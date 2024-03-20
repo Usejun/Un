@@ -8,9 +8,77 @@ namespace Un.Object
         public bool IsFull => Count >= value.Length;
         public int Count { get; protected set; }
 
+        public Obj this[int index]
+        {
+            get
+            {
+                if (OutOfRange(index)) throw new IndexOutOfRangeException();
+                return value[index];
+            }
+            set
+            {
+                if (OutOfRange(index)) throw new IndexOutOfRangeException();
+                this.value[index] = value;
+            }
+        }
+
+        public Obj this[Obj obj]
+        {
+            get
+            {
+                if (obj is not Int i || !i.value.TryInt(out var index) || OutOfRange(index)) throw new IndexOutOfRangeException();
+                return value[index];
+            }
+            set
+            {
+                if (obj is not Int i || !i.value.TryInt(out var index) || OutOfRange(index)) throw new IndexOutOfRangeException();
+                this.value[index] = value;
+            }
+        }
+
         public Iter()
         {
             value = [];
+        }
+
+        public Iter(string str)
+        {
+            value = [];
+            int index = 1;
+
+            Create(this);
+
+            Obj Create(Iter iter)
+            {
+                if (str[index] == ',')
+                    index++;
+
+                if (str[index] == '[')
+                {
+                    index++;
+                    iter.Append(Create([]));
+                }
+
+                if (str[index] == ']')
+                {
+                    index++;
+                    return iter;
+                }
+                else
+                {
+                    string value = "";
+                    while (index < str.Length && str[index] != ',')
+                    {
+                        if (str[index] == ']')
+                            break;
+
+                        value += str[index++];
+                    }
+                    iter.Append(Convert(value));
+
+                    return Create(iter);
+                }
+            }
         }
 
         public Iter(IEnumerable<Obj> value)
@@ -100,6 +168,8 @@ namespace Un.Object
         {
             Array.Resize(ref value, Count * 9 / 5 + 2);
         }
+
+        protected bool OutOfRange(int index) => index < 0 || index >= Count;
 
         public override string ToString() => $"[{string.Join(", ", value.Take(Count))}]";
 

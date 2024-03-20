@@ -1,4 +1,6 @@
-﻿namespace Un
+﻿using Un.Object;
+
+namespace Un
 {
     public class Token
     {
@@ -41,12 +43,14 @@
             While,
             Import,
             Return,
+            Comment,
 
             Variable,
             Function,
             Integer,
             Float,
             String,
+            Boolean,
             Iterator
         }
 
@@ -60,6 +64,12 @@
         {
             value = s;
             tokenType = GetType(s);
+        }
+
+        public Token(Obj obj)
+        {
+            value = obj.ToString();
+            tokenType = GetType(obj);
         }
 
         public Token(string s, Type type)
@@ -87,6 +97,7 @@
             ')' => Type.RParen,
             '[' => Type.LBrack,
             ']' => Type.RBrack,
+            '#' => Type.Comment,
             _ => Type.None
         };
 
@@ -109,5 +120,15 @@
             "import" => Type.Import,
             _ => Type.None
         };
+
+        public static Type GetType(Obj obj)
+        {
+            if (obj is Int) return Type.Integer;
+            if (obj is Float) return Type.Float;
+            if (obj is Str) return Type.String;
+            if (obj is Bool) return Type.Boolean;
+            if (obj is Iter) return Type.Iterator;
+            return Type.None;
+        }
     }
 }

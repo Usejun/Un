@@ -2,12 +2,11 @@
 
 namespace Un
 {
-    public class Tokenizer(string[] code)
+    public class Interpreter(string[] code)
     {
-        Calculator calculator = new();
-
         string[] code = code;
         List<Token> tokens = [];
+        List<Token> analyzedTokens = [];
 
         int index = 0;
         int line = 0;
@@ -23,10 +22,7 @@ namespace Un
             }
 
             Scan();
-
-            Console.WriteLine(string.Join(" ", tokens.Select(i => i.tokenType)));
-            Console.WriteLine(string.Join(" ", calculator.Postfix(tokens).Select(i => i.tokenType)));
-
+            Analyze();
             Parse();
 
             line++;
@@ -43,6 +39,7 @@ namespace Un
             {
                 SkipWhitespace();
                 if (index >= code[line].Length) break;
+                else if (code[line][index] == '#') return;
                 else if (code[line][index] == '\"') tokens.Add(String());
                 else if (char.IsLetter(code[line][index])) tokens.Add(Keyword());
                 else if (char.IsDigit(code[line][index])) tokens.Add(Number());
@@ -52,18 +49,80 @@ namespace Un
             }
         }
 
+        void Analyze()
+        {
+            analyzedTokens.Clear();
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                if (tokens[i].tokenType == Token.Type.LBrack)
+                {
+                    if (analyzedTokens.Count > 0 && 
+                        (analyzedTokens[^1].tokenType == Token.Type.Variable ||
+                        analyzedTokens[^1].tokenType == Token.Type.Iterator ||
+                        analyzedTokens[^1].tokenType == Token.Type.String))
+                    {
+                        int j = i + 1;
+                        while (tokens[j].tokenType != Token.Type.RBrack) j++;
+
+                        Obj index = Calculator.Calculate(tokens[(i + 1)..j]), var;
+                        Token token = analyzedTokens[^1];                
+                        
+                        if (token.tokenType == Token.Type.Variable)
+                            var = Process.Variable[token.value];
+                        else
+                            var = Obj.Convert(token.value);
+
+                        analyzedTokens.RemoveAt(analyzedTokens.Count - 1);
+
+                        if (var is Iter iter)
+                            token = new(iter[index]);
+                        else if (var is Str str)
+                            token = new(str[index]);
+
+                        analyzedTokens.Add(token);
+                        i = j;
+                    }
+                    else
+                    {
+                        string value = "[";
+
+                        int j = i + 1, depth = 1;
+
+                        while (depth > 0)
+                        {
+                            while (j < tokens.Count)
+                            {
+                                Token token = tokens[j];
+
+                                if (token.tokenType == Token.Type.LBrack)
+                                    depth++;
+                                else if (token.tokenType == Token.Type.RBrack)    
+                                    depth--;                                
+                                value += token.value;
+                                j++;
+                            }
+                        }
+
+                        value += "]";
+                        analyzedTokens.Add(new(value, Token.Type.Iterator));
+                        i = j;
+                    }
+                }
+                else analyzedTokens.Add(tokens[i]);
+            }
+        }
+
         void Parse()
         {
-            if (tokens.Count == 0) return;
-
-            if (tokens[0].tokenType == Token.Type.Import)
+            if (analyzedTokens.Count == 0 || analyzedTokens[0].tokenType == Token.Type.Comment) return;
+            else if (analyzedTokens[0].tokenType == Token.Type.Import)
             {
 
             }
-            else if (tokens[0].tokenType == Token.Type.Func)
+            else if (analyzedTokens[0].tokenType == Token.Type.Func)
             {
-                Process.Func.Add(tokens[1].value, line);
-                Process.Variable.Add(tokens[3].value, Obj.None);
+                Process.Func.Add(analyzedTokens[1].value, line);
+                Process.Variable.Add(analyzedTokens[3].value, Obj.None);
                 nesting++;
                 line++;
 
@@ -73,47 +132,48 @@ namespace Un
                 line--;
                 nesting--;
             }
-            else if (tokens[0].tokenType == Token.Type.Variable && tokens.Count >= 3 && tokens[1].tokenType == Token.Type.Assign)
+            else if (analyzedTokens[0].tokenType == Token.Type.Variable && analyzedTokens[1].tokenType == Token.Type.Assign &&
+                     analyzedTokens.Count > 2)
             {
-                if (Process.IsVariable(tokens[0].value))
-                    Process.Variable[tokens[0].value] = calculator.Calculate(tokens[2..]);
+                if (Process.IsVariable(analyzedTokens[0].value))
+                    Process.Variable[analyzedTokens[0].value] = Calculator.Calculate(analyzedTokens[2..]);
                 else
-                    Process.Variable.Add(tokens[0].value, calculator.Calculate(tokens[2..]));
+                    Process.Variable.Add(analyzedTokens[0].value, Calculator.Calculate(analyzedTokens[2..]));
             }
-            else if (Process.IsFunction(tokens[0].value))
+            else if (Process.IsFunction(analyzedTokens[0].value))
             {
-                Process.Function[tokens[0].value](calculator.Calculate(tokens[1..]));
+                Process.Function[analyzedTokens[0].value](Calculator.Calculate(analyzedTokens[1..]));
             }
-            else if (Process.IsFunc(tokens[0].value))
+            else if (Process.IsFunc(analyzedTokens[0].value))
             {
                 int last = line;
-                Obj parameter = calculator.Calculate(tokens[1..]);
+                Obj parameter = Calculator.Calculate(analyzedTokens[1..]);
 
-                line = Process.Func[tokens[0].value];
+                line = Process.Func[analyzedTokens[0].value];
                 Scan();
 
-                string arg = tokens[3].value;
+                string arg = analyzedTokens[3].value;
 
                 Process.Variable[arg] = parameter;
 
                 nesting++;
                 line++;
 
-                while (line < code.Length && IsBody(nesting) && TryInterpret());
+                while (line < code.Length && IsBody(nesting) && TryInterpret()) ;
 
                 nesting--;
                 Process.Variable[arg] = Obj.None;
-                line = last;                
+                line = last;
             }
-            else if (Process.IsControl(tokens[0].value))
+            else if (Process.IsControl(analyzedTokens[0].value))
             {
-                if (tokens[0].tokenType == Token.Type.Else ||
-                    calculator.Calculate(tokens[1..]) is Bool b && b.value)
+                if (analyzedTokens[0].tokenType == Token.Type.Else ||
+                    Calculator.Calculate(analyzedTokens[1..]) is Bool b && b.value)
                 {
                     nesting++;
                     line++;
 
-                    while (line < code.Length && IsBody(nesting) && TryInterpret());
+                    while (line < code.Length && IsBody(nesting) && TryInterpret()) ;
 
                     nesting--;
 
@@ -129,23 +189,23 @@ namespace Un
                     line--;
                 }
             }
-            else if (Process.IsLoop(tokens[0].value))
+            else if (Process.IsLoop(analyzedTokens[0].value))
             {
                 int loop = line;
 
-                if (tokens[0].tokenType == Token.Type.For)
+                if (analyzedTokens[0].tokenType == Token.Type.For)
                 {
-                    Iter iter = [];
+                    Iter iter;
 
-                    if (tokens[2].tokenType != Token.Type.Iterator && calculator.Calculate(tokens[2..]) is Iter i1)
+                    if (analyzedTokens[2].tokenType != Token.Type.Iterator && Calculator.Calculate(analyzedTokens[2..]) is Iter i1)
                         iter = i1;
-                    else if (tokens[2].tokenType == Token.Type.Iterator && Obj.Convert(tokens[2].value) is Iter i2)
+                    else if (analyzedTokens[2].tokenType == Token.Type.Iterator && Obj.Convert(analyzedTokens[2].value) is Iter i2)
                         iter = i2;
                     else
                         throw new ObjException("Convert Error");
 
                     nesting++;
-                    string var = tokens[1].value;
+                    string var = analyzedTokens[1].value;
                     Process.Variable.Add(var, Obj.None);
 
                     foreach (var item in iter)
@@ -158,7 +218,7 @@ namespace Un
 
                     nesting--;
                 }
-                else if (tokens[0].tokenType == Token.Type.While)
+                else if (analyzedTokens[0].tokenType == Token.Type.While)
                 {
                     nesting++;
 
@@ -168,7 +228,7 @@ namespace Un
 
                         Scan();
 
-                        if (calculator.Calculate(tokens[1..]) is not Bool b || !b.value)
+                        if (Calculator.Calculate(analyzedTokens[1..]) is not Bool b || !b.value)
                             break;
 
                         line++;
@@ -246,45 +306,6 @@ namespace Un
             }
 
             return new(str, Token.Type.Integer);
-        }
-
-        Token Iterator()
-        {
-            index++;
-            string str = "[";
-            int depth = 1;
-
-            while (depth > 0)
-            {
-                SkipWhitespace();
-                while (index < code[line].Length && code[line][index] != ',')
-                {
-                    if (code[line][index] == '[')
-                    {
-                        str += code[line][index++];
-                        depth++;
-                    }
-                    else if (code[line][index] == ']')
-                    {
-                        str += code[line][index++];
-                        depth--;
-                        break;
-                    }
-                    else if (!char.IsWhiteSpace(code[line][index]))
-                    {
-                        str += code[line][index++];
-                        if (code[line][index] != ']')
-                        {
-                            str += ",";
-                            index++;
-                        }
-                    }
-                    else break;
-                }
-                SkipWhitespace();
-            }
-
-            return new(str, Token.Type.Iterator);
         }
 
         Token Operator()
