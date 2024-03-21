@@ -23,8 +23,8 @@
             if (string.IsNullOrEmpty(str)) return None;
             if (str[0] == '\"' && str[^1] == '\"') return new Str(str.Trim('\"'));
             if (str[0] == '[' && str[^1] == ']') return new Iter(str);
-            if (str == "true") return new Bool(true);
-            if (str == "false") return new Bool(false);
+            if (str == "True") return new Bool(true);
+            if (str == "False") return new Bool(false);
             if (long.TryParse(str, out var l)) return new Int(l);
             if (double.TryParse(str, out var d)) return new Float(d);
 

@@ -42,6 +42,22 @@ namespace Un
 
         public static Iter Func(Obj parameter) => new(Process.Function.Keys.Select(key => new Str(key)));
 
+        public static Iter Range(Obj parameter)
+        {
+            if (parameter is Iter iter)
+            {
+                Iter range = [];
+                if (iter[0] is not Int i1 || !i1.value.TryInt(out int start)) return [];
+                if (iter[1] is not Int i2 || !i2.value.TryInt(out int count)) return [];
+
+                for (int i = 0; i < count; i++)
+                    range.Append(new Int(i + start));
+                return range;
+            }
+
+            return [];
+        }
+
         public static Int Len(Obj parameter)
         {
             if (parameter is Iter i) return new(i.Count);

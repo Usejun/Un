@@ -2,119 +2,133 @@
 
 namespace Un
 {
-    public class Interpreter(string[] code)
+    public class Interpreter(int index = 0, int line = 0, int nesting = 0)
     {
-        string[] code = code;
-        List<Token> tokens = [];
-        List<Token> analyzedTokens = [];
+        public Obj ReturnValue = Obj.None;
 
-        int index = 0;
-        int line = 0;
-        int nesting = 0;
+        int index = index;
+        int line = line;
+        int nesting = nesting;
 
         public bool TryInterpret()
         {
-            if (line >= code.Length) return false;
-            if (code[line].Length == 1)
+            if (ReturnValue != Obj.None) return false;
+            if (line >= Process.Code.Length) return false;
+            if (Process.Code[line].Length < 1)
             {
                 line++;
                 return true;
             }
 
-            Scan();
-            Analyze();
-            Parse();
-
+            Parse(Analyze(Scan(Process.Code[line])));
             line++;
-
             return true;
         }
 
-        void Scan()
+        public List<Token> Scan(string code)
         {
-            tokens.Clear();
+            List<Token> tokens = [];
             index = 0;
 
-            while (index < code[line].Length)
+            while (index < code.Length)
             {
-                SkipWhitespace();
-                if (index >= code[line].Length) break;
-                else if (code[line][index] == '#') return;
-                else if (code[line][index] == '\"') tokens.Add(String());
-                else if (char.IsLetter(code[line][index])) tokens.Add(Keyword());
-                else if (char.IsDigit(code[line][index])) tokens.Add(Number());
-                else if (Process.IsOperator(code[line][index])) tokens.Add(Operator());
-                else if (code[line][index] == ',') tokens.Add(new(code[line][index++]));
+                SkipWhitespace(code);
+                if (index >= code.Length) break;
+                else if (code[index] == '#') return [];
+                else if (code[index] == '\"') tokens.Add(String(code));
+                else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
+                else if (char.IsDigit(code[index])) tokens.Add(Number(code));
+                else if (Process.IsOperator(code[index])) tokens.Add(Operator(code));
+                else if (code[index] == ',') tokens.Add(new(code[index++]));
                 else throw new ScanException("scan Error");
             }
+
+            return tokens;
         }
 
-        void Analyze()
+        public List<Token> Analyze(List<Token> tokens)
         {
-            analyzedTokens.Clear();
+            List<Token> analyzedTokens = [];
+
             for (int i = 0; i < tokens.Count; i++)
-            {
+            {                
                 if (tokens[i].tokenType == Token.Type.LBrack)
                 {
+                    int j = i + 1;
+                    while (j < tokens.Count && tokens[j].tokenType != Token.Type.RBrack) j++;
+
                     if (analyzedTokens.Count > 0 && 
                         (analyzedTokens[^1].tokenType == Token.Type.Variable ||
                         analyzedTokens[^1].tokenType == Token.Type.Iterator ||
                         analyzedTokens[^1].tokenType == Token.Type.String))
                     {
-                        int j = i + 1;
-                        while (tokens[j].tokenType != Token.Type.RBrack) j++;
+                        Obj index = Calculator.Calculate(tokens[(i + 1)..j]);
 
-                        Obj index = Calculator.Calculate(tokens[(i + 1)..j]), var;
-                        Token token = analyzedTokens[^1];                
-                        
-                        if (token.tokenType == Token.Type.Variable)
-                            var = Process.Variable[token.value];
-                        else
-                            var = Obj.Convert(token.value);
-
-                        analyzedTokens.RemoveAt(analyzedTokens.Count - 1);
-
-                        if (var is Iter iter)
-                            token = new(iter[index]);
-                        else if (var is Str str)
-                            token = new(str[index]);
-
-                        analyzedTokens.Add(token);
-                        i = j;
+                        analyzedTokens.Add(new Token(index.ToString(), Token.Type.Indexer));
                     }
                     else
                     {
                         string value = "[";
+                        int depth = 1;
 
-                        int j = i + 1, depth = 1;
+                        j = i + 1;
 
                         while (depth > 0)
                         {
                             while (j < tokens.Count)
                             {
                                 Token token = tokens[j];
+                                value += token.value;
+                                j++;
 
                                 if (token.tokenType == Token.Type.LBrack)
                                     depth++;
-                                else if (token.tokenType == Token.Type.RBrack)    
-                                    depth--;                                
-                                value += token.value;
-                                j++;
+                                else if (token.tokenType == Token.Type.RBrack)
+                                {
+                                    j--;
+                                    depth--;
+                                    break;
+                                }
                             }
                         }
 
-                        value += "]";
                         analyzedTokens.Add(new(value, Token.Type.Iterator));
-                        i = j;
                     }
+
+                    i = j;
                 }
                 else analyzedTokens.Add(tokens[i]);
             }
+
+            return analyzedTokens;
         }
 
-        void Parse()
+        public void Parse(List<Token> analyzedTokens)
         {
+            List<Token.Type> tokenTypes = analyzedTokens.Select(i => i.tokenType).ToList();
+
+            int assign = tokenTypes.IndexOf(Token.Type.Assign);
+
             if (analyzedTokens.Count == 0 || analyzedTokens[0].tokenType == Token.Type.Comment) return;
+            else if (assign >= 1)
+            {
+                Token var = analyzedTokens[0];
+
+                if (assign == 1)
+                {
+                    if (!Process.IsVariable(var.value)) Process.Variable.Add(var.value, Obj.None);
+                    Process.Variable[var.value] = Calculator.Calculate(analyzedTokens[(assign + 1)..]);
+                }
+                else if (assign == 2)
+                {                    
+                    if (!Process.IsVariable(var.value)) throw new ObjException("Parse Error");
+                    Obj value = Process.Variable[var.value];
+                    
+                    if (value is Iter iter && Obj.Convert(analyzedTokens[1].value) is Int index)                          
+                        iter[index] = Calculator.Calculate(analyzedTokens[(assign + 1)..]);                        
+                    else throw new ObjException("Parse Error");
+                }                 
+            }
             else if (analyzedTokens[0].tokenType == Token.Type.Import)
             {
 
@@ -122,27 +136,18 @@ namespace Un
             else if (analyzedTokens[0].tokenType == Token.Type.Func)
             {
                 Process.Func.Add(analyzedTokens[1].value, line);
-                Process.Variable.Add(analyzedTokens[3].value, Obj.None);
                 nesting++;
                 line++;
 
-                while (line < code.Length && IsBody(nesting))
+                while (line < Process.Code.Length && IsBody(Process.Code[line]))
                     line++;
 
                 line--;
                 nesting--;
-            }
-            else if (analyzedTokens[0].tokenType == Token.Type.Variable && analyzedTokens[1].tokenType == Token.Type.Assign &&
-                     analyzedTokens.Count > 2)
+            }            
+            else if (analyzedTokens[0].tokenType == Token.Type.Return)
             {
-                if (Process.IsVariable(analyzedTokens[0].value))
-                    Process.Variable[analyzedTokens[0].value] = Calculator.Calculate(analyzedTokens[2..]);
-                else
-                    Process.Variable.Add(analyzedTokens[0].value, Calculator.Calculate(analyzedTokens[2..]));
-            }
-            else if (Process.IsFunction(analyzedTokens[0].value))
-            {
-                Process.Function[analyzedTokens[0].value](Calculator.Calculate(analyzedTokens[1..]));
+                ReturnValue = Calculator.Calculate(analyzedTokens[1..]);
             }
             else if (Process.IsFunc(analyzedTokens[0].value))
             {
@@ -150,7 +155,7 @@ namespace Un
                 Obj parameter = Calculator.Calculate(analyzedTokens[1..]);
 
                 line = Process.Func[analyzedTokens[0].value];
-                Scan();
+                Scan(Process.Code[line]);
 
                 string arg = analyzedTokens[3].value;
 
@@ -159,12 +164,16 @@ namespace Un
                 nesting++;
                 line++;
 
-                while (line < code.Length && IsBody(nesting) && TryInterpret()) ;
+                while (line < Process.Code.Length && IsBody(Process.Code[line]) && TryInterpret()) ;
 
                 nesting--;
                 Process.Variable[arg] = Obj.None;
                 line = last;
             }
+            else if (Process.IsFunction(analyzedTokens[0].value))
+            {
+                Process.Function[analyzedTokens[0].value](Calculator.Calculate(analyzedTokens[1..]));
+            }            
             else if (Process.IsControl(analyzedTokens[0].value))
             {
                 if (analyzedTokens[0].tokenType == Token.Type.Else ||
@@ -173,19 +182,22 @@ namespace Un
                     nesting++;
                     line++;
 
-                    while (line < code.Length && IsBody(nesting) && TryInterpret()) ;
+                    while (line < Process.Code.Length && IsBody(Process.Code[line]) && TryInterpret()) ;
 
                     nesting--;
 
-                    SkipConditional();
+                    if (line < Process.Code.Length)
+                        SkipConditional(Process.Code[line]);
                 }
                 else
                 {
                     line++;
+                    nesting++;
 
-                    while (IsBody(nesting + 1))
+                    while (line < Process.Code.Length && IsBody(Process.Code[line]))
                         line++;
 
+                    nesting--;
                     line--;
                 }
             }
@@ -195,14 +207,9 @@ namespace Un
 
                 if (analyzedTokens[0].tokenType == Token.Type.For)
                 {
-                    Iter iter;
+                    Obj obj = Calculator.Calculate(analyzedTokens[3..]);
 
-                    if (analyzedTokens[2].tokenType != Token.Type.Iterator && Calculator.Calculate(analyzedTokens[2..]) is Iter i1)
-                        iter = i1;
-                    else if (analyzedTokens[2].tokenType == Token.Type.Iterator && Obj.Convert(analyzedTokens[2].value) is Iter i2)
-                        iter = i2;
-                    else
-                        throw new ObjException("Convert Error");
+                    if (obj is not Iter iter) throw new ObjException("Arg Error");
 
                     nesting++;
                     string var = analyzedTokens[1].value;
@@ -213,9 +220,11 @@ namespace Un
                         line = loop + 1;
                         Process.Variable[var] = item;
 
-                        while (line < code.Length && IsBody(nesting) && TryInterpret()) ;
+                        while (line < Process.Code.Length && IsBody(Process.Code[line]) && TryInterpret()) ;
                     }
 
+                    Process.Variable.Remove(var);
+                    line--;
                     nesting--;
                 }
                 else if (analyzedTokens[0].tokenType == Token.Type.While)
@@ -226,14 +235,14 @@ namespace Un
                     {
                         line = loop;
 
-                        Scan();
+                        Scan(Process.Code[line]);
 
                         if (Calculator.Calculate(analyzedTokens[1..]) is not Bool b || !b.value)
                             break;
 
                         line++;
 
-                        while (line < code.Length && IsBody(nesting) && TryInterpret()) ;
+                        while (line < Process.Code.Length && IsBody(Process.Code[line]) && TryInterpret()) ;
                     }
 
                     nesting--;
@@ -243,64 +252,79 @@ namespace Un
             else throw new ParseException("Parse Error");
         }
 
-        void SkipWhitespace()
+        public bool IsBody(string code)
         {
-            while (index < code[line].Length && char.IsWhiteSpace(code[line][index]))
+            bool a = true, b = true;
+
+            for (int i = 0; a && i < nesting; i++)
+                if (code[i] != '\t')
+                    a = false;
+
+            for (int i = 0; b && i < 4 * nesting; i++)
+                if (code[i] != ' ')
+                    b = false;
+
+            return a || b;
+        }
+
+        public bool IsBody(string code, int nesting)
+        {
+            bool a = true, b = true;
+
+            for (int i = 0; a && i < nesting; i++)
+                if (code[i] != '\t')
+                    a = false;
+
+            for (int i = 0; b && i < 4 * nesting; i++)
+                if (code[i] != ' ')
+                    b = false;
+
+            return a || b;
+        }
+
+        void SkipWhitespace(string code)
+        {
+            while (index < code.Length && char.IsWhiteSpace(code[index]))
                 index++;
         }
 
-        void SkipConditional()
+        void SkipConditional(string code)
         {
             while (line < code.Length)
             {
                 index = 0;
 
-                SkipWhitespace();
-                if (Keyword().value == "endif")
+                SkipWhitespace(code);
+                if (Keyword(code).value == "endif")
                     break;
 
                 line++;
             }
         }
 
-        bool IsBody(int nesting)
+        Token String(string code)
         {
-            bool a = true, b = true;
+            string str = $"{code[index++]}";
 
-            for (int i = 0; a && i < nesting; i++)
-                if (code[line][i] != '\t')
-                    a = false;
-
-            for (int i = 0; b && i < 4 * nesting; i++)
-                if (code[line][i] != ' ')
-                    b = false;
-
-            return a || b;
-        }
-
-        Token String()
-        {
-            string str = $"{code[line][index++]}";
-
-            while (index < code[line].Length && code[line][index] != '\"')
-                str += code[line][index++];
-            str += code[line][index++];
+            while (index < code.Length && code[index] != '\"')
+                str += code[index++];
+            str += code[index++];
 
             return new(str, Token.Type.String);
         }
 
-        Token Number()
+        Token Number(string code)
         {
             string str = "";
 
-            while (index < code[line].Length && char.IsDigit(code[line][index]))
-                str += code[line][index++];
+            while (index < code.Length && char.IsDigit(code[index]))
+                str += code[index++];
 
-            if (index < code[line].Length && code[line][index] == '.')
+            if (index < code.Length && code[index] == '.')
             {
-                str += code[line][index++];
-                while (char.IsDigit(code[line][index]))
-                    str += code[line][index++];
+                str += code[index++];
+                while (char.IsDigit(code[index]))
+                    str += code[index++];
 
                 return new(str, Token.Type.Float);
             }
@@ -308,13 +332,13 @@ namespace Un
             return new(str, Token.Type.Integer);
         }
 
-        Token Operator()
+        Token Operator(string code)
         {
             bool TryOperator(char c1, char c2, out Token token)
             {
-                if (code[line][index] == c1)
+                if (code[index] == c1)
                 {
-                    if (code[line].Length > index + 1 && code[line][index + 1] == c2)
+                    if (code.Length > index + 1 && code[index + 1] == c2)
                     {
                         index += 2;
                         token = new($"{c1}{c2}");
@@ -341,15 +365,15 @@ namespace Un
             else if (TryOperator('/', '/', out var t5))
                 return t5;
 
-            return new(code[line][index++]);
+            return new(code[index++]);
         }
 
-        Token Keyword()
+        Token Keyword(string code)
         {
             string str = "";
 
-            while (index < code[line].Length && char.IsLetter(code[line][index]))
-                str += code[line][index++];
+            while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_'))
+                str += code[index++];
 
             if (Process.IsFunction(str))
                 return new(str, Token.Type.Function);

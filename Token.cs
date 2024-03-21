@@ -22,16 +22,18 @@ namespace Un
             LessThen,
             GreaterThen,
 
+            Indexer,
+
             Equal,
             Unequal,
-
-            Comma,
 
             LParen,
             RParen,
 
             LBrack,
             RBrack,
+
+            Comma,
 
             Func,
             True,
@@ -42,6 +44,7 @@ namespace Un
             For,
             While,
             Import,
+            In,
             Return,
             Comment,
 
@@ -51,7 +54,7 @@ namespace Un
             Float,
             String,
             Boolean,
-            Iterator
+            Iterator,
         }
 
         public Token(char c)
@@ -109,8 +112,9 @@ namespace Un
             "!=" => Type.Unequal,
             "//" => Type.DoubleSlash,
             "fn" => Type.Func,
-            "true" => Type.True,
-            "false" => Type.False,
+            "True" => Type.True,
+            "False" => Type.False,
+            "in" => Type.In,
             "if" => Type.If,
             "elif" => Type.ElIf,
             "else" => Type.Else,

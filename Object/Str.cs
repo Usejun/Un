@@ -13,11 +13,11 @@
             }
         }
         
-        public Str this[Obj obj]
+        public Str this[Int i]
         {
             get
             {
-                if (obj is not Int i || !i.value.TryInt(out int index) || OutOfRange(index) ) throw new IndexOutOfRangeException();
+                if (!i.value.TryInt(out int index) || OutOfRange(index) ) throw new IndexOutOfRangeException();
                 return new Str($"{value[index]}");
             }
         }

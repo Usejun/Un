@@ -22,16 +22,16 @@ namespace Un.Object
             }
         }
 
-        public Obj this[Obj obj]
+        public Obj this[Int i]
         {
             get
             {
-                if (obj is not Int i || !i.value.TryInt(out var index) || OutOfRange(index)) throw new IndexOutOfRangeException();
+                if (!i.value.TryInt(out var index) || OutOfRange(index)) throw new IndexOutOfRangeException();
                 return value[index];
             }
             set
             {
-                if (obj is not Int i || !i.value.TryInt(out var index) || OutOfRange(index)) throw new IndexOutOfRangeException();
+                if (!i.value.TryInt(out var index) || OutOfRange(index)) throw new IndexOutOfRangeException();
                 this.value[index] = value;
             }
         }
