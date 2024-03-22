@@ -38,6 +38,13 @@ namespace Un
 
         public static Str Str(Obj parameter) => new(parameter.ToString());
 
+        public static Bool Bool(Obj parameter) => parameter.ToString() switch
+        {
+            "True" => new(true),
+            "False" => new(false),
+            _ => throw new ObjException("Convert Error"),
+        };
+
         public static Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString()) is Iter i ? i : throw new ObjException("Convert Error"); 
 
         public static Iter Func(Obj parameter) => new(Process.Function.Keys.Select(key => new Str(key)));

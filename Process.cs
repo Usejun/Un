@@ -10,7 +10,8 @@ namespace Un
         {
             {"write", Std.Write}, {"writeln", Std.Writeln}, {"readln", Std.Readln},
             {"int", Std.Int}, {"float", Std.Float}, {"str", Std.Str}, {"type", Std.Type},
-            {"func", Std.Func}, {"len", Std.Len}, {"iter", Std.Iter}, {"range", Std.Range}
+            {"func", Std.Func}, {"len", Std.Len}, {"iter", Std.Iter}, {"range", Std.Range},
+            {"bool", Std.Bool},
         };
 
         public static Dictionary<string, Token.Type> Control = new()

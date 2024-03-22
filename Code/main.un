@@ -1,4 +1,8 @@
-﻿v = [[]] * 10
-for i in range([0, 10])
-	v[i] = v[i] + ([i] * 10)
-writeln(v)
+﻿fib = [0] * 21
+fib[0] = 1
+fib[1] = 1
+i = 2
+while (i < 20)
+	fib[i] = fib[i - 1] + fib[i - 2]
+	i = i + 1
+writeln(fib)

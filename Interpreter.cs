@@ -196,7 +196,7 @@ namespace Un
                     nesting--;
 
                     if (line < Process.Code.Length)
-                        SkipConditional(Process.Code[line]);
+                        SkipConditional();
                 }
                 else
                 {
@@ -297,17 +297,22 @@ namespace Un
                 index++;
         }
 
-        void SkipConditional(string code)
+        void SkipConditional()
         {
-            while (line < code.Length)
+            while (line < Process.Code.Length)
             {
                 index = 0;
 
-                SkipWhitespace(code);
-                if (Keyword(code).value == "endif")
+                SkipWhitespace(Process.Code[line]);
+                if (!Process.IsControl(Scan(Process.Code[line])[0]))
                     break;
 
+                nesting++;
                 line++;
+
+                while (line < Process.Code.Length && IsBody(Process.Code[line]))
+                    line++;
+                nesting--;
             }
         }
 
