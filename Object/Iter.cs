@@ -67,9 +67,14 @@ namespace Un.Object
                 else
                 {
                     string value = "";
+                    int depth = 1;
                     while (index < str.Length && str[index] != ',')
                     {
+                        if (str[index] == '[')
+                            depth++;
                         if (str[index] == ']')
+                            depth--;
+                        if (depth == 0)
                             break;
 
                         value += str[index++];
@@ -98,10 +103,10 @@ namespace Un.Object
         public void Append(Obj obj)
         {
             if (IsFull)
-                Resize();
+                Resize();            
 
             if (obj != None)
-                value[Count++] = obj;
+                value[Count++] = obj.Clone();
         }
 
         public void Append(Obj[] objs)
@@ -124,6 +129,13 @@ namespace Un.Object
                 value[i] = value[i + 1];
             Count--;
             return true;
+        }
+
+        public override void Ass(string value)
+        {
+            if (Convert(value) is Iter iter)
+                this.value = iter.value;
+            else throw new ObjException("Ass Error");
         }
 
         public override Obj Add(Obj obj)
@@ -172,6 +184,8 @@ namespace Un.Object
         protected bool OutOfRange(int index) => index < 0 || index >= Count;
 
         public override string ToString() => $"[{string.Join(", ", value.Take(Count))}]";
+
+        public override Obj Clone() => new Iter(value);
 
         public IEnumerator<Obj> GetEnumerator()
         {

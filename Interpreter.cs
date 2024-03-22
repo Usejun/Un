@@ -54,14 +54,23 @@ namespace Un
             {                
                 if (tokens[i].tokenType == Token.Type.LBrack)
                 {
-                    int j = i + 1;
-                    while (j < tokens.Count && tokens[j].tokenType != Token.Type.RBrack) j++;
+                    int j = i + 1, depth = 1;
+                    while (j < tokens.Count && depth > 0)
+                    {
+                        if (tokens[j].tokenType == Token.Type.LBrack)
+                            depth++;
+                        if (tokens[j].tokenType == Token.Type.RBrack)
+                            depth--;
+                        j++;
+                    }
 
                     if (analyzedTokens.Count > 0 && 
-                        (analyzedTokens[^1].tokenType == Token.Type.Variable ||
+                       (analyzedTokens[^1].tokenType == Token.Type.Variable ||
                         analyzedTokens[^1].tokenType == Token.Type.Iterator ||
-                        analyzedTokens[^1].tokenType == Token.Type.String))
+                        analyzedTokens[^1].tokenType == Token.Type.String ||
+                        analyzedTokens[^1].tokenType == Token.Type.Indexer))
                     {
+                        j--;
                         Obj index = Calculator.Calculate(tokens[(i + 1)..j]);
 
                         analyzedTokens.Add(new Token(index.ToString(), Token.Type.Indexer));
@@ -69,29 +78,23 @@ namespace Un
                     else
                     {
                         string value = "[";
-                        int depth = 1;
+                        depth = 1;
 
                         j = i + 1;
 
-                        while (depth > 0)
+                        while (j < tokens.Count && depth > 0)
                         {
-                            while (j < tokens.Count)
-                            {
-                                Token token = tokens[j];
-                                value += token.value;
-                                j++;
+                            Token token = tokens[j];
+                            value += token.value;
+                            j++;
 
-                                if (token.tokenType == Token.Type.LBrack)
-                                    depth++;
-                                else if (token.tokenType == Token.Type.RBrack)
-                                {
-                                    j--;
-                                    depth--;
-                                    break;
-                                }
-                            }
+                            if (token.tokenType == Token.Type.LBrack)
+                                depth++;
+                            else if (token.tokenType == Token.Type.RBrack)
+                                depth--;                           
                         }
 
+                        j--;
                         analyzedTokens.Add(new(value, Token.Type.Iterator));
                     }
 
@@ -112,22 +115,28 @@ namespace Un
             if (analyzedTokens.Count == 0 || analyzedTokens[0].tokenType == Token.Type.Comment) return;
             else if (assign >= 1)
             {
-                Token var = analyzedTokens[0];
+                Token token = analyzedTokens[0];
+
+                if (!Process.IsVariable(token.value))
+                {
+                    if (assign == 1) Process.Variable.Add(token.value, Obj.None);
+                    else throw new ObjException("Parse Error");
+                }
+
+                Obj var = Process.Variable[token.value];
+                Obj value = Calculator.Calculate(analyzedTokens[(assign + 1)..]);
+
+                for (int i = 1; i < assign - 1; i++)
+                {
+                    if (var is Iter iter1 && Obj.Convert(analyzedTokens[i].value) is Int index1)
+                        var = iter1[index1];
+                    else throw new ObjException("Parse Error");
+                }
 
                 if (assign == 1)
-                {
-                    if (!Process.IsVariable(var.value)) Process.Variable.Add(var.value, Obj.None);
-                    Process.Variable[var.value] = Calculator.Calculate(analyzedTokens[(assign + 1)..]);
-                }
-                else if (assign == 2)
-                {                    
-                    if (!Process.IsVariable(var.value)) throw new ObjException("Parse Error");
-                    Obj value = Process.Variable[var.value];
-                    
-                    if (value is Iter iter && Obj.Convert(analyzedTokens[1].value) is Int index)                          
-                        iter[index] = Calculator.Calculate(analyzedTokens[(assign + 1)..]);                        
-                    else throw new ObjException("Parse Error");
-                }                 
+                    Process.Variable[token.value] = value;
+                if (var is Iter iter2 && Obj.Convert(analyzedTokens[assign - 1].value) is Int index2)
+                    iter2[index2] = value;
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Import)
             {

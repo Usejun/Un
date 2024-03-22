@@ -4,6 +4,16 @@
     {
         public bool value = value;
 
+        public override void Ass(string value)
+        {
+            this.value = value switch
+            {
+                "True" => true,
+                "False" => false,
+                _ => throw new ObjException("Ass Error")
+            };
+        }
+
         public override string ToString() => $"{value}";
 
         public override int CompareTo(Obj? obj)
@@ -12,5 +22,8 @@
 
             throw new ObjException("compare Error");
         }
+
+        public override Obj Clone() => new Bool(value);
+
     }
 }

@@ -22,6 +22,13 @@
             }
         }
 
+        public override void Ass(string value)
+        {
+            if (value[0] == '\"' && value[^1] == '\"')
+                this.value = value;
+            else throw new ObjException("Ass Error");
+        }
+
         public override Obj Add(Obj obj) => new Str(value + obj.ToString());
 
         public override int CompareTo(Obj? obj)
@@ -34,5 +41,7 @@
         protected bool OutOfRange(int index) => 0 > index || index >= value.Length;
 
         public override string ToString() => value;
+
+        public override Obj Clone() => new Str(value);
     }
 }

@@ -4,6 +4,13 @@
     {
         public double value = value;
 
+        public override void Ass(string value)
+        {
+            if (double.TryParse(value, out var v))
+                this.value = v;
+            else throw new ObjException("Ass Error");
+        }
+
         public override Obj Add(Obj obj)
         {
             if (obj is Int i) return new Float(value + i.value);
@@ -61,5 +68,8 @@
         }
 
         public override string ToString() => $"{value}";
+
+        public override Obj Clone() => new Float(value);
+
     }
 }

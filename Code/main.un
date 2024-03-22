@@ -1,19 +1,4 @@
-﻿# 백준 4673번 : 셀프 넘버
-
-fn self_number(k)
-	a = k
-	while (k != 0)
-		a = a + (k % 10)
-		k = k // 10
-	return a
-
-nums = [False] * 10001
-
-for i in range([1, 10000])
-	t = self_number(i)
-	if (t < 10001)
-		nums[t] = True
-
-for i in range([1, 10000])
-	if (!nums[i])
-		writeln(i)
+﻿v = [[]] * 10
+for i in range([0, 10])
+	v[i] = v[i] + ([i] * 10)
+writeln(v)

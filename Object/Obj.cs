@@ -4,6 +4,8 @@
     {
         public static Obj None => null;
 
+        public virtual void Ass(string value) => throw new ObjException("Ass Error");
+
         public virtual Obj Add(Obj obj) => throw new ObjException("Add Error");
 
         public virtual Obj Sub(Obj obj) => throw new ObjException("Sub Error");
@@ -21,6 +23,7 @@
         public static Obj Convert(string str)
         {
             if (string.IsNullOrEmpty(str)) return None;
+            if (Process.IsVariable(str)) return Process.Variable[str];
             if (str[0] == '\"' && str[^1] == '\"') return new Str(str.Trim('\"'));
             if (str[0] == '[' && str[^1] == ']') return new Iter(str);
             if (str == "True") return new Bool(true);
@@ -32,6 +35,8 @@
         }
 
         public virtual int CompareTo(Obj? obj) => throw new ObjException("compare Error");
+
+        public virtual Obj Clone() => throw new ObjException("Clone Error");
     }
 
     public class ObjException : Exception
