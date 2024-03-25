@@ -1,11 +1,12 @@
 ﻿using Un.Object;
+using Un.Function;
 
 namespace Un
 {
     public static class Calculator
     {
         static Dictionary<Token.Type, int> Operator = Process.Operator;
-
+        
         static Stack<Token> postfixStack = [];
         static Stack<Obj> calculateStack = [];
 
@@ -47,22 +48,9 @@ namespace Un
             {
                 Token token = postfix[i];
 
-                if (Process.IsFunction(token))
+                if (Process.IsFunc(token))
                 {
-                    calculateStack.Push(Process.Function[token.value](calculateStack.TryPop(out var p) ? p : Obj.None));
-                }
-                else if (Process.IsFunc(token))
-                {
-                    int line = Process.Func[token.value];
-                    Interpreter interpreter = new(0, line + 1, 1);
-                    string arg = interpreter.Scan(Process.Code[line])[3].value;
-                    Process.Variable.Add(arg, calculateStack.TryPop(out var value) ? value : Obj.None);
-                    line++;
-
-                    while (interpreter.IsBody(Process.Code[line]) && interpreter.TryInterpret());
-
-                    Process.Variable.Remove(arg);
-                    calculateStack.Push(interpreter.ReturnValue);
+                    calculateStack.Push(Process.Func[token.value].Call(calculateStack.TryPop(out var obj) ? obj : Obj.None));
                 }
                 else if (Process.IsVariable(token))
                 {

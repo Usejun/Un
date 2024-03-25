@@ -4,6 +4,8 @@
     {
         public static Obj None => null;
 
+        public Dictionary<string, Obj> obj = [];
+
         public virtual void Ass(string value) => throw new ObjException("Ass Error");
 
         public virtual Obj Add(Obj obj) => throw new ObjException("Add Error");

@@ -16,6 +16,7 @@ namespace Un
             Slash,
             Percent,
             DoubleSlash,
+            Dot,
 
             LessOrEqual,
             GreaterOrEqual,
@@ -101,6 +102,7 @@ namespace Un
             '[' => Type.LBrack,
             ']' => Type.RBrack,
             '#' => Type.Comment,
+            '.' => Type.Dot,
             _ => Type.None
         };
 

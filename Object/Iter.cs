@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using Un.Class;
+using System.Collections;
 
 namespace Un.Object
 {
-    public class Iter : Obj, IEnumerable<Obj>
+    public class Iter : Cla, IEnumerable<Obj>
     {
         public Obj[] value;
         public bool IsFull => Count >= value.Length;
@@ -36,65 +37,51 @@ namespace Un.Object
             }
         }
 
-        public Iter()
+        public Iter() : base("iter")
         {
+            className = "iter";
             value = [];
         }
 
-        public Iter(string str)
+        public Iter(string str) : base("iter")
         {
+            className = "iter";
             value = [];
-            int index = 1;
+            int index = 0, depth = 0;
+            string buffer = "";
+            Interpreter inter = new([]);
 
-            Create(this);
-
-            Obj Create(Iter iter)
+            while (str.Length - 2 > index)
             {
-                if (str[index] == ',')
-                    index++;
+                index++;
+                if (str[index] == '[') depth++;
+                if (str[index] == ']') depth--;
 
-                if (str[index] == '[')
+                if (depth == 0 && str[index] == ',')
                 {
-                    index++;
-                    iter.Append(Create([]));
-                }
-
-                if (str[index] == ']')
-                {
-                    index++;
-                    return iter;
+                    if (buffer[0] == '[') Append(new Iter(buffer));
+                    else Append(Convert(buffer));
+                    buffer = "";
                 }
                 else
-                {
-                    string value = "";
-                    int depth = 1;
-                    while (index < str.Length && str[index] != ',')
-                    {
-                        if (str[index] == '[')
-                            depth++;
-                        if (str[index] == ']')
-                            depth--;
-                        if (depth == 0)
-                            break;
-
-                        value += str[index++];
-                    }
-                    iter.Append(Convert(value));
-
-                    return Create(iter);
-                }
+                    buffer += str[index];
             }
+
+            if (!string.IsNullOrEmpty(buffer))
+                Append(Calculator.Calculate(inter.Analyze(inter.Scan(buffer))));
         }
 
-        public Iter(IEnumerable<Obj> value)
+        public Iter(IEnumerable<Obj> value) : base("iter")
         {
+            className = "iter";
             this.value = [];
             foreach (var item in value)
                 Append(item);
         }
 
-        public Iter(Obj[] value)
+        public Iter(Obj[] value) : base("iter")
         {
+            className = "iter";
             this.value = [];
             foreach (var item in value)
                 Append(item);

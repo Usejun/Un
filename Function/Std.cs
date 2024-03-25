@@ -1,6 +1,6 @@
 ﻿using Un.Object;
 
-namespace Un
+namespace Un.Function
 {
     public static class Std
     {
@@ -45,9 +45,9 @@ namespace Un
             _ => throw new ObjException("Convert Error"),
         };
 
-        public static Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString()) is Iter i ? i : throw new ObjException("Convert Error"); 
+        public static Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString()) is Iter i ? i : throw new ObjException("Convert Error");
 
-        public static Iter Func(Obj parameter) => new(Process.Function.Keys.Select(key => new Str(key)));
+        public static Iter Func(Obj parameter) => new(Process.Func.Keys.Select(key => new Str(key)));
 
         public static Iter Range(Obj parameter)
         {
@@ -70,5 +70,22 @@ namespace Un
             if (parameter is Iter i) return new(i.Count);
             else return new(1);
         }
+
+        public static Dictionary<string, Fun> Functions() => new()
+        {
+            {"write", new NativeFun("write", "text", Write)},
+            {"writeln", new NativeFun("writeln", "text", Writeln)},
+            {"readln", new NativeFun("readln", "arg", Readln)},
+            {"int", new NativeFun("int", "value", Int)},
+            {"float", new NativeFun("float", "value", Float)},
+            {"str", new NativeFun("str", "value", Str)},
+            {"bool", new NativeFun("bool", "value", Bool)},
+            {"iter", new NativeFun("iter", "value", Iter)},
+            {"type", new NativeFun("type", "obj", Type)},
+            {"func", new NativeFun("func", "arg", Func)},
+            {"len", new NativeFun("len", "obj", Len)},
+            {"range", new NativeFun("range", "start_len", Range)},
+        };
+
     }
 }

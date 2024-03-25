@@ -1,4 +1,6 @@
-﻿using Un.Object;
+﻿using Un.Function;
+using Un.Object;
+using Un.Class;
 
 namespace Un
 {
@@ -6,13 +8,7 @@ namespace Un
     {
         public static string[] Code = [];
 
-        public static Dictionary<string, Func<Obj, Obj>> Function = new()
-        {
-            {"write", Std.Write}, {"writeln", Std.Writeln}, {"readln", Std.Readln},
-            {"int", Std.Int}, {"float", Std.Float}, {"str", Std.Str}, {"type", Std.Type},
-            {"func", Std.Func}, {"len", Std.Len}, {"iter", Std.Iter}, {"range", Std.Range},
-            {"bool", Std.Bool},
-        };
+        public static Dictionary<string, Cla> Class = [];     
 
         public static Dictionary<string, Token.Type> Control = new()
         {
@@ -29,7 +25,7 @@ namespace Un
             { Token.Type.Assign, 0 }, { Token.Type.RParen, 0 }, { Token.Type.Equal,  0 }, { Token.Type.Unequal, 0 },
             { Token.Type.LessOrEqual, 0 }, { Token.Type.LessThen, 0 }, { Token.Type.GreaterOrEqual, 0 }, { Token.Type.GreaterThen, 0 },
             { Token.Type.Plus, 1 }, { Token.Type.Minus, 1 }, { Token.Type.Percent, 1 }, { Token.Type.Bang, 1 },
-            { Token.Type.Asterisk, 2 }, { Token.Type.Slash, 2 }, { Token.Type.DoubleSlash, 2 }, { Token.Type.Variable, 2 },
+            { Token.Type.Asterisk, 2 }, { Token.Type.Slash, 2 }, { Token.Type.DoubleSlash, 2 },
             { Token.Type.Indexer, 2 },
             { Token.Type.Function, 3 }, 
             { Token.Type.LParen, 4 },
@@ -37,7 +33,13 @@ namespace Un
 
         public static Dictionary<string, Obj> Variable = [];
 
-        public static Dictionary<string, int> Func = [];
+        public static Dictionary<string, Fun> Func = [];
+
+        public static void Import(Dictionary<string, Fun> functions)
+        {
+            foreach (var function in functions)            
+                Func.Add(function.Key, function.Value);            
+        }
 
         public static bool IsVariable(string str) => Variable.ContainsKey(str);
 
@@ -85,10 +87,6 @@ namespace Un
             "!" => true,
             _ => false,
         };
-
-        public static bool IsFunction(Token token) => IsFunction(token.value);
-
-        public static bool IsFunction(string str) => Function.ContainsKey(str);
 
         public static bool IsFunc(Token token) => IsFunc(token.value);
 

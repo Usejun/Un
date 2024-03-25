@@ -2,25 +2,26 @@
 
 namespace Un
 {
-    public class Interpreter(int index = 0, int line = 0, int nesting = 0)
+    public class Interpreter(string[] code, int index = 0, int line = 0, int nesting = 0)
     {
         public Obj ReturnValue = Obj.None;
 
-        int index = index;
-        int line = line;
-        int nesting = nesting;
+        public int index = index;
+        public int line = line;
+        public int nesting = nesting;
+        public string[] code = code;
 
         public bool TryInterpret()
         {
             if (ReturnValue != Obj.None) return false;
-            if (line >= Process.Code.Length) return false;
-            if (Process.Code[line].Length < 1)
+            if (line >= code.Length) return false;
+            if (code[line].Length < 1)
             {
                 line++;
                 return true;
             }
 
-            Parse(Analyze(Scan(Process.Code[line])));
+            Parse(Analyze(Scan(code[line])));
             line++;
             return true;
         }
@@ -39,7 +40,7 @@ namespace Un
                 else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
                 else if (char.IsDigit(code[index])) tokens.Add(Number(code));
                 else if (Process.IsOperator(code[index])) tokens.Add(Operator(code));
-                else if (code[index] == ',') tokens.Add(new(code[index++]));
+                else if (code[index] == ',' || code[index] == '.') tokens.Add(new(code[index++]));
                 else throw new ScanException("scan Error");
             }
 
@@ -51,7 +52,7 @@ namespace Un
             List<Token> analyzedTokens = [];
 
             for (int i = 0; i < tokens.Count; i++)
-            {                
+            {
                 if (tokens[i].tokenType == Token.Type.LBrack)
                 {
                     int j = i + 1, depth = 1;
@@ -64,7 +65,7 @@ namespace Un
                         j++;
                     }
 
-                    if (analyzedTokens.Count > 0 && 
+                    if (analyzedTokens.Count > 0 &&
                        (analyzedTokens[^1].tokenType == Token.Type.Variable ||
                         analyzedTokens[^1].tokenType == Token.Type.Iterator ||
                         analyzedTokens[^1].tokenType == Token.Type.String ||
@@ -91,7 +92,7 @@ namespace Un
                             if (token.tokenType == Token.Type.LBrack)
                                 depth++;
                             else if (token.tokenType == Token.Type.RBrack)
-                                depth--;                           
+                                depth--;
                         }
 
                         j--;
@@ -144,45 +145,28 @@ namespace Un
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Func)
             {
-                Process.Func.Add(analyzedTokens[1].value, line);
+                int start = line;
+
                 nesting++;
                 line++;
 
-                while (line < Process.Code.Length && IsBody(Process.Code[line]))
+                while (line < code.Length && IsBody(code[line], nesting))
                     line++;
+
+                Process.Func.Add(analyzedTokens[1].value, new(code[start..line]));
 
                 line--;
                 nesting--;
-            }            
+
+            }
             else if (analyzedTokens[0].tokenType == Token.Type.Return)
             {
                 ReturnValue = Calculator.Calculate(analyzedTokens[1..]);
             }
             else if (Process.IsFunc(analyzedTokens[0].value))
             {
-                int last = line;
-                Obj parameter = Calculator.Calculate(analyzedTokens[1..]);
-
-                line = Process.Func[analyzedTokens[0].value];
-                Scan(Process.Code[line]);
-
-                string arg = analyzedTokens[3].value;
-
-                Process.Variable[arg] = parameter;
-
-                nesting++;
-                line++;
-
-                while (line < Process.Code.Length && IsBody(Process.Code[line]) && TryInterpret()) ;
-
-                nesting--;
-                Process.Variable[arg] = Obj.None;
-                line = last;
+                Process.Func[analyzedTokens[0].value].Call(Calculator.Calculate(analyzedTokens[1..]));
             }
-            else if (Process.IsFunction(analyzedTokens[0].value))
-            {
-                Process.Function[analyzedTokens[0].value](Calculator.Calculate(analyzedTokens[1..]));
-            }            
             else if (Process.IsControl(analyzedTokens[0].value))
             {
                 if (analyzedTokens[0].tokenType == Token.Type.Else ||
@@ -191,19 +175,20 @@ namespace Un
                     nesting++;
                     line++;
 
-                    while (line < Process.Code.Length && IsBody(Process.Code[line]) && TryInterpret()) ;
+                    while (line < code.Length && IsBody(code[line]) && TryInterpret()) ;
 
-                    nesting--;
-
-                    if (line < Process.Code.Length)
+                    if (line < code.Length && IsBody(code[line], nesting))
                         SkipConditional();
+
+                    line--;
+                    nesting--;
                 }
                 else
                 {
                     line++;
                     nesting++;
 
-                    while (line < Process.Code.Length && IsBody(Process.Code[line]))
+                    while (line < code.Length && IsBody(code[line]))
                         line++;
 
                     nesting--;
@@ -229,7 +214,7 @@ namespace Un
                         line = loop + 1;
                         Process.Variable[var] = item;
 
-                        while (line < Process.Code.Length && IsBody(Process.Code[line]) && TryInterpret()) ;
+                        while (line < code.Length && IsBody(code[line]) && TryInterpret()) ;
                     }
 
                     Process.Variable.Remove(var);
@@ -244,16 +229,19 @@ namespace Un
                     {
                         line = loop;
 
-                        Scan(Process.Code[line]);
+                        Scan(code[line]);
 
                         if (Calculator.Calculate(analyzedTokens[1..]) is not Bool b || !b.value)
                             break;
-
                         line++;
 
-                        while (line < Process.Code.Length && IsBody(Process.Code[line]) && TryInterpret()) ;
+                        while (line < code.Length && IsBody(code[line]) && TryInterpret()) ;
                     }
 
+                    line++;
+                    while (line < code.Length && IsBody(code[line]))
+                        line++;
+                    line--;
                     nesting--;
                 }
                 else throw new ParseException("Parse Error");
@@ -299,18 +287,21 @@ namespace Un
 
         void SkipConditional()
         {
-            while (line < Process.Code.Length)
+            while (line < code.Length)
             {
                 index = 0;
 
-                SkipWhitespace(Process.Code[line]);
-                if (!Process.IsControl(Scan(Process.Code[line])[0]))
+                SkipWhitespace(code[line]);
+
+                List<Token> tokens = Scan(code[line]);
+
+                if (tokens.Count > 0 && !Process.IsControl(tokens[0]))
                     break;
 
                 nesting++;
                 line++;
 
-                while (line < Process.Code.Length && IsBody(Process.Code[line]))
+                while (line < code.Length && IsBody(code[line]))
                     line++;
                 nesting--;
             }
@@ -389,7 +380,7 @@ namespace Un
             while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_'))
                 str += code[index++];
 
-            if (Process.IsFunction(str))
+            if (Process.IsFunc(str))
                 return new(str, Token.Type.Function);
             if (Token.GetType(str) != Token.Type.None)
                 return new(str);
