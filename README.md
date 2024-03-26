@@ -1,30 +1,30 @@
 # Un
-ÆÄÀÌ½ã ½ºÅ¸ÀÏÀÇ ÀÎÅÍÇÁ¸®ÅÍ ¾ð¾î
+íŒŒì´ì¬ ìŠ¤íƒ€ì¼ì˜ ì¸í„°í”„ë¦¬í„° ì–¸ì–´
 <br>
 
-## ¹æ½Ä
-C#À¸·Î ÀÛ¼ºµÈ ÇÁ·Î±×·¥À» ÅëÇØ UnÀ¸·Î ÀÛ¼ºµÈ ½ºÅ©¸³Æ®¸¦ ÇÑ ÁÙ¾¿ ÀÐ¾î ÄÚµå¸¦ ÇØ¼®ÇØ µ¿ÀÛ½ÃÅ²´Ù.
+## ë°©ì‹
+C#ìœ¼ë¡œ ìž‘ì„±ëœ í”„ë¡œê·¸ëž¨ì„ í†µí•´ Unìœ¼ë¡œ ìž‘ì„±ëœ ìŠ¤í¬ë¦½íŠ¸ë¥¼ í•œ ì¤„ì”© ì½ì–´ ì½”ë“œë¥¼ í•´ì„í•´ ë™ìž‘ì‹œí‚¨ë‹¤.
 <br>
 
-# ±¸Á¶
+# êµ¬ì¡°
 
-## ±âº» ÀÚ·áÇü
+## ê¸°ë³¸ ìžë£Œí˜•
 <ul>
-	<li>Int : ºÎÈ£°¡ ÀÖ´Â 64bit Á¤¼öÇü
-	<li>Float : ºÎÈ£°¡ ÀÖ´Â 64bit ºÎµ¿ ½Ç¼öÇü
-	<li>Str : ¹®ÀÚ¿­
+	<li>Int : ë¶€í˜¸ê°€ ìžˆëŠ” 64bit ì •ìˆ˜í˜•
+	<li>Float : ë¶€í˜¸ê°€ ìžˆëŠ” 64bit ë¶€ë™ ì‹¤ìˆ˜í˜•
+	<li>Str : ë¬¸ìžì—´
 	<li>Bool : Boolean 
-	<li>Iter : ´Ù¾çÇÑ ÀÚ·áÇüÀÌ ¹Ýº¹ÀûÀ¸·Î ÀÖ´Â ±¸Á¶
+	<li>Iter : ë‹¤ì–‘í•œ ìžë£Œí˜•ì´ ë°˜ë³µì ìœ¼ë¡œ ìžˆëŠ” êµ¬ì¡°
 </ul>
 
-## ÇÔ¼ö
+## í•¨ìˆ˜
 
-¸ðµç ÇÔ¼öÀÇ ¸Å°³º¯¼ö´Â **1°³**·Î °íÁ¤µÇ¾î ÀÖ°í, ¸ðµç ÇÔ¼ö´Â **ÇÊ¼öÀû**À¸·Î ÀÎ¼ö¸¦ ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-´Ù¼öÀÇ ÀÎ¼ö¸¦ ³ÖÀ¸·Á¸é **iter**ÇüÀ¸·Î ³Ñ°ÜÁÖ¾î¾ß ÇÑ´Ù.
+ëª¨ë“  í•¨ìˆ˜ì˜ ë§¤ê°œë³€ìˆ˜ëŠ” **1ê°œ**ë¡œ ê³ ì •ë˜ì–´ ìžˆê³ , ëª¨ë“  í•¨ìˆ˜ëŠ” **í•„ìˆ˜ì **ìœ¼ë¡œ ì¸ìˆ˜ë¥¼ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+ë‹¤ìˆ˜ì˜ ì¸ìˆ˜ë¥¼ ë„£ìœ¼ë ¤ë©´ **iter**í˜•ìœ¼ë¡œ ë„˜ê²¨ì£¼ì–´ì•¼ í•œë‹¤.
 
-¸¸¾à¿¡ ÇÔ¼öÀÇ ÀÎ¼ö °ª¿¡¼­ »çÄ¢¿¬»êÀÌ ÇÊ¿äÇÏÁö ¾Ê´Â °ªÀÌ¶ó¸é °ýÈ£¸¦ »ý·« ÇÒ ¼ö ÀÖ´Ù.
+ë§Œì•½ì— í•¨ìˆ˜ì˜ ì¸ìˆ˜ ê°’ì—ì„œ ì‚¬ì¹™ì—°ì‚°ì´ í•„ìš”í•˜ì§€ ì•ŠëŠ” ê°’ì´ë¼ë©´ ê´„í˜¸ë¥¼ ìƒëžµ í•  ìˆ˜ ìžˆë‹¤.
 
-**fn Å°¿öµå¸¦ »ç¿ëÇØ¼­ Á÷Á¢ ÇÔ¼ö¸¦ ¸¸µé ¼ö ÀÖ´Ù.**
+**fn í‚¤ì›Œë“œë¥¼ ì‚¬ìš©í•´ì„œ ì§ì ‘ í•¨ìˆ˜ë¥¼ ë§Œë“¤ ìˆ˜ ìžˆë‹¤.**
 
 
 ```
@@ -34,42 +34,42 @@ fn my_function(arg)
 ```
 
 
-### ±âº» ÇÔ¼ö
+### ê¸°ë³¸ í•¨ìˆ˜
 <ul>
-	<li> write : ÁÙ¹Ù²Þ ¾ø´Â Ãâ·Â
-	<li> writeln : ÁÙ¹Ù²Þ ÀÖ´Â Ãâ·Â
-	<li> readln : ÇÑ ÁÙÀ» ÀÐ¾î Str·Î ¹ÝÈ¯
-	<li> type : ÀÎ¼ö·Î ¹ÞÀº °ªÀÇ ÀÚ·áÇüÀ» ¹ÝÈ¯
-	<li> func : ±¸ÇöµÈ ¸ðµç ÇÔ¼ö¸¦ Iter·Î ¹ÝÈ¯
-	<li> len : Iter³ª StrÀÇ ±æÀÌ¸¦ ¹ÝÈ¯
-	<li> range : [start, length] Çü½ÄÀÇ ÀÎÀÚ¸¦ ¹Þ¾Æ iter¸¦ ¹ÝÈ¯
-	<li> int, float, str, iter, bool : ÀÎ¼ö¸¦ ÀÚ·áÇüÀ¸·Î º¯È¯ÇØ¼­ ¹ÝÈ¯
+	<li> write : ì¤„ë°”ê¿ˆ ì—†ëŠ” ì¶œë ¥
+	<li> writeln : ì¤„ë°”ê¿ˆ ìžˆëŠ” ì¶œë ¥
+	<li> readln : í•œ ì¤„ì„ ì½ì–´ Strë¡œ ë°˜í™˜
+	<li> type : ì¸ìˆ˜ë¡œ ë°›ì€ ê°’ì˜ ìžë£Œí˜•ì„ ë°˜í™˜
+	<li> func : êµ¬í˜„ëœ ëª¨ë“  í•¨ìˆ˜ë¥¼ Iterë¡œ ë°˜í™˜
+	<li> len : Iterë‚˜ Strì˜ ê¸¸ì´ë¥¼ ë°˜í™˜
+	<li> range : [start, length] í˜•ì‹ì˜ ì¸ìžë¥¼ ë°›ì•„ iterë¥¼ ë°˜í™˜
+	<li> int, float, str, iter, bool : ì¸ìˆ˜ë¥¼ ìžë£Œí˜•ìœ¼ë¡œ ë³€í™˜í•´ì„œ ë°˜í™˜
 </ul>
 
-## Á¶°Ç¹®
+## ì¡°ê±´ë¬¸
 
-if, elif, elseÀÇ Å°¿öµå¸¦ »ç¿ëÇÏ°í, Å°¿öµå ´ÙÀ½À¸·Î´Â **Bool**ÇüÀ» ¹ÝÈ¯ÇÏ´Â ½ÄÀÌ µû¶ó¿Í¾ßÇÑ´Ù.
+if, elif, elseì˜ í‚¤ì›Œë“œë¥¼ ì‚¬ìš©í•˜ê³ , í‚¤ì›Œë“œ ë‹¤ìŒìœ¼ë¡œëŠ” **Bool**í˜•ì„ ë°˜í™˜í•˜ëŠ” ì‹ì´ ë”°ë¼ì™€ì•¼í•œë‹¤.
 <br>
 
 ```
 n = int(readln(0))
 
 if n < 10
-    writeln("10º¸´Ù ÀÛÀ½")
+    writeln("10ë³´ë‹¤ ìž‘ìŒ")
 elif (n < 100)
-    writeln "10º¸´Ü Å©Áö¸¸ 100º¸´Ü ÀÛÀ½"
+    writeln "10ë³´ë‹¨ í¬ì§€ë§Œ 100ë³´ë‹¨ ìž‘ìŒ"
 else
-    writeln ("100º¸´Ù" + "Å­")
+    writeln ("100ë³´ë‹¤" + "í¼")
 ```
 
-## ¹Ýº¹¹®
+## ë°˜ë³µë¬¸
 
-**for [Variable] in [Iter]** °ú **while (Bool)** ÀÇ Çü½ÄÀ» »ç¿ëÇÑ´Ù.
+**for [Variable] in [Iter]** ê³¼ **while (Bool)** ì˜ í˜•ì‹ì„ ì‚¬ìš©í•œë‹¤.
 
 ### for
 
-in Å°¿öµå ÈÄ¿¡´Â **¹Ýµå½Ã Iter Çü½ÄÀÇ °ª**ÀÌ ¿Í¾ßÇÑ´Ù.
-Iter ³»ºÎ¸¦ ¼øÈ¸¸¦ ³¡³»¸é ¹Ýº¹¹®ÀÌ ³¡³­´Ù.
+in í‚¤ì›Œë“œ í›„ì—ëŠ” **ë°˜ë“œì‹œ Iter í˜•ì‹ì˜ ê°’**ì´ ì™€ì•¼í•œë‹¤.
+Iter ë‚´ë¶€ë¥¼ ìˆœíšŒë¥¼ ëë‚´ë©´ ë°˜ë³µë¬¸ì´ ëë‚œë‹¤.
 
 ```
 for i in range([1, 100])
@@ -78,8 +78,8 @@ for i in range([1, 100])
 
 ### while 
 
-while Å°¿öµå ÈÄ¿¡´Â **¹Ýµå½Ã Bool Çü½ÄÀÇ °ª**ÀÌ ¿Í¾ßÇÑ´Ù.
-Á¶°ÇÀÌ ºÎÇÕÇÏ¸é while¹® ³»ºÎ·Î µé¾î°£´Ù. ±×·¸Áö ¾ÊÀ» °æ¿ì¿¡´Â while¹®À» Å»ÃâÇÑ´Ù.
+while í‚¤ì›Œë“œ í›„ì—ëŠ” **ë°˜ë“œì‹œ Bool í˜•ì‹ì˜ ê°’**ì´ ì™€ì•¼í•œë‹¤.
+ì¡°ê±´ì´ ë¶€í•©í•˜ë©´ whileë¬¸ ë‚´ë¶€ë¡œ ë“¤ì–´ê°„ë‹¤. ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš°ì—ëŠ” whileë¬¸ì„ íƒˆì¶œí•œë‹¤.
 
 ```
 fib = [0] * 21
@@ -94,8 +94,7 @@ writeln(fib)
 
 ## TODO
 
-[x] Àç±Í
-[ ] Å¬·¡½º
-[ ] . ¿¬»êÀÚ
-[ ] import ±â´É
-[ ] ÇÔ¼ö ¸Å°³º¯¼ö Ãß°¡
+[ ] í´ëž˜ìŠ¤
+[ ] . ì—°ì‚°ìž
+[ ] import ê¸°ëŠ¥
+[ ] í•¨ìˆ˜ ë§¤ê°œë³€ìˆ˜ ì¶”ê°€
