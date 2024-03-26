@@ -2,25 +2,25 @@
 
 namespace Un.Function
 {
-    public static class Std
+    public class Std : Importable
     {
-        public static Obj Write(Obj parameter)
+        public Obj Write(Obj parameter)
         {
             Console.Write(parameter == Obj.None ? "" : parameter);
             return Obj.None;
         }
 
-        public static Obj Writeln(Obj parameter)
+        public Obj Writeln(Obj parameter)
         {
             Console.WriteLine(parameter == Obj.None ? "" : parameter);
             return Obj.None;
         }
 
-        public static Str Readln(Obj parameter) => new(Console.ReadLine()!);
+        public Str Readln(Obj parameter) => new(Console.ReadLine()!);
 
-        public static Obj Type(Obj parametr) => new Str(parametr.GetType().Name.ToLower());
+        public Obj Type(Obj parametr) => new Str(parametr.GetType().Name.ToLower());
 
-        public static Int Int(Obj parameter)
+        public Int Int(Obj parameter)
         {
             if (parameter is Int i) return new(i.value);
             if (parameter is Float f) return new((long)f.value);
@@ -28,7 +28,7 @@ namespace Un.Function
             throw new ObjException("Convert Error");
         }
 
-        public static Float Float(Obj parameter)
+        public Float Float(Obj parameter)
         {
             if (parameter is Int i) return new(i.value);
             if (parameter is Float f) return new(f.value);
@@ -36,20 +36,20 @@ namespace Un.Function
             throw new ObjException("Convert Error");
         }
 
-        public static Str Str(Obj parameter) => new(parameter.ToString());
+        public Str Str(Obj parameter) => new(parameter.ToString());
 
-        public static Bool Bool(Obj parameter) => parameter.ToString() switch
+        public Bool Bool(Obj parameter) => parameter.ToString() switch
         {
             "True" => new(true),
             "False" => new(false),
             _ => throw new ObjException("Convert Error"),
         };
 
-        public static Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString()) is Iter i ? i : throw new ObjException("Convert Error");
+        public Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString()) is Iter i ? i : throw new ObjException("Convert Error");
 
-        public static Iter Func(Obj parameter) => new(Process.Func.Keys.Select(key => new Str(key)));
+        public Iter Func(Obj parameter) => new(Process.Func.Keys.Select(key => new Str(key)));
 
-        public static Iter Range(Obj parameter)
+        public Iter Range(Obj parameter)
         {
             if (parameter is Iter iter)
             {
@@ -65,13 +65,13 @@ namespace Un.Function
             return [];
         }
 
-        public static Int Len(Obj parameter)
+        public Int Len(Obj parameter)
         {
             if (parameter is Iter i) return new(i.Count);
             else return new(1);
         }
 
-        public static Dictionary<string, Fun> Functions() => new()
+        public override Dictionary<string, Fun> Methods() => new()
         {
             {"write", new NativeFun("write", "text", Write)},
             {"writeln", new NativeFun("writeln", "text", Writeln)},

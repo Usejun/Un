@@ -3,14 +3,14 @@ using Un.Function;
 
 namespace Un
 {
-    public static class Calculator
+    public class Calculator
     {
-        static Dictionary<Token.Type, int> Operator = Process.Operator;
+        Dictionary<Token.Type, int> Operator = Process.Operator;
         
-        static Stack<Token> postfixStack = [];
-        static Stack<Obj> calculateStack = [];
+        Stack<Token> postfixStack = [];
+        Stack<Obj> calculateStack = [];
 
-        public static List<Token> Postfix(List<Token> expression)
+        public List<Token> Postfix(List<Token> expression)
         {
             postfixStack.Clear();
             List<Token> postfix = [];
@@ -39,7 +39,7 @@ namespace Un
             return postfix;
         }
 
-        public static Obj Calculate(List<Token> expression)
+        public Obj Calculate(List<Token> expression)
         {
             calculateStack.Clear();
             List<Token> postfix = Postfix(expression);
@@ -48,13 +48,13 @@ namespace Un
             {
                 Token token = postfix[i];
 
-                if (Process.IsFunc(token))
-                {
-                    calculateStack.Push(Process.Func[token.value].Call(calculateStack.TryPop(out var obj) ? obj : Obj.None));
-                }
-                else if (Process.IsVariable(token))
+                if (Process.IsVariable(token))
                 {
                     calculateStack.Push(Process.Variable[token.value]);
+                }
+                else if (Process.IsFunc(token))
+                {
+                    calculateStack.Push(Process.GetFunc(token.value).Call(calculateStack.TryPop(out var obj) ? obj : Obj.None));
                 }
                 else if (Process.IsOperator(token))
                 {
@@ -111,15 +111,6 @@ namespace Un
             }
 
             return calculateStack.TryPop(out var v) ? v : Obj.None;
-        }
-
-        public static bool TryInt(this long l, out int i)
-        {
-            i = 0;
-            if (l < int.MinValue || l > int.MaxValue) 
-                return false;
-            i = (int)l;
-            return true;
         }
     }
 }

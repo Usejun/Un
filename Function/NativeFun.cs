@@ -18,5 +18,10 @@ namespace Un.Function
         {
             return function(arg);
         }
+
+        public override Fun Clone()
+        {
+            return new NativeFun(name, argName, function);
+        }
     }
 }

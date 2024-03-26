@@ -35,10 +35,17 @@ namespace Un
 
         public static Dictionary<string, Fun> Func = [];
 
-        public static void Import(Dictionary<string, Fun> functions)
+        public static Fun GetFunc(string name)
         {
-            foreach (var function in functions)            
-                Func.Add(function.Key, function.Value);            
+            if (Func.TryGetValue(name, out var func))
+                return func.Clone();
+            throw new ObjException("Get function Error");
+        }
+
+        public static void Import(Importable importable)
+        {
+            foreach (var item in importable.Methods())
+                Func.Add(item.Key, item.Value);
         }
 
         public static bool IsVariable(string str) => Variable.ContainsKey(str);

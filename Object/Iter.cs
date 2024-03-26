@@ -50,6 +50,7 @@ namespace Un.Object
             int index = 0, depth = 0;
             string buffer = "";
             Interpreter inter = new([]);
+            Calculator calculator = new();
 
             while (str.Length - 2 > index)
             {
@@ -60,7 +61,7 @@ namespace Un.Object
                 if (depth == 0 && str[index] == ',')
                 {
                     if (buffer[0] == '[') Append(new Iter(buffer));
-                    else Append(Convert(buffer));
+                    else Append(calculator.Calculate(inter.Analyze(inter.Scan(buffer))));
                     buffer = "";
                 }
                 else
@@ -68,7 +69,7 @@ namespace Un.Object
             }
 
             if (!string.IsNullOrEmpty(buffer))
-                Append(Calculator.Calculate(inter.Analyze(inter.Scan(buffer))));
+                Append(calculator.Calculate(inter.Analyze(inter.Scan(buffer))));
         }
 
         public Iter(IEnumerable<Obj> value) : base("iter")

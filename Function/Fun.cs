@@ -2,13 +2,13 @@
 
 namespace Un.Function
 {
-    public class Fun
+    public class Fun 
     {
-        public string name;
-        public string argName;
-        public string[] code;
-        public Obj arg;
-        public Interpreter interpreter;
+        public string name = "";
+        public string argName = "";
+        public string[] code = [];
+        public Obj arg = Obj.None;
+        public Interpreter interpreter = new([]);
 
         public Fun() { }               
 
@@ -45,6 +45,16 @@ namespace Un.Function
             interpreter.ReturnValue = Obj.None;
 
             return returnValue;
-        }   
+        }
+
+        public virtual Fun Clone()
+        {
+            return new() {
+                name = name,
+                argName = argName,
+                code = code,
+                interpreter = new(code)
+            };
+        }
     }
 }

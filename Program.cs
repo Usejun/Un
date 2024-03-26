@@ -7,7 +7,8 @@ const string FILE = "main.un";
 using StreamReader r = new(new FileStream(PATH + FILE, FileMode.Open));
 
 Process.Code = r.ReadToEnd().Split('\n');
-Process.Import(Std.Functions());
+Process.Import(new Std());
+Process.Import(new Un.Function.Math());
 
 Interpreter interpreter = new(Process.Code);
 

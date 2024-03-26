@@ -11,6 +11,8 @@ namespace Un
         public int nesting = nesting;
         public string[] code = code;
 
+        public Calculator calculator = new();
+
         public bool TryInterpret()
         {
             if (ReturnValue != Obj.None) return false;
@@ -72,7 +74,7 @@ namespace Un
                         analyzedTokens[^1].tokenType == Token.Type.Indexer))
                     {
                         j--;
-                        Obj index = Calculator.Calculate(tokens[(i + 1)..j]);
+                        Obj index = calculator.Calculate(tokens[(i + 1)..j]);
 
                         analyzedTokens.Add(new Token(index.ToString(), Token.Type.Indexer));
                     }
@@ -125,7 +127,7 @@ namespace Un
                 }
 
                 Obj var = Process.Variable[token.value];
-                Obj value = Calculator.Calculate(analyzedTokens[(assign + 1)..]);
+                Obj value = calculator.Calculate(analyzedTokens[(assign + 1)..]);
 
                 for (int i = 1; i < assign - 1; i++)
                 {
@@ -161,16 +163,16 @@ namespace Un
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Return)
             {
-                ReturnValue = Calculator.Calculate(analyzedTokens[1..]);
+                ReturnValue = calculator.Calculate(analyzedTokens[1..]);
             }
             else if (Process.IsFunc(analyzedTokens[0].value))
             {
-                Process.Func[analyzedTokens[0].value].Call(Calculator.Calculate(analyzedTokens[1..]));
+                Process.GetFunc(analyzedTokens[0].value).Call(calculator.Calculate(analyzedTokens[1..]));
             }
             else if (Process.IsControl(analyzedTokens[0].value))
             {
                 if (analyzedTokens[0].tokenType == Token.Type.Else ||
-                    Calculator.Calculate(analyzedTokens[1..]) is Bool b && b.value)
+                    calculator.Calculate(analyzedTokens[1..]) is Bool b && b.value)
                 {
                     nesting++;
                     line++;
@@ -201,7 +203,7 @@ namespace Un
 
                 if (analyzedTokens[0].tokenType == Token.Type.For)
                 {
-                    Obj obj = Calculator.Calculate(analyzedTokens[3..]);
+                    Obj obj = calculator.Calculate(analyzedTokens[3..]);
 
                     if (obj is not Iter iter) throw new ObjException("Arg Error");
 
@@ -231,7 +233,7 @@ namespace Un
 
                         Scan(code[line]);
 
-                        if (Calculator.Calculate(analyzedTokens[1..]) is not Bool b || !b.value)
+                        if (calculator.Calculate(analyzedTokens[1..]) is not Bool b || !b.value)
                             break;
                         line++;
 
