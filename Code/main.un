@@ -4,7 +4,7 @@
 	if (dp[n] == 0)
 		dp[n] = fib(n - 2) + fib(n - 1)
 	return dp[n]
-	
-dp = [0] * 50
-fib(49)
-write dp
+
+dp = [0] * 30
+fib(29)
+writeln dp

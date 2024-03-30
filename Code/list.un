@@ -1,0 +1,14 @@
+﻿class list
+	array = []
+	count = 0
+
+	fn add(key)
+		this = key[0]
+		item = key[1]		
+		this.array = this.array + item
+		this.count = this.count + len(item)
+
+	fn get(key)
+		this = key[0]
+		index = key[1]
+		return this.array[index]

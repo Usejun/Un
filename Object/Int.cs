@@ -4,11 +4,19 @@
     {
         public long value = value;
 
-        public override void Ass(string value)
+        public override void Ass(string value, Dictionary<string, Obj> variable)
         {
             if (long.TryParse(value, out var v))
                 this.value = v;
             else throw new ObjException("Ass Error");
+        }
+
+        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        {
+            if (value is Int i)
+                this.value = i.value;
+            else
+                throw new ObjException("Ass Error");
         }
 
         public override Obj Add(Obj obj)

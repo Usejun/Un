@@ -1,12 +1,10 @@
 ﻿using Un.Object;
-using Un.Function;
+using Un.Class;
 
 namespace Un
 {
     public class Calculator
     {
-        Dictionary<Token.Type, int> Operator = Process.Operator;
-        
         Stack<Token> postfixStack = [];
         Stack<Obj> calculateStack = [];
 
@@ -17,7 +15,7 @@ namespace Un
 
             foreach (var token in expression)
             {
-                if (Process.Operator.ContainsKey(token.tokenType))
+                if (Process.Operator.TryGetValue(token.tokenType, out int value))
                 {
                     if (token.tokenType == Token.Type.RParen)
                     {
@@ -26,7 +24,7 @@ namespace Un
                     }
                     else
                     {
-                        while (postfixStack.TryPeek(out var v) && Operator[v.tokenType] >= Operator[token.tokenType] && v.tokenType != Token.Type.LParen)
+                        while (postfixStack.TryPeek(out var v) && Process.Operator[v.tokenType] >= value && v.tokenType != Token.Type.LParen)
                             postfix.Add(postfixStack.Pop());
                         postfixStack.Push(token);
                     }
@@ -39,18 +37,26 @@ namespace Un
             return postfix;
         }
 
-        public Obj Calculate(List<Token> expression)
+        public Obj Calculate(List<Token> expression, Dictionary<string, Obj> variable)
         {
             calculateStack.Clear();
             List<Token> postfix = Postfix(expression);
 
             for (int i = 0; i < postfix.Count; i++)
             {
-                Token token = postfix[i];
-
-                if (Process.IsVariable(token))
+                Token token = postfix[i]; 
+                
+                if (variable.TryGetValue(token.value, out var value))
+                {
+                    calculateStack.Push(value);
+                }
+                else if (Process.IsGlobalVariable(token))
                 {
                     calculateStack.Push(Process.Variable[token.value]);
+                }
+                else if (Process.IsClass(token))
+                {
+                    calculateStack.Push(Process.GetClass(token.value));
                 }
                 else if (Process.IsFunc(token))
                 {
@@ -63,13 +69,18 @@ namespace Un
                         Obj a = calculateStack.Pop(), b = Obj.None;
                         if (token.tokenType == Token.Type.Indexer)
                         {
-                            b = Obj.Convert(token.value);
+                            b = Obj.Convert(token.value, variable);
                             if (a is Iter iter && b is Int index1)
                                 calculateStack.Push(iter[index1]);
                             else if (a is Str str && b is Int index2)
                                 calculateStack.Push(str[index2]);
                             else
                                 throw new ObjException("Operator Error");
+                        }
+                        else if (token.tokenType == Token.Type.Pointer)
+                        {
+                            if (a is Cla cla)
+                                calculateStack.Push(cla.Get(new(token.value)));
                         }
                         else if (token.tokenType == Token.Type.Bang)
                         {
@@ -102,11 +113,11 @@ namespace Un
                         };
 
                         calculateStack.Push(c);
-                    }                    
-                }                
+                    }
+                }
                 else
                 {
-                    calculateStack.Push(Obj.Convert(token.value));
+                    calculateStack.Push(Obj.Convert(token.value, variable));
                 }
             }
 

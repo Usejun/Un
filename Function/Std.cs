@@ -45,7 +45,7 @@ namespace Un.Function
             _ => throw new ObjException("Convert Error"),
         };
 
-        public Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString()) is Iter i ? i : throw new ObjException("Convert Error");
+        public Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString(), Process.Variable) is Iter i ? i : throw new ObjException("Convert Error");
 
         public Iter Func(Obj parameter) => new(Process.Func.Keys.Select(key => new Str(key)));
 

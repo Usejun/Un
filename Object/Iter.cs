@@ -43,14 +43,12 @@ namespace Un.Object
             value = [];
         }
 
-        public Iter(string str) : base("iter")
+        public Iter(string str, Dictionary<string, Obj> variable) : base("iter")
         {
             className = "iter";
             value = [];
             int index = 0, depth = 0;
             string buffer = "";
-            Interpreter inter = new([]);
-            Calculator calculator = new();
 
             while (str.Length - 2 > index)
             {
@@ -60,8 +58,8 @@ namespace Un.Object
 
                 if (depth == 0 && str[index] == ',')
                 {
-                    if (buffer[0] == '[') Append(new Iter(buffer));
-                    else Append(calculator.Calculate(inter.Analyze(inter.Scan(buffer))));
+                    if (buffer[0] == '[') Append(new Iter(buffer, variable));
+                    else Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, variable), variable));
                     buffer = "";
                 }
                 else
@@ -69,7 +67,7 @@ namespace Un.Object
             }
 
             if (!string.IsNullOrEmpty(buffer))
-                Append(calculator.Calculate(inter.Analyze(inter.Scan(buffer))));
+                Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, variable), variable));
         }
 
         public Iter(IEnumerable<Obj> value) : base("iter")
@@ -84,14 +82,13 @@ namespace Un.Object
         {
             className = "iter";
             this.value = [];
-            foreach (var item in value)
-                Append(item);
+            Append(value);
         }
 
         public void Append(Obj obj)
         {
             if (IsFull)
-                Resize();            
+                Resize();
 
             if (obj != None)
                 value[Count++] = obj.Clone();
@@ -100,7 +97,7 @@ namespace Un.Object
         public void Append(Obj[] objs)
         {
             foreach (var obj in objs)
-                Append(obj);
+                Append(obj);           
         }
 
         public bool Remove(Obj obj)
@@ -119,34 +116,38 @@ namespace Un.Object
             return true;
         }
 
-        public override void Ass(string value)
+        public override void Ass(string value, Dictionary<string, Obj> variable)
         {
-            if (Convert(value) is Iter iter)
+            if (Convert(value, variable) is Iter iter)
                 this.value = iter.value;
             else throw new ObjException("Ass Error");
         }
 
+        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        {
+            if (value is Iter i)
+                this.value = i.value;
+            else
+                throw new ObjException("Ass Error");
+        }
+
         public override Obj Add(Obj obj)
         {
-            Iter iter = new(value);
+            if (obj is Iter l) Append(l);
+            else Append(obj);
 
-            if (obj is Iter l) iter.Append(l.value);
-            else iter.Append(obj);
-
-            return iter;
+            return this;
         }
 
         public override Obj Sub(Obj obj)
         {
-            Iter iter = new(value);
-
             if (obj is Iter i)
                 foreach (var item in i)
-                    iter.Remove(item);
+                    Remove(item);
             else
-                iter.Remove(obj);
+                Remove(obj);
 
-            return iter;
+            return this;
         }
 
         public override Obj Mul(Obj obj)
@@ -173,7 +174,7 @@ namespace Un.Object
 
         public override string ToString() => $"[{string.Join(", ", value.Take(Count))}]";
 
-        public override Obj Clone() => new Iter(value);
+        public override Cla Clone() => new Iter(value);
 
         public IEnumerator<Obj> GetEnumerator()
         {

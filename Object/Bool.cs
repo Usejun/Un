@@ -4,7 +4,7 @@
     {
         public bool value = value;
 
-        public override void Ass(string value)
+        public override void Ass(string value, Dictionary<string, Obj> variable)
         {
             this.value = value switch
             {
@@ -12,6 +12,14 @@
                 "False" => false,
                 _ => throw new ObjException("Ass Error")
             };
+        }
+
+        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        {
+            if (value is Bool b)
+                this.value = b.value;
+            else
+                throw new ObjException("Ass Error");
         }
 
         public override string ToString() => $"{value}";

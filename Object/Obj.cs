@@ -4,9 +4,9 @@
     {
         public static Obj None => null;
 
-        public Dictionary<string, Obj> obj = [];
+        public virtual void Ass(string value, Dictionary<string, Obj> variable) => throw new ObjException("Ass Error");
 
-        public virtual void Ass(string value) => throw new ObjException("Ass Error");
+        public virtual void Ass(Obj value, Dictionary<string, Obj> variable) => throw new ObjException("Ass Error");
 
         public virtual Obj Add(Obj obj) => throw new ObjException("Add Error");
 
@@ -22,12 +22,13 @@
 
         public override string ToString() => "None";
 
-        public static Obj Convert(string str)
+        public static Obj Convert(string str, Dictionary<string, Obj> variables)
         {
-            if (string.IsNullOrEmpty(str)) return None;
-            if (Process.IsVariable(str)) return Process.Variable[str];
+            if (string.IsNullOrEmpty(str)) return None; 
+            if (variables.TryGetValue(str, out var value)) return value;
+            if (Process.IsGlobalVariable(str)) return Process.Variable[str];
             if (str[0] == '\"' && str[^1] == '\"') return new Str(str.Trim('\"'));
-            if (str[0] == '[' && str[^1] == ']') return new Iter(str);
+            if (str[0] == '[' && str[^1] == ']') return new Iter(str, variables);
             if (str == "True") return new Bool(true);
             if (str == "False") return new Bool(false);
             if (long.TryParse(str, out var l)) return new Int(l);

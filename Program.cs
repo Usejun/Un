@@ -1,15 +1,13 @@
 ﻿using Un;
 using Un.Function;
 
-const string PATH = "D:\\User\\Un\\Code\\";
-const string FILE = "main.un";
+const string PATH = "D:\\User\\Un\\Code";
+const string FILE = "sub.un";
 
-using StreamReader r = new(new FileStream(PATH + FILE, FileMode.Open));
+Process.Initialize(PATH, FILE);
 
-Process.Code = r.ReadToEnd().Split('\n');
 Process.Import(new Std());
 Process.Import(new Un.Function.Math());
+Process.Import("list.un");
 
-Interpreter interpreter = new(Process.Code);
-
-while (interpreter.TryInterpret()) ;
+Process.Run();

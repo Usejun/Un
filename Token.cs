@@ -16,7 +16,6 @@ namespace Un
             Slash,
             Percent,
             DoubleSlash,
-            Dot,
 
             LessOrEqual,
             GreaterOrEqual,
@@ -24,6 +23,7 @@ namespace Un
             GreaterThen,
 
             Indexer,
+            Pointer,
 
             Equal,
             Unequal,
@@ -34,6 +34,7 @@ namespace Un
             LBrack,
             RBrack,
 
+            Dot,
             Comma,
 
             Func,
@@ -55,6 +56,7 @@ namespace Un
             Float,
             String,
             Boolean,
+            Class,
             Iterator,
         }
 
@@ -124,6 +126,7 @@ namespace Un
             "while" => Type.While,
             "return" => Type.Return,
             "import" => Type.Import,
+            "class" => Type.Class,
             _ => Type.None
         };
 

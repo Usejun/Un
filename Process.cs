@@ -6,7 +6,13 @@ namespace Un
 {
     public static class Process
     {
+        public static string File = "";
+
+        public static string Path = "";
+
         public static string[] Code = [];
+
+        public static Interpreter Main = new([], Process.Variable);
 
         public static Dictionary<string, Cla> Class = [];     
 
@@ -35,11 +41,36 @@ namespace Un
 
         public static Dictionary<string, Fun> Func = [];
 
+        public static void Initialize(string path, string file)
+        {            
+            Path = path;
+            File = file;
+
+            using StreamReader r = new(new FileStream($"{path}\\{file}", FileMode.Open));
+
+            Code = r.ReadToEnd().Split('\n');
+        }
+
+        public static void Run()
+        {
+            Main.code = Code;
+            Main.variable = Variable;
+
+            while (Main.TryInterpret()) ;            
+        }
+
         public static Fun GetFunc(string name)
         {
             if (Func.TryGetValue(name, out var func))
                 return func.Clone();
             throw new ObjException("Get function Error");
+        }
+
+        public static Cla GetClass(string name)
+        {
+            if (Class.TryGetValue(name, out var cla))
+                return cla.Clone();
+            throw new ObjException("Get Class Error");
         }
 
         public static void Import(Importable importable)
@@ -48,9 +79,18 @@ namespace Un
                 Func.Add(item.Key, item.Value);
         }
 
-        public static bool IsVariable(string str) => Variable.ContainsKey(str);
+        public static void Import(string file)
+        {
+            using StreamReader r = new(new FileStream($"{Path}\\{file}", FileMode.Open));
 
-        public static bool IsVariable(Token token) => IsVariable(token.value);
+            Interpreter interpreter = new(r.ReadToEnd().Split('\n'), []);
+
+            while (interpreter.TryInterpret());
+        }
+
+        public static bool IsGlobalVariable(string str) => Variable.ContainsKey(str);
+
+        public static bool IsGlobalVariable(Token token) => IsGlobalVariable(token.value);
 
         public static bool IsOperator(Token token) => IsOperator(token.tokenType);
 
@@ -79,7 +119,7 @@ namespace Un
 
         public static bool IsSoloOperator(Token.Type type) => type switch
         {
-            Token.Type.Bang or Token.Type.Indexer => true,
+            Token.Type.Bang or Token.Type.Indexer or Token.Type.Pointer => true,
             _ => false,
         };
 
@@ -106,6 +146,10 @@ namespace Un
         public static bool IsControl(Token token) => IsControl(token.value);
 
         public static bool IsControl(string str) => Control.ContainsKey(str);
+
+        public static bool IsClass(Token token) => IsClass(token.value);
+
+        public static bool IsClass(string str) => Class.ContainsKey(str);
 
     }
 }

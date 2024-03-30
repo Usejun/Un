@@ -22,11 +22,19 @@
             }
         }
 
-        public override void Ass(string value)
+        public override void Ass(string value, Dictionary<string, Obj> variable)
         {
             if (value[0] == '\"' && value[^1] == '\"')
                 this.value = value;
             else throw new ObjException("Ass Error");
+        }
+
+        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        {
+            if (value is Str s)
+                this.value = s.value;
+            else
+                throw new ObjException("Ass Error");
         }
 
         public override Obj Add(Obj obj) => new Str(value + obj.ToString());

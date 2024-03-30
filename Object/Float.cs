@@ -4,11 +4,19 @@
     {
         public double value = value;
 
-        public override void Ass(string value)
+        public override void Ass(string value, Dictionary<string, Obj> variable)
         {
             if (double.TryParse(value, out var v))
                 this.value = v;
             else throw new ObjException("Ass Error");
+        }
+
+        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        {
+            if (value is Float f)
+                this.value = f.value;
+            else
+                throw new ObjException("Ass Error");
         }
 
         public override Obj Add(Obj obj)
