@@ -1,4 +1,3 @@
-﻿l = list()
-l.add(123)
-l.add([11, 3, 2, 422, 13, 22])
-writeln(l.array[1][2])
+﻿l = list 
+l += [1, 10]
+writeln(len(l))

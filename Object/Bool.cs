@@ -1,10 +1,12 @@
-﻿namespace Un.Object
+﻿using Un.Function;
+
+namespace Un.Object
 {
     public class Bool(bool value) : Obj
     {
         public bool value = value;
 
-        public override void Ass(string value, Dictionary<string, Obj> variable)
+        public override void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             this.value = value switch
             {
@@ -14,7 +16,7 @@
             };
         }
 
-        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        public override void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             if (value is Bool b)
                 this.value = b.value;

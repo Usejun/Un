@@ -1,12 +1,14 @@
-﻿namespace Un.Object
+﻿using Un.Function;
+
+namespace Un.Object
 {
     public class Obj : IComparable<Obj>
     {
         public static Obj None => null;
 
-        public virtual void Ass(string value, Dictionary<string, Obj> variable) => throw new ObjException("Ass Error");
+        public virtual void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method) => throw new ObjException("Ass Error");
 
-        public virtual void Ass(Obj value, Dictionary<string, Obj> variable) => throw new ObjException("Ass Error");
+        public virtual void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method) => throw new ObjException("Ass Error");
 
         public virtual Obj Add(Obj obj) => throw new ObjException("Add Error");
 
@@ -20,15 +22,19 @@
 
         public virtual Obj Mod(Obj obj) => throw new ObjException("Mod Error");
 
+        public virtual Int Len() => new(1);
+
         public override string ToString() => "None";
 
-        public static Obj Convert(string str, Dictionary<string, Obj> variables)
+        public static Obj Convert(string str, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             if (string.IsNullOrEmpty(str)) return None; 
-            if (variables.TryGetValue(str, out var value)) return value;
+            if (variable.TryGetValue(str, out var varValue)) return varValue;
+            if (method.TryGetValue(str, out var methodValue )) return methodValue;
+            if (Process.IsFunc(str)) return Process.GetFunc(str);
             if (Process.IsGlobalVariable(str)) return Process.Variable[str];
             if (str[0] == '\"' && str[^1] == '\"') return new Str(str.Trim('\"'));
-            if (str[0] == '[' && str[^1] == ']') return new Iter(str, variables);
+            if (str[0] == '[' && str[^1] == ']') return new Iter(str, variable, method);
             if (str == "True") return new Bool(true);
             if (str == "False") return new Bool(false);
             if (long.TryParse(str, out var l)) return new Int(l);

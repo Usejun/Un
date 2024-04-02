@@ -1,4 +1,6 @@
-﻿namespace Un.Object
+﻿using Un.Function;
+
+namespace Un.Object
 {
     public class Str(string value) : Obj
     {
@@ -22,14 +24,14 @@
             }
         }
 
-        public override void Ass(string value, Dictionary<string, Obj> variable)
+        public override void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             if (value[0] == '\"' && value[^1] == '\"')
                 this.value = value;
             else throw new ObjException("Ass Error");
         }
 
-        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        public override void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             if (value is Str s)
                 this.value = s.value;

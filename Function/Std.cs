@@ -45,7 +45,7 @@ namespace Un.Function
             _ => throw new ObjException("Convert Error"),
         };
 
-        public Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString(), Process.Variable) is Iter i ? i : throw new ObjException("Convert Error");
+        public Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString(), Process.Variable, Process.Func) is Iter i ? i : throw new ObjException("Convert Error");
 
         public Iter Func(Obj parameter) => new(Process.Func.Keys.Select(key => new Str(key)));
 
@@ -65,11 +65,7 @@ namespace Un.Function
             return [];
         }
 
-        public Int Len(Obj parameter)
-        {
-            if (parameter is Iter i) return new(i.Count);
-            else return new(1);
-        }
+        public Int Len(Obj parameter) => parameter.Len();
 
         public override Dictionary<string, Fun> Methods() => new()
         {

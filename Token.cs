@@ -9,6 +9,13 @@ namespace Un
             None,
 
             Assign,
+            PlusAssign,
+            MinusAssign,
+            AsteriskAssign,
+            SlashAssign,
+            DoubleSlashAssign,
+            PercentAssign,
+
             Plus,
             Minus,
             Bang,
@@ -110,6 +117,12 @@ namespace Un
 
         public static Type GetType(string str) => str switch
         {
+            "+=" => Type.PlusAssign,
+            "-=" => Type.MinusAssign,
+            "*=" => Type.AsteriskAssign,
+            "/=" => Type.SlashAssign,
+            "//=" => Type.DoubleSlashAssign,
+            "%=" => Type.PercentAssign,
             ">=" => Type.LessOrEqual,
             "<=" => Type.GreaterOrEqual,
             "==" => Type.Equal,

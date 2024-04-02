@@ -1,4 +1,5 @@
-﻿using Un.Object;
+﻿using Un.Function;
+using Un.Object;
 
 namespace Un
 {
@@ -114,7 +115,7 @@ namespace Un
             }
         }
 
-        public static List<Token> Analyzation(List<Token> tokens, Dictionary<string, Obj> variable)
+        public static List<Token> Analyzation(List<Token> tokens, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             List<Token> analyzedTokens = [];
 
@@ -140,7 +141,7 @@ namespace Un
                         analyzedTokens[^1].tokenType == Token.Type.Pointer))
                     {
                         j--;
-                        Obj index = Calculator.Calculate(tokens[(i + 1)..j], variable);
+                        Obj index = Calculator.Calculate(Analyzation(tokens[(i + 1)..j], variable, method), variable, method);
 
                         analyzedTokens.Add(new Token(index.ToString(), Token.Type.Indexer));
                     }
@@ -171,7 +172,7 @@ namespace Un
                 }
                 else if (tokens[i].tokenType == Token.Type.Dot)
                 {
-                    analyzedTokens.Add(new (tokens[i + 1].value, Token.Type.Pointer));
+                    analyzedTokens.Add(new(tokens[i + 1].value, Token.Type.Pointer));
                     i++;
                 }
                 else analyzedTokens.Add(tokens[i]);
@@ -180,7 +181,7 @@ namespace Un
             return analyzedTokens;
         }
 
-        public static List<Token> All(string code, Dictionary<string, Obj> variable) => Analyzation(Tokenization(code), variable);
+        public static List<Token> All(string code, Dictionary<string, Obj> variable, Dictionary<string, Fun> method) => Analyzation(Tokenization(code), variable, method);
 
         public static bool IsBody(string code, int nesting)
         {

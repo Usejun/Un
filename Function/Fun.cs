@@ -9,6 +9,7 @@ namespace Un.Function
         public string[] code = [];
         public Obj arg = None;
         public Dictionary<string, Obj> variable = [];
+        public Dictionary<string, Fun> method = [];
 
         public Fun() { }               
 
@@ -23,7 +24,7 @@ namespace Un.Function
         public virtual Obj Call(Obj arg)
         {
             this.arg = arg;
-            Interpreter interpreter = new(code, variable: variable)
+            Interpreter interpreter = new(code, variable, method)
             {
                 line = 1,
                 nesting = 1

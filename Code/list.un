@@ -2,13 +2,59 @@
 	array = []
 	count = 0
 
-	fn add(key)
+	fn append(key)
 		this = key[0]
-		item = key[1]		
-		this.array = this.array + item
-		this.count = this.count + len(item)
+		item = key[1]
+		for i in [item]
+			if (len(this.array) == this.count)
+				this.array += i 				
+			else
+				this.array[this.count] = i
+			this.count += 1
 
-	fn get(key)
+	fn get(key)   		
 		this = key[0]
 		index = key[1]
 		return this.array[index]
+
+	fn remove(key)
+		this = key[0]
+		item = key[1]		
+		for i in range([0, this.count])
+			if (this.array[i] == item)		
+				return remove_at([this, i])			
+		return False
+
+	fn remove_at(key)
+		this = key[0]
+		index = key[1]
+		if (this.count > 0)
+			for i in range([index, this.count - index - 1])
+				this.array[i] = this.array[i + 1]
+		this.count -= 1
+		return True
+
+	fn index_of(key)
+		this = key[0]
+		item = key[1]
+		for i in range([0, this.count])
+			if (this.array[i] == item)
+				return i
+		return -1
+	
+	fn contains(key)
+		this = key[0]
+		item = key[1]
+		if (index_of([this, item]) == -1)
+			return False
+		return True
+
+	fn __add__(key)
+		this = key[0]
+		item = key[1]
+		this.append(item)
+		return this
+
+	fn __len__(key)
+		this = key[0]
+		return len(this.array)

@@ -1,9 +1,10 @@
 ﻿using Un.Class;
 using System.Collections;
+using Un.Function;
 
 namespace Un.Object
 {
-    public class Iter : Cla, IEnumerable<Obj>
+    public class Iter : Cla, IEnumerable<Obj>, IIndexable
     {
         public Obj[] value;
         public bool IsFull => Count >= value.Length;
@@ -37,13 +38,25 @@ namespace Un.Object
             }
         }
 
+        public Obj GetByIndex(Obj index)
+        {
+            if (index is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
+            return value[iIndex];
+        }
+
+        public void SetByIndex(Obj index, Obj value)
+        {
+            if (index is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
+            this.value[iIndex] = value;
+        }
+
         public Iter() : base("iter")
         {
             className = "iter";
             value = [];
         }
 
-        public Iter(string str, Dictionary<string, Obj> variable) : base("iter")
+        public Iter(string str, Dictionary<string, Obj> variable, Dictionary<string, Fun> method) : base("iter")
         {
             className = "iter";
             value = [];
@@ -58,8 +71,8 @@ namespace Un.Object
 
                 if (depth == 0 && str[index] == ',')
                 {
-                    if (buffer[0] == '[') Append(new Iter(buffer, variable));
-                    else Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, variable), variable));
+                    if (buffer[0] == '[') Append(new Iter(buffer, variable, method));
+                    else Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, variable, method), variable, method));
                     buffer = "";
                 }
                 else
@@ -67,7 +80,7 @@ namespace Un.Object
             }
 
             if (!string.IsNullOrEmpty(buffer))
-                Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, variable), variable));
+                Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, variable, method), variable, method));
         }
 
         public Iter(IEnumerable<Obj> value) : base("iter")
@@ -94,6 +107,12 @@ namespace Un.Object
                 value[Count++] = obj.Clone();
         }
 
+        public void Append(Iter iter)
+        {
+            foreach (var item in iter)
+                Append(item);            
+        }
+
         public void Append(Obj[] objs)
         {
             foreach (var obj in objs)
@@ -116,14 +135,14 @@ namespace Un.Object
             return true;
         }
 
-        public override void Ass(string value, Dictionary<string, Obj> variable)
+        public override void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
-            if (Convert(value, variable) is Iter iter)
+            if (Convert(value, variable, method) is Iter iter)
                 this.value = iter.value;
             else throw new ObjException("Ass Error");
         }
 
-        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        public override void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             if (value is Iter i)
                 this.value = i.value;
@@ -165,6 +184,8 @@ namespace Un.Object
             throw new Exception("Mul Error");
         }
 
+        public override Int Len() => new(Count);
+
         protected void Resize()
         {
             Array.Resize(ref value, Count * 9 / 5 + 2);
@@ -186,7 +207,7 @@ namespace Un.Object
         {
             for (int i = 0; i < Count; i++)
                 yield return value[i];
-        }
+        }        
     }
 
 }

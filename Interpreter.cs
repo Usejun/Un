@@ -4,7 +4,13 @@ using Un.Function;
 
 namespace Un
 {
-    public class Interpreter(string[] code, Dictionary<string, Obj>? variable, int index = 0, int line = 0, int nesting = 0)
+    public class Interpreter(string[] code, 
+                             Dictionary<string, Obj> variable, 
+                             Dictionary<string, Fun> method, 
+                             string className = "",
+                             int index = 0, 
+                             int line = 0, 
+                             int nesting = 0)
     {
         public Obj ReturnValue = Obj.None;
 
@@ -12,7 +18,9 @@ namespace Un
         public int line = line;
         public int nesting = nesting;
         public string[] code = code;
-        public Dictionary<string, Obj> variable = variable; 
+        public string className = className;
+        public Dictionary<string, Obj> variable = variable;
+        public Dictionary<string, Fun> method = method;
         public Calculator calculator = new();
 
         public bool TryInterpret()
@@ -25,7 +33,7 @@ namespace Un
                 return true;
             }
 
-            Parse(Tokenizer.Analyzation(Scan(code[line]), variable));
+            Parse(Tokenizer.Analyzation(Scan(code[line]), variable, method));
             line++;
             return true;
         }
@@ -42,7 +50,7 @@ namespace Un
                 else if (code[index] == '#') return [];
                 else if (code[index] == '\"') tokens.Add(String(code));
                 else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
-                else if (char.IsDigit(code[index])) tokens.Add(Number(code));
+                else if (char.IsDigit(code[index]) || (code[index] == '-' && char.IsDigit(code[index + 1]))) tokens.Add(Number(code));
                 else if (Process.IsOperator(code[index])) tokens.Add(Operator(code));
                 else if (code[index] == ',' || code[index] == '.') tokens.Add(new(code[index++]));
                 else throw new ScanException("scan Error");
@@ -56,7 +64,7 @@ namespace Un
             int assign = -1;
 
             for (int i = 0; assign == -1 && i < analyzedTokens.Count; i++)
-                if (analyzedTokens[i].tokenType == Token.Type.Assign)
+                if (analyzedTokens[i].tokenType >= Token.Type.Assign && analyzedTokens[i].tokenType <= Token.Type.PercentAssign)
                     assign = i;            
 
             if (analyzedTokens.Count == 0 || analyzedTokens[0].tokenType == Token.Type.Comment) return;
@@ -71,13 +79,13 @@ namespace Un
                 }
 
                 Obj var = variable[token.value];
-                Obj value = calculator.Calculate(analyzedTokens[(assign + 1)..], variable);
+                Obj value = calculator.Calculate(analyzedTokens[(assign + 1)..], variable, method, className);
 
                 for (int i = 1; i < assign - 1; i++)
                 {
                     if (analyzedTokens[i].tokenType == Token.Type.Indexer)
                     {
-                        Obj index = Obj.Convert(analyzedTokens[i].value, variable);
+                        Obj index = Obj.Convert(analyzedTokens[i].value, variable, method);
                         
                         if (var is Iter iter && index is Int iIndex)                        
                             var = iter[iIndex];
@@ -95,21 +103,55 @@ namespace Un
                 }
 
                 if (assign == 1)
-                    variable[token.value] = value;
+                    variable[token.value] = analyzedTokens[assign].tokenType switch
+                    {
+                        Token.Type.PlusAssign => var.Add(value),
+                        Token.Type.MinusAssign => var.Sub(value),
+                        Token.Type.AsteriskAssign => var.Mul(value),
+                        Token.Type.SlashAssign => var.Div(value),
+                        Token.Type.DoubleSlashAssign => var.IDiv(value),
+                        Token.Type.PercentAssign => var.Mod(value),
+                        _ => value
+                    };
                 else
                 {
                     Token last = analyzedTokens[assign - 1];
 
                     if (last.tokenType == Token.Type.Indexer)
                     {
-                        if (var is Iter iter && Obj.Convert(last.value, variable) is Int iIndex)
-                            iter[iIndex] = value;
+                        if (var is Iter iter && Obj.Convert(last.value, variable, method) is Int iIndex)
+                        {
+                            iter[iIndex] = analyzedTokens[assign].tokenType switch
+                            {
+                                Token.Type.PlusAssign => var.Add(value),
+                                Token.Type.MinusAssign => var.Sub(value),
+                                Token.Type.AsteriskAssign => var.Mul(value),
+                                Token.Type.SlashAssign => var.Div(value),
+                                Token.Type.DoubleSlashAssign => var.IDiv(value),
+                                Token.Type.PercentAssign => var.Mod(value),
+                                _ => value
+                            };
+
+                        }
                         else throw new ObjException("Parse Error");
                     }
                     else if (last.tokenType == Token.Type.Pointer)
                     {
                         if (var is Cla cla)
-                            cla.Get(last.value).Ass(value, variable);
+                        {
+                            Obj obj = analyzedTokens[assign].tokenType switch
+                            {
+                                Token.Type.PlusAssign => cla.Get(last.value).Add(value),
+                                Token.Type.MinusAssign => cla.Get(last.value).Sub(value),
+                                Token.Type.AsteriskAssign => cla.Get(last.value).Mul(value),
+                                Token.Type.SlashAssign => cla.Get(last.value).Div(value),
+                                Token.Type.DoubleSlashAssign => cla.Get(last.value).IDiv(value),
+                                Token.Type.PercentAssign => cla.Get(last.value).Mod(value),
+                                _ => value
+                            };
+
+                            cla.Get(last.value).Ass(obj, variable, method);
+                        }
                         else throw new ObjException("Parse Error");
                     }
                     else throw new ObjException("Parse Error");
@@ -133,7 +175,7 @@ namespace Un
                         line++;
                 }
 
-                Process.Class.Add(analyzedTokens[1].value, new(code[start..line], variable));
+                Process.Class.Add(analyzedTokens[1].value, new(code[start..line], variable, method));
                 
                 line--;
                 nesting--;
@@ -156,18 +198,18 @@ namespace Un
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Return)
             {
-                ReturnValue = calculator.Calculate(analyzedTokens[1..], variable);
+                ReturnValue = calculator.Calculate(analyzedTokens[1..], variable, method, className);
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Variable)
             {
                 int next = 1;
-                Obj var = Obj.Convert(analyzedTokens[0].value, variable);
+                Obj var = Obj.Convert(analyzedTokens[0].value, variable, method);
 
                 while (analyzedTokens.Count > next)
                 {
                     if (analyzedTokens[next].tokenType == Token.Type.Indexer)
                     {
-                        Obj index = Obj.Convert(analyzedTokens[next].value, variable);
+                        Obj index = Obj.Convert(analyzedTokens[next].value, variable, method);
 
                         if (var is Iter iter && index is Int iIndex)
                             var = iter[iIndex];
@@ -192,7 +234,7 @@ namespace Un
                                 last++;
                             }
 
-                            var = func.Call(new Iter([cla, Tokenizer.Calculator.Calculate(analyzedTokens[start..last], variable)]));
+                            var = func.Call(new Iter([cla, Tokenizer.Calculator.Calculate(analyzedTokens[start..last], variable, method, className)]));
                             next = last;
                         }
                     }
@@ -206,31 +248,29 @@ namespace Un
             }
             else if (Process.IsFunc(analyzedTokens[0].value))
             {
-                Process.GetFunc(analyzedTokens[0].value).Call(calculator.Calculate(analyzedTokens[1..], variable));
+                Process.GetFunc(analyzedTokens[0].value).Call(calculator.Calculate(analyzedTokens[1..], variable, method, className));
             }
             else if (Process.IsControl(analyzedTokens[0].value))
             {
                 if (analyzedTokens[0].tokenType == Token.Type.Else ||
-                    calculator.Calculate(analyzedTokens[1..], variable) is Bool b && b.value)
+                    calculator.Calculate(analyzedTokens[1..], variable, method, className) is Bool b && b.value)
                 {
                     nesting++;
                     line++;
 
                     while (line < code.Length && IsBody() && TryInterpret());
 
-                    if (line < code.Length && IsBody())
-                        SkipConditional();
-
-                    line--;
                     nesting--;
+
+                    if (line < code.Length)
+                        SkipConditional();
                 }
                 else
                 {
                     line++;
                     nesting++;
 
-                    while (line < code.Length && IsBody())
-                        line++;
+                    SkipBody();
 
                     nesting--;
                     line--;
@@ -242,23 +282,36 @@ namespace Un
 
                 if (analyzedTokens[0].tokenType == Token.Type.For)
                 {
-                    Obj obj = calculator.Calculate(analyzedTokens[3..], variable);
+                    Obj obj = calculator.Calculate(analyzedTokens[3..], variable, method, className), prev = Obj.None;
 
                     if (obj is not Iter iter) throw new ObjException("Arg Error");
 
                     nesting++;
                     string var = analyzedTokens[1].value;
-                    variable.Add(var, Obj.None);
 
-                    foreach (var item in iter)
+                    if (variable.TryGetValue(var, out prev))
+                        variable[var] = Obj.None;
+                    else
+                        variable.Add(var, Obj.None);
+
+                    if (iter.Count != 0)
                     {
-                        line = loop + 1;
-                        variable[var] = item;
+                        foreach (var item in iter)
+                        {
+                            line = loop + 1;
+                            variable[var] = item;
 
-                        while (line < code.Length && IsBody() && TryInterpret()) ;
+                            while (line < code.Length && IsBody() && TryInterpret()) ;
+                        }
                     }
+                    
+                    SkipBody();
 
-                    variable.Remove(var);
+                    if (prev == Obj.None)
+                        variable.Remove(var);
+                    else
+                        variable[var] = prev;
+
                     line--;
                     nesting--;
                 }
@@ -272,7 +325,7 @@ namespace Un
 
                         Scan(code[line]);
 
-                        if (calculator.Calculate(analyzedTokens[1..], variable) is not Bool b || !b.value)
+                        if (calculator.Calculate(analyzedTokens[1..], variable, method, className) is not Bool b || !b.value)
                             break;
                         line++;
 
@@ -280,8 +333,7 @@ namespace Un
                     }
 
                     line++;
-                    while (line < code.Length && IsBody())
-                        line++;
+                    SkipBody();
                     line--;
                     nesting--;
                 }
@@ -333,6 +385,12 @@ namespace Un
             }
         }
 
+        void SkipBody()
+        {
+            while (line < code.Length && IsBody())
+                line++;
+        }
+
         Token String(string code)
         {
             string str = $"{code[index++]}";
@@ -346,7 +404,7 @@ namespace Un
 
         Token Number(string code)
         {
-            string str = "";
+            string str = $"{code[index++]}";            
 
             while (index < code.Length && char.IsDigit(code[index]))
                 str += code[index++];
@@ -369,8 +427,35 @@ namespace Un
             {
                 if (code[index] == c1)
                 {
+                    if (code.Length > index 
+                        + 1 && code[index + 1] == c2)
+                    {
+                        index += 2;
+                        token = new($"{c1}{c2}");
+                        return true;
+                    }
+
+                    index++;
+                    token = new(c1);
+                    return true;
+                }
+
+                token = new("None", Token.Type.None);
+                return false;
+            }
+
+            bool TryOperators(char c1, char c2, char c3, out Token token)
+            {
+                if (code[index] == c1)
+                {
                     if (code.Length > index + 1 && code[index + 1] == c2)
                     {
+                        if (code.Length > index + 2 && code[index + 2] == c3)
+                        {
+                            index += 3;
+                            token = new($"{c1}{c2}{c3}");
+                            return true;
+                        }
                         index += 2;
                         token = new($"{c1}{c2}");
                         return true;
@@ -395,6 +480,18 @@ namespace Un
                 return t4;
             else if (TryOperator('/', '/', out var t5))
                 return t5;
+            else if (TryOperator('+', '=', out var t6))
+                return t6;
+            else if (TryOperator('-', '=', out var t7))
+                return t7;
+            else if (TryOperator('*', '=', out var t8))
+                return t8;
+            else if (TryOperator('/', '=', out var t9))
+                return t9;
+            else if (TryOperator('%', '=', out var t10))
+                return t10;
+            else if (TryOperators('/', '/', '=', out var t11))
+                return t11;
 
             return new(code[index++]);
         }

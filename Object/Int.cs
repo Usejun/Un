@@ -1,17 +1,19 @@
-﻿namespace Un.Object
+﻿using Un.Function;
+
+namespace Un.Object
 {
     public class Int(long value) : Obj
     {
         public long value = value;
 
-        public override void Ass(string value, Dictionary<string, Obj> variable)
+        public override void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             if (long.TryParse(value, out var v))
                 this.value = v;
             else throw new ObjException("Ass Error");
         }
 
-        public override void Ass(Obj value, Dictionary<string, Obj> variable)
+        public override void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
         {
             if (value is Int i)
                 this.value = i.value;
@@ -23,6 +25,7 @@
         {
             if (obj is Int i) return new Int(value + i.value);
             if (obj is Float f) return new Float(value + f.value);
+            if (obj is Str s) return new Str($"{value}{s.value}");
 
             throw new ObjException("Add Error");
         }
