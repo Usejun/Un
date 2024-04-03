@@ -8,8 +8,7 @@ namespace Un.Function
         public string argName = "";
         public string[] code = [];
         public Obj arg = None;
-        public Dictionary<string, Obj> variable = [];
-        public Dictionary<string, Fun> method = [];
+        public Dictionary<string, Obj> properties = [];
 
         public Fun() { }               
 
@@ -24,17 +23,17 @@ namespace Un.Function
         public virtual Obj Call(Obj arg)
         {
             this.arg = arg;
-            Interpreter interpreter = new(code, variable, method)
+            Interpreter interpreter = new(code, properties)
             {
                 line = 1,
                 nesting = 1
             };
 
-            variable.Add(argName, arg);
+            properties.Add(argName, arg);
 
             while (interpreter.TryInterpret());
 
-            variable.Clear();
+            properties.Clear();
 
             return interpreter.ReturnValue;
         }

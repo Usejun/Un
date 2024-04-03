@@ -18,7 +18,7 @@ namespace Un.Function
 
         public Obj Pow(Obj parameter)
         {
-            Obj result = Obj.None;
+            Obj result = None;
 
             if (parameter is Iter iter && iter[1] is Int count)
             {

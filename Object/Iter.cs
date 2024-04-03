@@ -4,7 +4,7 @@ using Un.Function;
 
 namespace Un.Object
 {
-    public class Iter : Cla, IEnumerable<Obj>, IIndexable
+    public class Iter : Cla, IEnumerable<Obj>
     {
         public Obj[] value;
         public bool IsFull => Count >= value.Length;
@@ -38,25 +38,13 @@ namespace Un.Object
             }
         }
 
-        public Obj GetByIndex(Obj index)
-        {
-            if (index is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
-            return value[iIndex];
-        }
-
-        public void SetByIndex(Obj index, Obj value)
-        {
-            if (index is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
-            this.value[iIndex] = value;
-        }
-
         public Iter() : base("iter")
         {
             className = "iter";
             value = [];
         }
 
-        public Iter(string str, Dictionary<string, Obj> variable, Dictionary<string, Fun> method) : base("iter")
+        public Iter(string str, Dictionary<string, Obj> properties) : base("iter")
         {
             className = "iter";
             value = [];
@@ -71,8 +59,8 @@ namespace Un.Object
 
                 if (depth == 0 && str[index] == ',')
                 {
-                    if (buffer[0] == '[') Append(new Iter(buffer, variable, method));
-                    else Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, variable, method), variable, method));
+                    if (buffer[0] == '[') Append(new Iter(buffer, properties));
+                    else Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, properties), properties));
                     buffer = "";
                 }
                 else
@@ -80,7 +68,7 @@ namespace Un.Object
             }
 
             if (!string.IsNullOrEmpty(buffer))
-                Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, variable, method), variable, method));
+                Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, properties), properties));
         }
 
         public Iter(IEnumerable<Obj> value) : base("iter")
@@ -135,14 +123,14 @@ namespace Un.Object
             return true;
         }
 
-        public override void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
+        public override void Ass(string value, Dictionary<string, Obj> properties)
         {
-            if (Convert(value, variable, method) is Iter iter)
+            if (Convert(value, properties) is Iter iter)
                 this.value = iter.value;
             else throw new ObjException("Ass Error");
         }
 
-        public override void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
+        public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Iter i)
                 this.value = i.value;
@@ -186,6 +174,26 @@ namespace Un.Object
 
         public override Int Len() => new(Count);
 
+        public override Str Type() => new("iter");
+
+        public override Iter CIter() => this;
+
+        public override Str CStr() => new($"[{string.Join(", ", value.Take(Count).Select(i => i.CStr().value))}]");
+
+        public override Obj GetByIndex(Obj parameter)
+        {
+            if (parameter is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
+            return value[iIndex];
+        }
+
+        public override Obj SetByIndex(Obj parameter)
+        {
+            if (parameter is not Iter iter) throw new ObjException("Get by Index Error");
+            if (iter[0] is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
+            value[iIndex] = iter[1];
+            return value[iIndex];
+        }
+
         protected void Resize()
         {
             Array.Resize(ref value, Count * 9 / 5 + 2);
@@ -193,9 +201,7 @@ namespace Un.Object
 
         protected bool OutOfRange(int index) => index < 0 || index >= Count;
 
-        public override string ToString() => $"[{string.Join(", ", value.Take(Count))}]";
-
-        public override Cla Clone() => new Iter(value);
+        public override Cla Clone() => new Iter(value.Take(Count));
 
         public IEnumerator<Obj> GetEnumerator()
         {

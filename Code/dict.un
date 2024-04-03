@@ -1,0 +1,2 @@
+﻿class dict
+	value = [0] * 1024

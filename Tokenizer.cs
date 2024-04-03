@@ -106,7 +106,7 @@ namespace Un
                 while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_'))
                     str += code[index++];
 
-                if (Process.IsFunc(str))
+                if (Process.IsGlobalVariable(str) && Process.GetProperty(str) is Fun)
                     return new(str, Token.Type.Function);
                 if (Token.GetType(str) != Token.Type.None)
                     return new(str);
@@ -115,7 +115,7 @@ namespace Un
             }
         }
 
-        public static List<Token> Analyzation(List<Token> tokens, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
+        public static List<Token> Analyzation(List<Token> tokens, Dictionary<string, Obj> properties)
         {
             List<Token> analyzedTokens = [];
 
@@ -141,7 +141,7 @@ namespace Un
                         analyzedTokens[^1].tokenType == Token.Type.Pointer))
                     {
                         j--;
-                        Obj index = Calculator.Calculate(Analyzation(tokens[(i + 1)..j], variable, method), variable, method);
+                        Obj index = Calculator.Calculate(Analyzation(tokens[(i + 1)..j], properties), properties);
 
                         analyzedTokens.Add(new Token(index.ToString(), Token.Type.Indexer));
                     }
@@ -181,7 +181,7 @@ namespace Un
             return analyzedTokens;
         }
 
-        public static List<Token> All(string code, Dictionary<string, Obj> variable, Dictionary<string, Fun> method) => Analyzation(Tokenization(code), variable, method);
+        public static List<Token> All(string code, Dictionary<string, Obj> properties) => Analyzation(Tokenization(code), properties);
 
         public static bool IsBody(string code, int nesting)
         {

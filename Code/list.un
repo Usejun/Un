@@ -17,6 +17,12 @@
 		index = key[1]
 		return this.array[index]
 
+	fn set(key)
+		this = key[0]
+		index = key[1]
+		item = key[2]
+		this.array[index] = value
+
 	fn remove(key)
 		this = key[0]
 		item = key[1]		
@@ -58,3 +64,15 @@
 	fn __len__(key)
 		this = key[0]
 		return len(this.array)
+
+	fn __get__(key)
+		this = key[0]
+		index = key[1]
+		return this.array[index]
+	
+	fn __set__(key)
+		this = key[0]
+		index = key[1][0]
+		value = key[1][1]
+		this.array[index] = value
+		return this.array[index]

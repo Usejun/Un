@@ -20,21 +20,18 @@ namespace Un.Class
         public override Obj Call(Obj arg)
         {
             this.arg = arg;
-            Interpreter interpreter = new(code, variable, method)
+            Interpreter interpreter = new(code, properties)
             {
                 line = 1,
                 nesting = 2,
                 className = className
             };
 
-            variable.Add(argName, arg);
+            properties.Add(argName, arg);
 
             while (interpreter.TryInterpret()) ;
 
-            //if (arg is Iter args)
-            //    args[0] = variable["this"];
-
-            variable.Clear();
+            properties.Clear();
 
             return interpreter.ReturnValue;
         }

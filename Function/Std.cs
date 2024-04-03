@@ -6,48 +6,40 @@ namespace Un.Function
     {
         public Obj Write(Obj parameter)
         {
-            Console.Write(parameter == Obj.None ? "" : parameter);
-            return Obj.None;
+            Console.Write(parameter == None ? "" : parameter.CStr().value);
+            return None;
         }
 
         public Obj Writeln(Obj parameter)
         {
-            Console.WriteLine(parameter == Obj.None ? "" : parameter);
-            return Obj.None;
+            Console.WriteLine(parameter == None ? "" : parameter.CStr().value);
+            return None;
         }
 
         public Str Readln(Obj parameter) => new(Console.ReadLine()!);
 
-        public Obj Type(Obj parametr) => new Str(parametr.GetType().Name.ToLower());
+        public Obj Type(Obj parametr) => parametr.Type();
 
-        public Int Int(Obj parameter)
+        public Int Int(Obj parameter) => parameter.CInt();
+
+        public Float Float(Obj parameter) => parameter.CFloat();
+
+        public Str Str(Obj parameter) => parameter.CStr();
+
+        public Bool Bool(Obj parameter) => parameter.CBool();
+
+        public Iter Iter(Obj parameter) => parameter.CIter();
+
+        public Iter Func(Obj parameter)
         {
-            if (parameter is Int i) return new(i.value);
-            if (parameter is Float f) return new((long)f.value);
-            if (parameter is Str s && long.TryParse(s.value.Trim('\"'), out var l)) return new(l);
-            throw new ObjException("Convert Error");
+            List<string> func = [];
+
+            foreach (var i in Process.Properties)
+                if (i.Value is Fun)
+                    func.Add(i.Key);
+
+            return new Iter(func.Select(i => new Str(i)));
         }
-
-        public Float Float(Obj parameter)
-        {
-            if (parameter is Int i) return new(i.value);
-            if (parameter is Float f) return new(f.value);
-            if (parameter is Str s && double.TryParse(s.value, out var d)) return new(d);
-            throw new ObjException("Convert Error");
-        }
-
-        public Str Str(Obj parameter) => new(parameter.ToString());
-
-        public Bool Bool(Obj parameter) => parameter.ToString() switch
-        {
-            "True" => new(true),
-            "False" => new(false),
-            _ => throw new ObjException("Convert Error"),
-        };
-
-        public Iter Iter(Obj parameter) => Obj.Convert(parameter.ToString(), Process.Variable, Process.Func) is Iter i ? i : throw new ObjException("Convert Error");
-
-        public Iter Func(Obj parameter) => new(Process.Func.Keys.Select(key => new Str(key)));
 
         public Iter Range(Obj parameter)
         {
@@ -67,6 +59,8 @@ namespace Un.Function
 
         public Int Len(Obj parameter) => parameter.Len();
 
+        public Int Hash(Obj parameter) => parameter.Hash();
+
         public override Dictionary<string, Fun> Methods() => new()
         {
             {"write", new NativeFun("write", "text", Write)},
@@ -79,8 +73,9 @@ namespace Un.Function
             {"iter", new NativeFun("iter", "value", Iter)},
             {"type", new NativeFun("type", "obj", Type)},
             {"func", new NativeFun("func", "arg", Func)},
-            {"len", new NativeFun("len", "obj", Len)},
             {"range", new NativeFun("range", "start_len", Range)},
+            {"len", new NativeFun("len", "obj", Len)},
+            {"hash", new NativeFun("hash", "obj", Hash)},
         };
 
     }

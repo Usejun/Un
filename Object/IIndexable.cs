@@ -2,7 +2,7 @@
 {
     public interface IIndexable
     {
-        public Obj GetByIndex(Obj index);
-        public void SetByIndex(Obj index, Obj value);
+        public Obj GetByIndex(Obj obj);
+        public Obj SetByIndex(Obj obj);
     }
 }

@@ -1,12 +1,10 @@
-﻿using Un.Function;
-
-namespace Un.Object
+﻿namespace Un.Object
 {
     public class Bool(bool value) : Obj
     {
         public bool value = value;
 
-        public override void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
+        public override void Ass(string value, Dictionary<string, Obj> properties)
         {
             this.value = value switch
             {
@@ -16,7 +14,7 @@ namespace Un.Object
             };
         }
 
-        public override void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
+        public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Bool b)
                 this.value = b.value;
@@ -24,7 +22,11 @@ namespace Un.Object
                 throw new ObjException("Ass Error");
         }
 
-        public override string ToString() => $"{value}";
+        public override Str Type() => new("bool");
+
+        public override Str CStr() => new ($"{value}");
+
+        public override Bool CBool() => this;
 
         public override int CompareTo(Obj? obj)
         {

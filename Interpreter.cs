@@ -5,8 +5,7 @@ using Un.Function;
 namespace Un
 {
     public class Interpreter(string[] code, 
-                             Dictionary<string, Obj> variable, 
-                             Dictionary<string, Fun> method, 
+                             Dictionary<string, Obj> properties, 
                              string className = "",
                              int index = 0, 
                              int line = 0, 
@@ -19,13 +18,12 @@ namespace Un
         public int nesting = nesting;
         public string[] code = code;
         public string className = className;
-        public Dictionary<string, Obj> variable = variable;
-        public Dictionary<string, Fun> method = method;
+        public Dictionary<string, Obj> properties = properties;
         public Calculator calculator = new();
 
         public bool TryInterpret()
         {
-            if (ReturnValue != Obj.None) return false;
+            if (ReturnValue is not Str str || str.value != "None") return false;
             if (line >= code.Length) return false;
             if (string.IsNullOrWhiteSpace(code[line]))
             {
@@ -33,7 +31,7 @@ namespace Un
                 return true;
             }
 
-            Parse(Tokenizer.Analyzation(Scan(code[line]), variable, method));
+            Parse(Tokenizer.Analyzation(Scan(code[line]), properties));
             line++;
             return true;
         }
@@ -72,38 +70,34 @@ namespace Un
             {
                 Token token = analyzedTokens[0];
 
-                if (!variable.ContainsKey(token.value))
+                if (!properties.ContainsKey(token.value))
                 {
-                    if (assign == 1) variable.Add(token.value, Obj.None);
+                    if (assign == 1) properties.Add(token.value, Obj.None);
                     else throw new ObjException("Parse Error");
                 }
 
-                Obj var = variable[token.value];
-                Obj value = calculator.Calculate(analyzedTokens[(assign + 1)..], variable, method, className);
+                Obj var = properties[token.value];
+                Obj value = calculator.Calculate(analyzedTokens[(assign + 1)..], properties, className);
 
                 for (int i = 1; i < assign - 1; i++)
                 {
                     if (analyzedTokens[i].tokenType == Token.Type.Indexer)
                     {
-                        Obj index = Obj.Convert(analyzedTokens[i].value, variable, method);
-                        
-                        if (var is Iter iter && index is Int iIndex)                        
-                            var = iter[iIndex];
+                        if (var is IIndexable indexable)
+                            var = indexable.GetByIndex(Obj.Convert(analyzedTokens[i].value, properties));
                         else throw new ObjException("Parse Error");
                     }
                     else if (analyzedTokens[i].tokenType == Token.Type.Pointer)
                     {
                         if (var is Cla cla)
-                        {
                             var = cla.Get(analyzedTokens[i].value);
-                        }
                         else throw new ObjException("Parse Error");
                     } 
                     else throw new ObjException("Parse Error");
                 }
 
                 if (assign == 1)
-                    variable[token.value] = analyzedTokens[assign].tokenType switch
+                    properties[token.value] = analyzedTokens[assign].tokenType switch
                     {
                         Token.Type.PlusAssign => var.Add(value),
                         Token.Type.MinusAssign => var.Sub(value),
@@ -119,9 +113,9 @@ namespace Un
 
                     if (last.tokenType == Token.Type.Indexer)
                     {
-                        if (var is Iter iter && Obj.Convert(last.value, variable, method) is Int iIndex)
-                        {
-                            iter[iIndex] = analyzedTokens[assign].tokenType switch
+                        if (var is IIndexable indexable)
+                        {                            
+                            Obj obj = analyzedTokens[assign].tokenType switch
                             {
                                 Token.Type.PlusAssign => var.Add(value),
                                 Token.Type.MinusAssign => var.Sub(value),
@@ -132,6 +126,7 @@ namespace Un
                                 _ => value
                             };
 
+                            indexable.SetByIndex(new Iter([Obj.Convert(last.value, properties), obj]));
                         }
                         else throw new ObjException("Parse Error");
                     }
@@ -150,7 +145,8 @@ namespace Un
                                 _ => value
                             };
 
-                            cla.Get(last.value).Ass(obj, variable, method);
+                            if (cla.Properties.ContainsKey(last.value))
+                                cla.Properties[last.value] = obj;                            
                         }
                         else throw new ObjException("Parse Error");
                     }
@@ -159,7 +155,14 @@ namespace Un
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Import)
             {
+                Iter packages = Obj.Convert(analyzedTokens[1].value, properties) as Iter;
 
+                foreach (var package in packages)
+                {
+                    if (package is not Str name) continue;
+
+                    Process.Import(name.value);
+                }
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Class)
             {
@@ -175,7 +178,7 @@ namespace Un
                         line++;
                 }
 
-                Process.Class.Add(analyzedTokens[1].value, new(code[start..line], variable, method));
+                Process.Class.Add(analyzedTokens[1].value, new(code[start..line], properties));
                 
                 line--;
                 nesting--;
@@ -190,7 +193,7 @@ namespace Un
                 while (line < code.Length && IsBody())
                     line++;
 
-                Process.Func.Add(analyzedTokens[1].value, new(code[start..line]));
+                Process.Properties.Add(analyzedTokens[1].value, new Fun(code[start..line]));
 
                 line--;
                 nesting--;
@@ -198,21 +201,21 @@ namespace Un
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Return)
             {
-                ReturnValue = calculator.Calculate(analyzedTokens[1..], variable, method, className);
+                ReturnValue = calculator.Calculate(analyzedTokens[1..], properties, className);
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Variable)
             {
                 int next = 1;
-                Obj var = Obj.Convert(analyzedTokens[0].value, variable, method);
+                Obj var = Obj.Convert(analyzedTokens[0].value, properties);
 
                 while (analyzedTokens.Count > next)
                 {
                     if (analyzedTokens[next].tokenType == Token.Type.Indexer)
                     {
-                        Obj index = Obj.Convert(analyzedTokens[next].value, variable, method);
+                        Obj index = Obj.Convert(analyzedTokens[next].value, properties);
 
-                        if (var is Iter iter && index is Int iIndex)
-                            var = iter[iIndex];
+                        if (var is IIndexable indexable)
+                            var = indexable.GetByIndex(index);
                         else throw new ObjException("Parse Error");
                     }
                     else if (analyzedTokens[next].tokenType == Token.Type.Pointer)
@@ -234,7 +237,7 @@ namespace Un
                                 last++;
                             }
 
-                            var = func.Call(new Iter([cla, Tokenizer.Calculator.Calculate(analyzedTokens[start..last], variable, method, className)]));
+                            var = func.Call(new Iter([cla, Tokenizer.Calculator.Calculate(analyzedTokens[start..last], properties, className)]));
                             next = last;
                         }
                     }
@@ -242,18 +245,20 @@ namespace Un
                     next++;
                 }
             }
+            else if (analyzedTokens[0].tokenType == Token.Type.Function)
+            {
+                Obj value = Process.GetProperty(analyzedTokens[0].value);
+                if (value is Fun fun)
+                    fun.Call(calculator.Calculate(analyzedTokens[1..], properties, className));
+            }
             else if (Process.IsClass(analyzedTokens[0].value))
             {       
                 
             }
-            else if (Process.IsFunc(analyzedTokens[0].value))
-            {
-                Process.GetFunc(analyzedTokens[0].value).Call(calculator.Calculate(analyzedTokens[1..], variable, method, className));
-            }
             else if (Process.IsControl(analyzedTokens[0].value))
             {
                 if (analyzedTokens[0].tokenType == Token.Type.Else ||
-                    calculator.Calculate(analyzedTokens[1..], variable, method, className) is Bool b && b.value)
+                    calculator.Calculate(analyzedTokens[1..], properties, className) is Bool b && b.value)
                 {
                     nesting++;
                     line++;
@@ -282,24 +287,24 @@ namespace Un
 
                 if (analyzedTokens[0].tokenType == Token.Type.For)
                 {
-                    Obj obj = calculator.Calculate(analyzedTokens[3..], variable, method, className), prev = Obj.None;
+                    Obj obj = calculator.Calculate(analyzedTokens[3..], properties, className), prev = Obj.None;
 
                     if (obj is not Iter iter) throw new ObjException("Arg Error");
 
                     nesting++;
                     string var = analyzedTokens[1].value;
 
-                    if (variable.TryGetValue(var, out prev))
-                        variable[var] = Obj.None;
+                    if (properties.TryGetValue(var, out prev))
+                        properties[var] = Obj.None;
                     else
-                        variable.Add(var, Obj.None);
+                        properties.Add(var, Obj.None);
 
                     if (iter.Count != 0)
                     {
                         foreach (var item in iter)
                         {
                             line = loop + 1;
-                            variable[var] = item;
+                            properties[var] = item;
 
                             while (line < code.Length && IsBody() && TryInterpret()) ;
                         }
@@ -308,9 +313,9 @@ namespace Un
                     SkipBody();
 
                     if (prev == Obj.None)
-                        variable.Remove(var);
+                        properties.Remove(var);
                     else
-                        variable[var] = prev;
+                        properties[var] = prev;
 
                     line--;
                     nesting--;
@@ -325,7 +330,7 @@ namespace Un
 
                         Scan(code[line]);
 
-                        if (calculator.Calculate(analyzedTokens[1..], variable, method, className) is not Bool b || !b.value)
+                        if (calculator.Calculate(analyzedTokens[1..], properties, className) is not Bool b || !b.value)
                             break;
                         line++;
 
@@ -503,10 +508,10 @@ namespace Un
             while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_'))
                 str += code[index++];
 
-            if (Process.IsFunc(str))
+            if (Process.IsGlobalVariable(str) && Process.GetProperty(str) is Fun)
                 return new(str, Token.Type.Function);
             if (Token.GetType(str) != Token.Type.None)
-                return new(str);
+                return new(str);         
 
             return new Token(str, Token.Type.Variable);
         }        

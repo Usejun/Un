@@ -1,14 +1,12 @@
-﻿using Un.Function;
-
-namespace Un.Object
+﻿namespace Un.Object
 {
     public class Obj : IComparable<Obj>
     {
-        public static Obj None => null;
+        public static Obj None => new Str("None");
 
-        public virtual void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method) => throw new ObjException("Ass Error");
+        public virtual void Ass(string value, Dictionary<string, Obj> properties) => throw new ObjException("Ass Error");
 
-        public virtual void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method) => throw new ObjException("Ass Error");
+        public virtual void Ass(Obj value, Dictionary<string, Obj> properties) => throw new ObjException("Ass Error");
 
         public virtual Obj Add(Obj obj) => throw new ObjException("Add Error");
 
@@ -24,19 +22,31 @@ namespace Un.Object
 
         public virtual Int Len() => new(1);
 
-        public override string ToString() => "None";
+        public virtual Int Hash() => new(GetHashCode());
 
-        public static Obj Convert(string str, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
+        public virtual Str Type() => new ("obj");
+
+        public virtual Int CInt() => throw new ObjException("Int Error");
+
+        public virtual Float CFloat() => throw new ObjException("Float Error");
+
+        public virtual Str CStr() => new("obj");
+
+        public virtual Bool CBool() => new(false);
+
+        public virtual Iter CIter() => throw new ObjException("Iter Error");
+
+        public static Obj Convert(string str, Dictionary<string, Obj> properties)
         {
-            if (string.IsNullOrEmpty(str)) return None; 
-            if (variable.TryGetValue(str, out var varValue)) return varValue;
-            if (method.TryGetValue(str, out var methodValue )) return methodValue;
-            if (Process.IsFunc(str)) return Process.GetFunc(str);
-            if (Process.IsGlobalVariable(str)) return Process.Variable[str];
+            if (string.IsNullOrEmpty(str)) return None;
+            if (properties.TryGetValue(str, out var value)) return value;
+            if (Process.IsStaticClass(str)) return Process.GetStaticClass(str);
+            if (Process.IsGlobalVariable(str)) return Process.GetProperty(str);
             if (str[0] == '\"' && str[^1] == '\"') return new Str(str.Trim('\"'));
-            if (str[0] == '[' && str[^1] == ']') return new Iter(str, variable, method);
+            if (str[0] == '[' && str[^1] == ']') return new Iter(str, properties);
             if (str == "True") return new Bool(true);
             if (str == "False") return new Bool(false);
+            if (str == "None") return None;
             if (long.TryParse(str, out var l)) return new Int(l);
             if (double.TryParse(str, out var d)) return new Float(d);
 

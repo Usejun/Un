@@ -1,3 +1,9 @@
-﻿l = list 
-l += [1, 10]
-writeln(len(l))
+﻿import ["math", "list", "time", "pair"]
+
+l = pair
+
+l.key = 123
+l.value = 123
+
+writeln([l.key, l.value])
+

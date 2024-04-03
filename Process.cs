@@ -12,9 +12,16 @@ namespace Un
 
         public static string[] Code = [];
 
-        public static Interpreter Main = new([], Variable, Func);
+        public static Interpreter Main = new([], Properties);
 
-        public static Dictionary<string, Cla> Class = [];     
+        public static Dictionary<string, Obj> Package = new()
+        {
+            {"std", new Std()}, {"math", new Function.Math()}, {"time", new Time()}           
+        };
+
+        public static Dictionary<string, Cla> Class = [];
+
+        public static Dictionary<string, Cla> StaticClass = [];
 
         public static Dictionary<string, Token.Type> Control = new()
         {
@@ -37,9 +44,7 @@ namespace Un
             { Token.Type.LParen, 4 },
         };
 
-        public static Dictionary<string, Obj> Variable = [];
-
-        public static Dictionary<string, Fun> Func = [];
+        public static Dictionary<string, Obj> Properties = [];
 
         public static void Initialize(string path, string file)
         {            
@@ -49,22 +54,23 @@ namespace Un
             using StreamReader r = new(new FileStream($"{path}\\{file}", FileMode.Open));
 
             Code = r.ReadToEnd().Split('\n');
+
+            Import("std");
         }
 
         public static void Run()
         {
             Main.code = Code;
-            Main.variable = Variable;
-            Main.method = Func;
+            Main.properties = Properties;
 
             while (Main.TryInterpret()) ;            
         }
 
-        public static Fun GetFunc(string name)
+        public static Obj GetProperty(string name)
         {
-            if (Func.TryGetValue(name, out var func))
-                return func.Clone();
-            throw new ObjException("Get function Error");
+            if (Properties.TryGetValue(name, out var value))
+                return value.Clone();
+            throw new ObjException("Get Property Error");
         }
 
         public static Cla GetClass(string name)
@@ -74,22 +80,45 @@ namespace Un
             throw new ObjException("Get Class Error");
         }
 
-        public static void Import(Importable importable)
+        public static Cla GetStaticClass(string name)
         {
-            foreach (var item in importable.Methods())
-                Func.Add(item.Key, item.Value);
+            if (StaticClass.TryGetValue(name, out var cla))
+                return cla;
+            throw new ObjException("Get Static Class Error");
         }
 
-        public static void Import(string file)
+        public static void Import(string name)
         {
-            using StreamReader r = new(new FileStream($"{Path}\\{file}", FileMode.Open));
+            if (IsPackage(name))
+            {
+                if (Package[name] is Importable importable)
+                {
+                    foreach (var item in importable.Methods())
+                        Properties.Add(item.Key, item.Value);
+                }
+                else if (Package[name] is Cla cla)
+                {
+                    if (cla is IStatic statics)
+                    {
+                        StaticClass.Add(name, cla);
+                    }
+                    else
+                    {
+                        Class.Add(name, cla);
+                    }
+                }
+            }
+            else
+            {
+                using StreamReader r = new(new FileStream($"{Path}\\{name}.un", FileMode.Open));
 
-            Interpreter interpreter = new(r.ReadToEnd().Split('\n'), [], []);
+                Interpreter interpreter = new(r.ReadToEnd().Split('\n'), []);
 
-            while (interpreter.TryInterpret());
+                while (interpreter.TryInterpret()) ;
+            }
         }
 
-        public static bool IsGlobalVariable(string str) => Variable.ContainsKey(str);
+        public static bool IsGlobalVariable(string str) => Properties.ContainsKey(str);
 
         public static bool IsGlobalVariable(Token token) => IsGlobalVariable(token.value);
 
@@ -136,10 +165,6 @@ namespace Un
             _ => false,
         };
 
-        public static bool IsFunc(Token token) => IsFunc(token.value);
-
-        public static bool IsFunc(string str) => Func.ContainsKey(str);
-
         public static bool IsLoop(Token token) => IsLoop(token.value);
 
         public static bool IsLoop(string str) => Loop.ContainsKey(str);
@@ -151,6 +176,14 @@ namespace Un
         public static bool IsClass(Token token) => IsClass(token.value);
 
         public static bool IsClass(string str) => Class.ContainsKey(str);
+
+        public static bool IsStaticClass(Token token) => IsStaticClass(token.value);
+
+        public static bool IsStaticClass(string str) => StaticClass.ContainsKey(str);
+
+        public static bool IsPackage(Token token) => IsPackage(token.value);
+
+        public static bool IsPackage(string str) => Package.ContainsKey(str);
 
     }
 }

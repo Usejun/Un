@@ -6,14 +6,14 @@ namespace Un.Object
     {
         public long value = value;
 
-        public override void Ass(string value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
+        public override void Ass(string value, Dictionary<string, Obj> properties)
         {
             if (long.TryParse(value, out var v))
                 this.value = v;
             else throw new ObjException("Ass Error");
         }
 
-        public override void Ass(Obj value, Dictionary<string, Obj> variable, Dictionary<string, Fun> method)
+        public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Int i)
                 this.value = i.value;
@@ -70,6 +70,20 @@ namespace Un.Object
             throw new ObjException("Mod Error");
         }
 
+        public override Str Type() => new("int");
+
+        public override Int CInt() => this;
+
+        public override Float CFloat() => new(value);
+
+        public override Str CStr() => new ($"{value}");
+
+        public override Bool CBool()
+        {
+            if (value == 0) return new(false);
+            return new(true);
+        }
+
         public override int CompareTo(Obj? obj)
         {
             if (obj is Int i) return value.CompareTo(i.value);
@@ -77,8 +91,6 @@ namespace Un.Object
 
             throw new ObjException("compare Error");
         }
-
-        public override string ToString() => $"{value}";
 
         public override Obj Clone() => new Int(value);
     }
