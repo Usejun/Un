@@ -1,0 +1,6 @@
+﻿import ["dict"]
+
+d = dict()
+d.add(["key", 13])
+
+writeln(d["key"])

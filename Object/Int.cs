@@ -1,8 +1,6 @@
-﻿using Un.Function;
-
-namespace Un.Object
+﻿namespace Un.Object
 {
-    public class Int(long value) : Obj
+    public class Int(long value) : Obj("int")
     {
         public long value = value;
 
@@ -72,6 +70,8 @@ namespace Un.Object
 
         public override Str Type() => new("int");
 
+        public override Int Hash() => new(value.GetHashCode());
+
         public override Int CInt() => this;
 
         public override Float CFloat() => new(value);
@@ -84,12 +84,10 @@ namespace Un.Object
             return new(true);
         }
 
-        public override int CompareTo(Obj? obj)
+        public override Int Comp(Obj obj)
         {
-            if (obj is Int i) return value.CompareTo(i.value);
-            if (obj is Float f) return value.CompareTo(f.value);
-
-            throw new ObjException("compare Error");
+            if (obj is Int i) return new(i.value.CompareTo(value));
+            throw new ObjException("Comp Error");
         }
 
         public override Obj Clone() => new Int(value);

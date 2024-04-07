@@ -1,6 +1,6 @@
 ﻿namespace Un.Object
 {
-    public class Str(string value) : Obj, IIndexable
+    public class Str(string value) : Obj("str"), IIndexable
     {
         public string value = value;
 
@@ -37,9 +37,11 @@
                 throw new ObjException("Ass Error");
         }
 
-        public override Obj Add(Obj obj) => new Str(value + obj.ToString());
+        public override Obj Add(Obj obj) => new Str(value + obj.CStr().value);
 
         public override Str Type() => new ("str");
+
+        public override Int Hash() => new (value.GetHashCode());
 
         public override Int CInt()
         {
@@ -71,11 +73,10 @@
 
         public override Int Len() => new(value.Length);
 
-        public override int CompareTo(Obj? obj)
+        public override Int Comp(Obj obj)
         {
-            if (obj is Str s) return value.CompareTo(s.value);
-
-            throw new ObjException("compare Error");
+            if (obj is Str s) return new(s.value.CompareTo(value));
+            throw new ObjException("Comp Error");
         }
 
         protected bool OutOfRange(int index) => 0 > index || index >= value.Length;

@@ -31,6 +31,7 @@ namespace Un
 
             Indexer,
             Pointer,
+            Method,
 
             Equal,
             Unequal,
@@ -81,7 +82,7 @@ namespace Un
 
         public Token(Obj obj)
         {
-            value = obj.ToString();
+            value = obj.CStr().value;
             tokenType = GetType(obj);
         }
 

@@ -1,6 +1,5 @@
 ﻿using Un.Function;
 using Un.Object;
-using Un.Class;
 
 namespace Un
 {
@@ -19,9 +18,9 @@ namespace Un
             {"std", new Std()}, {"math", new Function.Math()}, {"time", new Time()}           
         };
 
-        public static Dictionary<string, Cla> Class = [];
+        public static Dictionary<string, Obj> Class = [];
 
-        public static Dictionary<string, Cla> StaticClass = [];
+        public static Dictionary<string, Obj> StaticClass = [];
 
         public static Dictionary<string, Token.Type> Control = new()
         {
@@ -40,7 +39,7 @@ namespace Un
             { Token.Type.Plus, 1 }, { Token.Type.Minus, 1 }, { Token.Type.Percent, 1 }, { Token.Type.Bang, 1 },
             { Token.Type.Asterisk, 2 }, { Token.Type.Slash, 2 }, { Token.Type.DoubleSlash, 2 },
             { Token.Type.Indexer, 2 }, { Token.Type.Pointer, 2 },
-            { Token.Type.Function, 3 }, 
+            { Token.Type.Function, 3 }, { Token.Type.Method, 3 },
             { Token.Type.LParen, 4 },
         };
 
@@ -73,14 +72,14 @@ namespace Un
             throw new ObjException("Get Property Error");
         }
 
-        public static Cla GetClass(string name)
+        public static Obj GetClass(string name)
         {
             if (Class.TryGetValue(name, out var cla))
                 return cla.Clone();
             throw new ObjException("Get Class Error");
         }
 
-        public static Cla GetStaticClass(string name)
+        public static Obj GetStaticClass(string name)
         {
             if (StaticClass.TryGetValue(name, out var cla))
                 return cla;
@@ -96,15 +95,15 @@ namespace Un
                     foreach (var item in importable.Methods())
                         Properties.Add(item.Key, item.Value);
                 }
-                else if (Package[name] is Cla cla)
+                else if (Package[name] is Obj cla)
                 {
                     if (cla is IStatic statics)
                     {
-                        StaticClass.Add(name, cla);
+                        StaticClass.TryAdd(name, cla);
                     }
                     else
                     {
-                        Class.Add(name, cla);
+                        Class.TryAdd(name, cla);
                     }
                 }
             }

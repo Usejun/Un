@@ -1,9 +1,8 @@
-﻿using Un.Class;
-using Un.Object;
+﻿using Un.Object;
 
 namespace Un.Function
 {
-    public class Time : Cla, IStatic
+    public class Time : Obj, IStatic
     {
         public Time()
         {

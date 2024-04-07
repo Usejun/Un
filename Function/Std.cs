@@ -6,19 +6,19 @@ namespace Un.Function
     {
         public Obj Write(Obj parameter)
         {
-            Console.Write(parameter == None ? "" : parameter.CStr().value);
+            Console.Write(parameter.CStr().value);
             return None;
         }
 
         public Obj Writeln(Obj parameter)
         {
-            Console.WriteLine(parameter == None ? "" : parameter.CStr().value);
+            Console.WriteLine(parameter.CStr().value);
             return None;
         }
 
         public Str Readln(Obj parameter) => new(Console.ReadLine()!);
 
-        public Obj Type(Obj parametr) => parametr.Type();
+        public Obj Type(Obj parameter) => parameter.Type();
 
         public Int Int(Obj parameter) => parameter.CInt();
 
@@ -38,20 +38,21 @@ namespace Un.Function
                 if (i.Value is Fun)
                     func.Add(i.Key);
 
-            return new Iter(func.Select(i => new Str(i)));
+            return new Iter(func.Select(i => new Str(i)).ToArray());
         }
 
         public Iter Range(Obj parameter)
         {
             if (parameter is Iter iter)
             {
-                Iter range = [];
                 if (iter[0] is not Int i1 || !i1.value.TryInt(out int start)) return [];
                 if (iter[1] is not Int i2 || !i2.value.TryInt(out int count)) return [];
+                Obj[] objs = new Obj[count];
 
                 for (int i = 0; i < count; i++)
-                    range.Append(new Int(i + start));
-                return range;
+                    objs[i] = new Int(start + i);
+
+                return new Iter(objs);
             }
 
             return [];

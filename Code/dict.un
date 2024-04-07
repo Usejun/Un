@@ -1,2 +1,47 @@
-﻿class dict
-	value = [0] * 1024
+﻿import ["list", "math", "pair"]
+
+class dict
+	capacity = pow([2, 16])
+	value = list([None] * capacity)
+	keys = list()	
+	count = 0
+
+	fn add(params)
+		this = params[0]
+		item = pair([params[1][0], params[1][1]])
+		this.keys.add(item.key)
+		index = hash(item.key)
+		
+		if (index < 0) 
+			index *= -1
+
+		while (this.value[index % this.capacity] != None)
+			index += 1
+
+		this.value[index % this.capacity] = item
+		this.count += 1
+		
+	fn contains(params)
+		this = params[0]
+		return this.search(params[1]) != None
+
+	fn search(params)
+		this = params[0]
+		item = pair([params[1][0], params[1][1]])
+		index = hash(item.key)
+		temp = this.value[index]
+
+		while (temp != None)
+			if (temp.key == item.key)
+				return temp
+			index += 1
+			temp = this.value[index]
+
+		return None
+	
+	fn __get__(params)
+		this = params[0]
+		key = params[1]
+
+		if (type(this.value[hash(key) % this.capacity]) != "None")
+			return this.value[hash(key) % this.capacity].value

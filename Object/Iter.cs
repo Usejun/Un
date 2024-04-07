@@ -1,10 +1,8 @@
-﻿using Un.Class;
-using System.Collections;
-using Un.Function;
+﻿using System.Collections;
 
 namespace Un.Object
 {
-    public class Iter : Cla, IEnumerable<Obj>
+    public class Iter : Obj, IEnumerable<Obj>
     {
         public Obj[] value;
         public bool IsFull => Count >= value.Length;
@@ -40,14 +38,13 @@ namespace Un.Object
 
         public Iter() : base("iter")
         {
-            className = "iter";
             value = [];
         }
 
         public Iter(string str, Dictionary<string, Obj> properties) : base("iter")
         {
-            className = "iter";
             value = [];
+            Calculator calculator = new();
             int index = 0, depth = 0;
             string buffer = "";
 
@@ -60,7 +57,7 @@ namespace Un.Object
                 if (depth == 0 && str[index] == ',')
                 {
                     if (buffer[0] == '[') Append(new Iter(buffer, properties));
-                    else Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, properties), properties));
+                    else Append(calculator.Calculate(Tokenizer.All(buffer, properties), properties));
                     buffer = "";
                 }
                 else
@@ -68,22 +65,22 @@ namespace Un.Object
             }
 
             if (!string.IsNullOrEmpty(buffer))
-                Append(Tokenizer.Calculator.Calculate(Tokenizer.All(buffer, properties), properties));
-        }
-
-        public Iter(IEnumerable<Obj> value) : base("iter")
-        {
-            className = "iter";
-            this.value = [];
-            foreach (var item in value)
-                Append(item);
+                Append(calculator.Calculate(Tokenizer.All(buffer, properties), properties));            
         }
 
         public Iter(Obj[] value) : base("iter")
+        {        
+            this.value = value;
+            Count = value.Length;
+        }
+
+        public override Obj Init(Obj obj)
         {
-            className = "iter";
-            this.value = [];
-            Append(value);
+            var iter = obj.CIter();
+            value = iter.value;
+            Count = iter.Count;
+
+            return this;
         }
 
         public void Append(Obj obj)
@@ -110,7 +107,7 @@ namespace Un.Object
         public bool Remove(Obj obj)
         {
             for (int i = 0; i < Count; i++)
-                if (value[i].CompareTo(obj) == 0)
+                if (value[i].Comp(obj).value == 0)
                     return RemoveAt(i);
             return false;
         }
@@ -159,14 +156,17 @@ namespace Un.Object
 
         public override Obj Mul(Obj obj)
         {
-            if (obj is Int i)
+            if (obj is Int pow)
             {
-                Iter iter = [];
+                Iter items = Clone() as Iter;
+                int len = items.Count;
+                Obj[] objs = new Obj[len * pow.value];
 
-                for (int j = 0; j < i.value; j++)
-                    iter.Append(value);
+                for (int i = 0; i < pow.value; i++)                
+                    for (int j = 0; j < len; j++)                    
+                        objs[len * i + j] = items[j];
 
-                return iter;
+                return new Iter(objs);
             }
 
             throw new Exception("Mul Error");
@@ -175,6 +175,14 @@ namespace Un.Object
         public override Int Len() => new(Count);
 
         public override Str Type() => new("iter");
+
+        public override Int Hash() => new(value.GetHashCode());
+
+        public override Int Comp(Obj obj)
+        {
+            if (obj is Iter iter) return new(iter.Count.CompareTo(Count));
+            throw new ObjException("Comp Error");
+        }
 
         public override Iter CIter() => this;
 
@@ -201,7 +209,7 @@ namespace Un.Object
 
         protected bool OutOfRange(int index) => index < 0 || index >= Count;
 
-        public override Cla Clone() => new Iter(value.Take(Count));
+        public override Obj Clone() => new Iter(value.Take(Count).ToArray());
 
         public IEnumerator<Obj> GetEnumerator()
         {

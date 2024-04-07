@@ -1,25 +1,24 @@
-﻿using Un.Class;
-using Un.Function;
+﻿using Un.Function;
 
 namespace Un.Object
 {
-    public class Date : Cla
+    public class Date : Obj
     {
         public DateTime value;
 
-        public Date(DateTime value)
+        public Date(DateTime value) : base("date")
         {
             this.value = value;
             Init();
         }
 
-        public Date(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0)
+        public Date(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0, int milliseconds = 0) : base("date")
         {
-            value = new(year, month, day, hour, minute, second);
+            value = new(year, month, day, hour, minute, second, milliseconds);
             Init();
         }
 
-        public void Init()
+        public override void Init()
         {
             Properties.TryAdd("year", new Int(value.Year));
             Properties.TryAdd("month", new Int(value.Month));
@@ -27,6 +26,7 @@ namespace Un.Object
             Properties.TryAdd("hour", new Int(value.Hour));
             Properties.TryAdd("minute", new Int(value.Minute)); 
             Properties.TryAdd("second", new Int(value.Second));
+            Properties.TryAdd("milliseconds", new Int(value.Millisecond));
             Properties.TryAdd("add_years", new NativeFun("add_years", "years", (obj) =>
             {
                 if (obj is Int i && i.value.TryInt(out int years))                
@@ -63,8 +63,16 @@ namespace Un.Object
                     return new Date(value.AddSeconds(seconds));
                 return None;
             }));
+            Properties.TryAdd("add_milliseconds", new NativeFun("add_milliseconds", "milliseconds", (obj) =>
+            {
+                if (obj is Int i && i.value.TryInt(out int milliseconds))
+                    return new Date(value.AddMilliseconds(milliseconds));
+                return None;
+            }));
         }
 
-        public override Str CStr() => new($"{value:yyyy:MM:dd HH:mm:ss}");
+        public override Str CStr() => new($"{value:yyyy:MM:dd HH:mm:ss:ffff}");
+
+        public override Int Hash() => new(value.GetHashCode());
     }
 }

@@ -143,7 +143,10 @@ namespace Un
                         j--;
                         Obj index = Calculator.Calculate(Analyzation(tokens[(i + 1)..j], properties), properties);
 
-                        analyzedTokens.Add(new Token(index.ToString(), Token.Type.Indexer));
+                        if (index is Str)
+                            analyzedTokens.Add(new Token($"\"{index.CStr().value}\"", Token.Type.Indexer));
+                        else
+                            analyzedTokens.Add(new Token(index.CStr().value, Token.Type.Indexer));
                     }
                     else
                     {
@@ -174,8 +177,14 @@ namespace Un
                 {
                     analyzedTokens.Add(new(tokens[i + 1].value, Token.Type.Pointer));
                     i++;
-                }
+                    if (tokens.Count > i + 1 && tokens[i + 1].tokenType == Token.Type.LParen)
+                        analyzedTokens[^1].tokenType = Token.Type.Method;
+                }              
                 else analyzedTokens.Add(tokens[i]);
+
+                if (analyzedTokens[^1].tokenType == Token.Type.Variable &&
+                    Process.IsClass(tokens[i]))
+                    analyzedTokens[^1].tokenType = Token.Type.Function;
             }
 
             return analyzedTokens;

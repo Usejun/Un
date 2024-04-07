@@ -1,29 +1,26 @@
 ﻿using Un.Object;
-using Un.Class;
 using Un.Function;
 
 namespace Un
 {
     public class Interpreter(string[] code, 
                              Dictionary<string, Obj> properties, 
-                             string className = "",
                              int index = 0, 
                              int line = 0, 
                              int nesting = 0)
     {
-        public Obj ReturnValue = Obj.None;
+        public Obj ReturnValue = null;
 
         public int index = index;
         public int line = line;
         public int nesting = nesting;
         public string[] code = code;
-        public string className = className;
         public Dictionary<string, Obj> properties = properties;
         public Calculator calculator = new();
 
         public bool TryInterpret()
         {
-            if (ReturnValue is not Str str || str.value != "None") return false;
+            if (ReturnValue is not null) return false;
             if (line >= code.Length) return false;
             if (string.IsNullOrWhiteSpace(code[line]))
             {
@@ -69,85 +66,40 @@ namespace Un
             else if (assign >= 1)
             {
                 Token token = analyzedTokens[0];
+                Obj var = Obj.None;
 
-                if (!properties.ContainsKey(token.value))
-                {
-                    if (assign == 1) properties.Add(token.value, Obj.None);
-                    else throw new ObjException("Parse Error");
-                }
+                if (properties.TryGetValue(token.value, out var local))
+                    var = local;
+                else if (Process.Properties.TryGetValue(token.value, out var global))
+                    var = global;
+                else 
+                    properties.Add(token.value, var);
 
-                Obj var = properties[token.value];
-                Obj value = calculator.Calculate(analyzedTokens[(assign + 1)..], properties, className);
+                Obj value = calculator.Calculate(analyzedTokens[(assign + 1)..], properties);
 
                 for (int i = 1; i < assign - 1; i++)
                 {
                     if (analyzedTokens[i].tokenType == Token.Type.Indexer)
-                    {
-                        if (var is IIndexable indexable)
-                            var = indexable.GetByIndex(Obj.Convert(analyzedTokens[i].value, properties));
-                        else throw new ObjException("Parse Error");
-                    }
+                        var = var.GetByIndex(Obj.Convert(analyzedTokens[i].value, properties));
                     else if (analyzedTokens[i].tokenType == Token.Type.Pointer)
-                    {
-                        if (var is Cla cla)
-                            var = cla.Get(analyzedTokens[i].value);
-                        else throw new ObjException("Parse Error");
-                    } 
+                        var = var.Get(analyzedTokens[i].value);
                     else throw new ObjException("Parse Error");
                 }
 
                 if (assign == 1)
-                    properties[token.value] = analyzedTokens[assign].tokenType switch
-                    {
-                        Token.Type.PlusAssign => var.Add(value),
-                        Token.Type.MinusAssign => var.Sub(value),
-                        Token.Type.AsteriskAssign => var.Mul(value),
-                        Token.Type.SlashAssign => var.Div(value),
-                        Token.Type.DoubleSlashAssign => var.IDiv(value),
-                        Token.Type.PercentAssign => var.Mod(value),
-                        _ => value
-                    };
+                    properties[token.value] = AssignCalculate(analyzedTokens[assign], var, value);
                 else
                 {
                     Token last = analyzedTokens[assign - 1];
 
                     if (last.tokenType == Token.Type.Indexer)
                     {
-                        if (var is IIndexable indexable)
-                        {                            
-                            Obj obj = analyzedTokens[assign].tokenType switch
-                            {
-                                Token.Type.PlusAssign => var.Add(value),
-                                Token.Type.MinusAssign => var.Sub(value),
-                                Token.Type.AsteriskAssign => var.Mul(value),
-                                Token.Type.SlashAssign => var.Div(value),
-                                Token.Type.DoubleSlashAssign => var.IDiv(value),
-                                Token.Type.PercentAssign => var.Mod(value),
-                                _ => value
-                            };
-
-                            indexable.SetByIndex(new Iter([Obj.Convert(last.value, properties), obj]));
-                        }
-                        else throw new ObjException("Parse Error");
+                        var.SetByIndex(new Iter([Obj.Convert(last.value, properties), AssignCalculate(analyzedTokens[assign], var, value)]));
                     }
                     else if (last.tokenType == Token.Type.Pointer)
                     {
-                        if (var is Cla cla)
-                        {
-                            Obj obj = analyzedTokens[assign].tokenType switch
-                            {
-                                Token.Type.PlusAssign => cla.Get(last.value).Add(value),
-                                Token.Type.MinusAssign => cla.Get(last.value).Sub(value),
-                                Token.Type.AsteriskAssign => cla.Get(last.value).Mul(value),
-                                Token.Type.SlashAssign => cla.Get(last.value).Div(value),
-                                Token.Type.DoubleSlashAssign => cla.Get(last.value).IDiv(value),
-                                Token.Type.PercentAssign => cla.Get(last.value).Mod(value),
-                                _ => value
-                            };
-
-                            if (cla.Properties.ContainsKey(last.value))
-                                cla.Properties[last.value] = obj;                            
-                        }
+                        if (var.Properties.ContainsKey(last.value))
+                            var.Properties[last.value] = AssignCalculate(analyzedTokens[assign], var.Get(last.value), value);
                         else throw new ObjException("Parse Error");
                     }
                     else throw new ObjException("Parse Error");
@@ -155,53 +107,30 @@ namespace Un
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Import)
             {
-                Iter packages = Obj.Convert(analyzedTokens[1].value, properties) as Iter;
-
-                foreach (var package in packages)
+                if (Obj.Convert(analyzedTokens[1].value, properties) is Iter packages)
                 {
-                    if (package is not Str name) continue;
+                    foreach (var package in packages)
+                    {
+                        if (package is not Str name) continue;
 
-                    Process.Import(name.value);
+                        Process.Import(name.value);
+                    }
                 }
+                else throw new ObjException("Import Error");
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Class)
             {
-                int start = line;
-
-                nesting++;
-                line++;
-
-                while (line < code.Length && IsBody())
-                {
-                    line++;
-                    while (line < code.Length && string.IsNullOrWhiteSpace(code[line]))
-                        line++;
-                }
-
-                Process.Class.Add(analyzedTokens[1].value, new(code[start..line], properties));
-                
+                Process.Class.TryAdd(analyzedTokens[1].value, new([..GetBody(includeHeader: true)], properties));            
                 line--;
-                nesting--;
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Func)
             {
-                int start = line;
-
-                nesting++;
-                line++;
-
-                while (line < code.Length && IsBody())
-                    line++;
-
-                Process.Properties.Add(analyzedTokens[1].value, new Fun(code[start..line]));
-
+                Process.Properties.Add(analyzedTokens[1].value, new Fun(GetBody()));
                 line--;
-                nesting--;
-
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Return)
             {
-                ReturnValue = calculator.Calculate(analyzedTokens[1..], properties, className);
+                ReturnValue = analyzedTokens[1..].Count == 0 ? Obj.None : calculator.Calculate(analyzedTokens[1..], properties);
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Variable)
             {
@@ -218,13 +147,10 @@ namespace Un
                             var = indexable.GetByIndex(index);
                         else throw new ObjException("Parse Error");
                     }
-                    else if (analyzedTokens[next].tokenType == Token.Type.Pointer)
+                    else if (analyzedTokens[next].tokenType == Token.Type.Pointer ||
+                             analyzedTokens[next].tokenType == Token.Type.Method)
                     {
-                        if (var is Cla cla)
-                            var = cla.Get(analyzedTokens[next].value);
-                        else throw new ObjException("Parse Error");
-
-                        if (var is Fun func)
+                        if (var.Get(analyzedTokens[next].value) is Fun func)
                         {
                             int start = next + 1, last = next + 2, depth = 1;
 
@@ -237,7 +163,7 @@ namespace Un
                                 last++;
                             }
 
-                            var = func.Call(new Iter([cla, Tokenizer.Calculator.Calculate(analyzedTokens[start..last], properties, className)]));
+                            var = func.Call(new Iter([var, Tokenizer.Calculator.Calculate(analyzedTokens[start..last], properties)]));
                             next = last;
                         }
                     }
@@ -249,7 +175,7 @@ namespace Un
             {
                 Obj value = Process.GetProperty(analyzedTokens[0].value);
                 if (value is Fun fun)
-                    fun.Call(calculator.Calculate(analyzedTokens[1..], properties, className));
+                    fun.Call(calculator.Calculate(analyzedTokens[1..], properties));
             }
             else if (Process.IsClass(analyzedTokens[0].value))
             {       
@@ -258,7 +184,7 @@ namespace Un
             else if (Process.IsControl(analyzedTokens[0].value))
             {
                 if (analyzedTokens[0].tokenType == Token.Type.Else ||
-                    calculator.Calculate(analyzedTokens[1..], properties, className) is Bool b && b.value)
+                    calculator.Calculate(analyzedTokens[1..], properties) is Bool b && b.value)
                 {
                     nesting++;
                     line++;
@@ -272,13 +198,13 @@ namespace Un
                 }
                 else
                 {
-                    line++;
                     nesting++;
+                    line++;
 
                     SkipBody();
 
-                    nesting--;
                     line--;
+                    nesting--;
                 }
             }
             else if (Process.IsLoop(analyzedTokens[0].value))
@@ -287,17 +213,18 @@ namespace Un
 
                 if (analyzedTokens[0].tokenType == Token.Type.For)
                 {
-                    Obj obj = calculator.Calculate(analyzedTokens[3..], properties, className), prev = Obj.None;
+                    Obj obj = calculator.Calculate(analyzedTokens[3..], properties), prev = Obj.None;
 
                     if (obj is not Iter iter) throw new ObjException("Arg Error");
 
-                    nesting++;
                     string var = analyzedTokens[1].value;
 
                     if (properties.TryGetValue(var, out prev))
                         properties[var] = Obj.None;
                     else
                         properties.Add(var, Obj.None);
+
+                    nesting++;
 
                     if (iter.Count != 0)
                     {
@@ -309,6 +236,7 @@ namespace Un
                             while (line < code.Length && IsBody() && TryInterpret()) ;
                         }
                     }
+                    else line = loop + 1;
                     
                     SkipBody();
 
@@ -330,11 +258,12 @@ namespace Un
 
                         Scan(code[line]);
 
-                        if (calculator.Calculate(analyzedTokens[1..], properties, className) is not Bool b || !b.value)
+                        if (ReturnValue is not null) break;
+                        if (calculator.Calculate(analyzedTokens[1..], properties) is not Bool b || !b.value)
                             break;
                         line++;
 
-                        while (line < code.Length && IsBody() && TryInterpret()) ;
+                        while (line < code.Length && IsBody() && TryInterpret());                        
                     }
 
                     line++;
@@ -347,8 +276,38 @@ namespace Un
             else throw new ParseException("Parse Error");
         }
 
+        string[] GetBody(bool includeHeader = false)
+        {
+            List<string> buffer = [];
+
+            if (includeHeader)
+                buffer.Add(code[line]);
+
+            nesting++;
+            line++;
+
+            while (code.Length > line && IsBody())
+                buffer.Add(code[line++]);
+
+            nesting--;
+            return [..buffer];
+        }
+
+        Obj AssignCalculate(Token token, Obj a, Obj b) => token.tokenType switch
+        {
+            Token.Type.PlusAssign => a.Add(b),
+            Token.Type.MinusAssign => a.Sub(b),
+            Token.Type.AsteriskAssign => a.Mul(b),
+            Token.Type.SlashAssign => a.Div(b),
+            Token.Type.DoubleSlashAssign => a.IDiv(b),
+            Token.Type.PercentAssign => a.Mod(b),
+            _ => b
+        };
+
         bool IsBody()
         {
+            if (string.IsNullOrWhiteSpace(code[line]) || string.IsNullOrEmpty(code[line])) return true;
+
             bool a = true, b = true;
 
             for (int i = 0; a && i < nesting; i++)
@@ -401,7 +360,22 @@ namespace Un
             string str = $"{code[index++]}";
 
             while (index < code.Length && code[index] != '\"')
-                str += code[index++];
+            {
+                if (code[index] == '\\')
+                {
+                    str += code[index + 1] switch
+                    {
+                        'n' => "\n",
+                        't' => "\t",
+                        'r' => "\r",
+                        '\\' => "\\",
+                        _ => $"\\{code[index + 1]}"
+                    };
+                    index += 2;
+                }
+                else str += code[index++];
+            }
+
             str += code[index++];
 
             return new(str, Token.Type.String);

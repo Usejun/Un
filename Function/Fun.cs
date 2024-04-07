@@ -7,6 +7,7 @@ namespace Un.Function
         public string name = "";
         public string argName = "";
         public string[] code = [];
+        public int nesting = 0;
         public Obj arg = None;
         public Dictionary<string, Obj> properties = [];
 
@@ -18,6 +19,10 @@ namespace Un.Function
             List<Token> tokens = Tokenizer.Tokenization(code[0]);
             name = tokens[1].value;        
             argName = tokens[3].value;
+
+            foreach (var chr in code[0])
+                if (chr == '\t')
+                    nesting++;            
         }
 
         public virtual Obj Call(Obj arg)
@@ -26,7 +31,7 @@ namespace Un.Function
             Interpreter interpreter = new(code, properties)
             {
                 line = 1,
-                nesting = 1
+                nesting = nesting + 1,
             };
 
             properties.Add(argName, arg);
@@ -44,6 +49,8 @@ namespace Un.Function
                 name = name,
                 argName = argName,
                 code = code,
+                nesting = nesting,
+                properties = []
             };
         }
     }

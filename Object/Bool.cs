@@ -1,6 +1,6 @@
 ﻿namespace Un.Object
 {
-    public class Bool(bool value) : Obj
+    public class Bool(bool value) : Obj("bool")
     {
         public bool value = value;
 
@@ -24,15 +24,16 @@
 
         public override Str Type() => new("bool");
 
+        public override Int Hash() => new(value.GetHashCode());
+
         public override Str CStr() => new ($"{value}");
 
         public override Bool CBool() => this;
 
-        public override int CompareTo(Obj? obj)
+        public override Int Comp(Obj obj)
         {
-            if (obj is Bool b) return value.CompareTo(b.value);
-
-            throw new ObjException("compare Error");
+            if (obj is Bool b) return new(b.value.CompareTo(value));
+            throw new ObjException("Comp Error");
         }
 
         public override Obj Clone() => new Bool(value);
