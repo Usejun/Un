@@ -56,7 +56,7 @@ namespace Un.Object
 
                 if (depth == 0 && str[index] == ',')
                 {
-                    if (buffer[0] == '[') Append(new Iter(buffer, properties));
+                    if (IsIter(buffer)) Append(new Iter(buffer, properties));
                     else Append(calculator.Calculate(Tokenizer.All(buffer, properties), properties));
                     buffer = "";
                 }
@@ -124,15 +124,14 @@ namespace Un.Object
         {
             if (Convert(value, properties) is Iter iter)
                 this.value = iter.value;
-            else throw new ObjException("Ass Error");
+            base.Ass(value, properties);
         }
 
         public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Iter i)
                 this.value = i.value;
-            else
-                throw new ObjException("Ass Error");
+            base.Ass(value, properties);
         }
 
         public override Obj Add(Obj obj)
@@ -146,10 +145,11 @@ namespace Un.Object
         public override Obj Sub(Obj obj)
         {
             if (obj is Iter i)
+            {
                 foreach (var item in i)
                     Remove(item);
-            else
-                Remove(obj);
+            }
+            else Remove(obj);
 
             return this;
         }
@@ -158,13 +158,12 @@ namespace Un.Object
         {
             if (obj is Int pow)
             {
-                Iter items = Clone() as Iter;
-                int len = items.Count;
+                int len = Count;
                 Obj[] objs = new Obj[len * pow.value];
 
                 for (int i = 0; i < pow.value; i++)                
                     for (int j = 0; j < len; j++)                    
-                        objs[len * i + j] = items[j];
+                        objs[len * i + j] = value[j];
 
                 return new Iter(objs);
             }
@@ -181,7 +180,7 @@ namespace Un.Object
         public override Int Comp(Obj obj)
         {
             if (obj is Iter iter) return new(iter.Count.CompareTo(Count));
-            throw new ObjException("Comp Error");
+            return base.Comp(obj);
         }
 
         public override Iter CIter() => this;
@@ -196,7 +195,7 @@ namespace Un.Object
 
         public override Obj SetByIndex(Obj parameter)
         {
-            if (parameter is not Iter iter) throw new ObjException("Get by Index Error");
+            if (parameter is not Iter iter) throw new ArgumentException("The argument is not an Iter.");
             if (iter[0] is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
             value[iIndex] = iter[1];
             return value[iIndex];
@@ -221,7 +220,11 @@ namespace Un.Object
         {
             for (int i = 0; i < Count; i++)
                 yield return value[i];
-        }        
+        }
+
+        public static bool IsIter(string str) => str[0] == '[' && str[^1] == ']';
+
+        public static Iter Arg(params Obj[] args) => new(args);
     }
 
 }

@@ -28,11 +28,7 @@ namespace Un.Function
         public virtual Obj Call(Obj arg)
         {
             this.arg = arg;
-            Interpreter interpreter = new(code, properties)
-            {
-                line = 1,
-                nesting = nesting + 1,
-            };
+            Interpreter interpreter = new(code, properties, line: 1, nesting: nesting + 1);
 
             properties.Add(argName, arg);
 

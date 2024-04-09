@@ -1,8 +1,18 @@
 ﻿namespace Un.Object
 {
-    public class Str(string value) : Obj("str"), IIndexable
+    public class Str : Obj
     {
-        public string value = value;
+        public string value;
+
+        public Str() : base("str") 
+        {
+            value = "";
+        }
+
+        public Str(string value) : base("str")
+        {
+            this.value = value;
+        }
 
         public Str this[int index]
         {
@@ -22,19 +32,24 @@
             }
         }
 
+        public override Obj Init(Obj obj)
+        {
+            value = obj.CStr().value;
+            return this;
+        }
+
         public override void Ass(string value, Dictionary<string, Obj> properties)
         {
             if (value[0] == '\"' && value[^1] == '\"')
                 this.value = value;
-            else throw new ObjException("Ass Error");
+            else throw new InvalidOperationException("This is a type that can't be assigned.");
         }
 
         public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Str s)
                 this.value = s.value;
-            else
-                throw new ObjException("Ass Error");
+            throw new InvalidOperationException("This is a type that can't be assigned.");
         }
 
         public override Obj Add(Obj obj) => new Str(value + obj.CStr().value);
@@ -47,21 +62,21 @@
         {
             if (long.TryParse(value, out var l))
                 return new(l);
-            throw new ObjException("Int Error");
+            return base.CInt();
         }
 
         public override Float CFloat()
         {
             if (double.TryParse(value, out var d))
                 return new(d);
-            throw new ObjException("Float Error");
+            return base.CFloat();
         }
 
         public override Bool CBool()
         {
             if (value == "True") return new(true);
             if (value == "False") return new(false);
-            throw new ObjException("Bool Error");
+            return base.CBool();
         }
 
         public override Iter CIter()
@@ -76,22 +91,22 @@
         public override Int Comp(Obj obj)
         {
             if (obj is Str s) return new(s.value.CompareTo(value));
-            throw new ObjException("Comp Error");
+            return base.Comp(obj);
         }
 
         protected bool OutOfRange(int index) => 0 > index || index >= value.Length;
 
         public override Obj Clone() => new Str(value);
 
-        public Obj GetByIndex(Obj obj)
+        public override Obj GetByIndex(Obj obj)
         {
             if (obj is not Int i || !i.value.TryInt(out int index) || OutOfRange(index)) throw new IndexOutOfRangeException();
             return new Str($"{value[index]}");
         }
 
-        public Obj SetByIndex(Obj obj)
+        public override Obj SetByIndex(Obj obj)
         {
-            throw new ObjException("Set Error");
+            throw new IndexerException("Can't be assigned as an index.");
         }
     }
 }

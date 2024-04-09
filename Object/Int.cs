@@ -1,22 +1,37 @@
 ﻿namespace Un.Object
 {
-    public class Int(long value) : Obj("int")
+    public class Int : Obj
     {
-        public long value = value;
+        public long value;
+
+        public Int() : base("int")
+        { 
+            value = 0;
+        }
+
+        public Int(long value) : base("int")
+        {
+            this.value = value;
+        }
+
+        public override Obj Init(Obj obj)
+        {
+            value = obj.CInt().value;
+            return this;
+        }
 
         public override void Ass(string value, Dictionary<string, Obj> properties)
         {
             if (long.TryParse(value, out var v))
                 this.value = v;
-            else throw new ObjException("Ass Error");
+            throw new InvalidOperationException("This is a type that can't be assigned.");
         }
 
         public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Int i)
                 this.value = i.value;
-            else
-                throw new ObjException("Ass Error");
+            throw new InvalidOperationException("This is a type that can't be assigned.");
         }
 
         public override Obj Add(Obj obj)
@@ -25,7 +40,7 @@
             if (obj is Float f) return new Float(value + f.value);
             if (obj is Str s) return new Str($"{value}{s.value}");
 
-            throw new ObjException("Add Error");
+            return base.Add(obj);
         }
 
         public override Obj Sub(Obj obj)
@@ -33,7 +48,7 @@
             if (obj is Int i) return new Int(value - i.value);
             if (obj is Float f) return new Float(value - f.value);
 
-            throw new ObjException("Sub Error");
+            return base.Sub(obj);
         }
 
         public override Obj Mul(Obj obj)
@@ -41,7 +56,7 @@
             if (obj is Int i) return new Int(value * i.value);
             if (obj is Float f) return new Float(value * f.value);
 
-            throw new ObjException("Mul Error");
+            return base.Mul(obj);
         }
 
         public override Obj Div(Obj obj)
@@ -49,7 +64,7 @@
             if (obj is Int i) return new Float((double)value / i.value);
             if (obj is Float f) return new Float(value / f.value);
 
-            throw new ObjException("Div Error");
+            return base.Div(obj);
         }
 
         public override Obj IDiv(Obj obj)
@@ -57,7 +72,7 @@
             if (obj is Int i) return new Int(value / i.value);
             if (obj is Float f) return new Int(value / (long)f.value);
 
-            throw new ObjException("IDiv Error");
+            return base.IDiv(obj);
         }
 
         public override Obj Mod(Obj obj)
@@ -65,7 +80,7 @@
             if (obj is Int i) return new Float(value % (double)i.value);
             if (obj is Float f) return new Float(value % f.value);
 
-            throw new ObjException("Mod Error");
+            return base.Mod(obj);
         }
 
         public override Str Type() => new("int");
@@ -87,7 +102,7 @@
         public override Int Comp(Obj obj)
         {
             if (obj is Int i) return new(i.value.CompareTo(value));
-            throw new ObjException("Comp Error");
+            return base.Comp(obj);
         }
 
         public override Obj Clone() => new Int(value);

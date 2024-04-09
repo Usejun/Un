@@ -8,6 +8,9 @@ writeln(l + "\n")
 
 writeln("list에 1과 5를 삭제")
 writeln(l.remove(1))
+
+writeln(l + "\n")
+
 writeln(l.remove(5))
 
 writeln(l + "\n")

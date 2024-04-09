@@ -1,49 +1,46 @@
-﻿using Un.Function;
-using Un.Object;
+﻿using Un.Object;
+using Un.Package;
 
 namespace Un
 {
     public static class Process
     {
-        public static string File = "";
+        public static string File { get; private set; } = "";
 
-        public static string Path = "";
+        public static string Path { get; private set; } = "";
 
-        public static string[] Code = [];
+        public static string[] Code { get; private set; } = [];
 
-        public static Interpreter Main = new([], Properties);
+        public static Interpreter Main = new([], []);
 
-        public static Dictionary<string, Obj> Package = new()
+        public readonly static Dictionary<string, Pack> Package = new()
         {
-            {"std", new Std()}, {"math", new Function.Math()}, {"time", new Time()}           
+            {"std", new Std("std")}, {"math", new Package.Math("math")}, {"time", new Time("time")}           
         };
 
-        public static Dictionary<string, Obj> Class = [];
+        public readonly static Dictionary<string, Obj> Class = new()
+        {
+            {"int", new Int() },
+            {"float", new Float() },
+            {"iter", new Iter() },
+            {"bool", new Bool() },
+            {"str", new Str() },
+            {"date", new Date() },
+        };
 
-        public static Dictionary<string, Obj> StaticClass = [];
+        public readonly static Dictionary<string, Obj> StaticClass = [];
 
-        public static Dictionary<string, Token.Type> Control = new()
+        public readonly static Dictionary<string, Token.Type> Control = new()
         {
             {"if", Token.Type.If}, {"elif", Token.Type.ElIf}, {"else", Token.Type.Else}
         };
 
-        public static Dictionary<string, Token.Type> Loop = new()
+        public readonly static Dictionary<string, Token.Type> Loop = new()
         {
             {"for", Token.Type.For}, {"while", Token.Type.While}
         };
 
-        public static Dictionary<Token.Type, int> Operator = new()
-        {
-            { Token.Type.Assign, 0 }, { Token.Type.RParen, 0 }, { Token.Type.Equal,  0 }, { Token.Type.Unequal, 0 },
-            { Token.Type.LessOrEqual, 0 }, { Token.Type.LessThen, 0 }, { Token.Type.GreaterOrEqual, 0 }, { Token.Type.GreaterThen, 0 },
-            { Token.Type.Plus, 1 }, { Token.Type.Minus, 1 }, { Token.Type.Percent, 1 }, { Token.Type.Bang, 1 },
-            { Token.Type.Asterisk, 2 }, { Token.Type.Slash, 2 }, { Token.Type.DoubleSlash, 2 },
-            { Token.Type.Indexer, 2 }, { Token.Type.Pointer, 2 },
-            { Token.Type.Function, 3 }, { Token.Type.Method, 3 },
-            { Token.Type.LParen, 4 },
-        };
-
-        public static Dictionary<string, Obj> Properties = [];
+        public readonly static Dictionary<string, Obj> Properties = [];
 
         public static void Initialize(string path, string file)
         {            
@@ -59,53 +56,20 @@ namespace Un
 
         public static void Run()
         {
-            Main.code = Code;
-            Main.properties = Properties;
+            Main = new(Code, Properties);
 
             while (Main.TryInterpret()) ;            
-        }
-
-        public static Obj GetProperty(string name)
-        {
-            if (Properties.TryGetValue(name, out var value))
-                return value.Clone();
-            throw new ObjException("Get Property Error");
-        }
-
-        public static Obj GetClass(string name)
-        {
-            if (Class.TryGetValue(name, out var cla))
-                return cla.Clone();
-            throw new ObjException("Get Class Error");
-        }
-
-        public static Obj GetStaticClass(string name)
-        {
-            if (StaticClass.TryGetValue(name, out var cla))
-                return cla;
-            throw new ObjException("Get Static Class Error");
         }
 
         public static void Import(string name)
         {
             if (IsPackage(name))
             {
-                if (Package[name] is Importable importable)
-                {
-                    foreach (var item in importable.Methods())
-                        Properties.Add(item.Key, item.Value);
-                }
-                else if (Package[name] is Obj cla)
-                {
-                    if (cla is IStatic statics)
-                    {
-                        StaticClass.TryAdd(name, cla);
-                    }
-                    else
-                    {
-                        Class.TryAdd(name, cla);
-                    }
-                }
+                foreach (var fun in Package[name].Import())
+                    Properties.Add(fun.name, fun);
+
+                if (Package[name] is IStatic sta)
+                    StaticClass.Add(name, sta.Static());                                
             }
             else
             {
@@ -117,72 +81,41 @@ namespace Un
             }
         }
 
-        public static bool IsGlobalVariable(string str) => Properties.ContainsKey(str);
+        public static bool TryGetProperty(string name, out Obj property) => Properties.TryGetValue(name, out property);
 
-        public static bool IsGlobalVariable(Token token) => IsGlobalVariable(token.value);
+        public static bool TryGetProperty(Token token, out Obj property) => Properties.TryGetValue(token.value, out property);
 
-        public static bool IsOperator(Token token) => IsOperator(token.tokenType);
+        public static bool TryGetClass(string name, out Obj cla) => Class.TryGetValue(name, out cla);
 
-        public static bool IsOperator(Token.Type type) => type switch
-        {
-            >= Token.Type.Assign and <= Token.Type.RParen => true, 
-            _ => false
-        };
+        public static bool TryGetClass(Token token, out Obj cla) => Class.TryGetValue(token.value, out cla);
 
-        public static bool IsOperator(string str) => str switch
-        {
-            "+" or "-" or "*" or "/" or "%" or "//" or "=" or
-            "(" or ")" or ">" or "<" or "!" or ">=" or "==" or
-            "<=" or "!=" => true,
-            _ => false,
-        };
+        public static bool TryGetStaticClass(string name, out Obj cla) => StaticClass.TryGetValue(name, out cla);
 
-        public static bool IsOperator(char chr) => chr switch
-        {
-            '+' or '-' or '*' or '/' or '%' or '=' or '(' or ')' or
-            '>' or '<' or '!' or '[' or ']' => true,
-            _ => false,
-        };
+        public static bool TryGetStaticClass(Token token, out Obj cla) => StaticClass.TryGetValue(token.value, out cla);        
 
-        public static bool IsSoloOperator(Token token) => IsSoloOperator(token.tokenType);
-
-        public static bool IsSoloOperator(Token.Type type) => type switch
-        {
-            Token.Type.Bang or Token.Type.Indexer or Token.Type.Pointer => true,
-            _ => false,
-        };
-
-        public static bool IsSoloOperator(char chr) => chr switch
-        {
-            '!' => true,
-            _ => false,
-        };
-
-        public static bool IsSoloOperator(string str) => str switch
-        {
-            "!" => true,
-            _ => false,
-        };
-
-        public static bool IsLoop(Token token) => IsLoop(token.value);
+        public static bool IsLoop(Token token) => Loop.ContainsKey(token.value);
 
         public static bool IsLoop(string str) => Loop.ContainsKey(str);
 
-        public static bool IsControl(Token token) => IsControl(token.value);
+        public static bool IsControl(Token token) => Control.ContainsKey(token.value);
 
         public static bool IsControl(string str) => Control.ContainsKey(str);
 
-        public static bool IsClass(Token token) => IsClass(token.value);
+        public static bool IsClass(Token token) => Class.ContainsKey(token.value);
 
         public static bool IsClass(string str) => Class.ContainsKey(str);
 
-        public static bool IsStaticClass(Token token) => IsStaticClass(token.value);
+        public static bool IsStaticClass(Token token) => StaticClass.ContainsKey(token.value);
 
         public static bool IsStaticClass(string str) => StaticClass.ContainsKey(str);
 
-        public static bool IsPackage(Token token) => IsPackage(token.value);
+        public static bool IsPackage(Token token) => Package.ContainsKey(token.value);
 
         public static bool IsPackage(string str) => Package.ContainsKey(str);
+
+        public static bool IsProperty(Token token) => Properties.ContainsKey(token.value);
+
+        public static bool IsProperty(string str) => Properties.ContainsKey(str);
 
     }
 }

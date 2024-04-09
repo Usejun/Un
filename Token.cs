@@ -29,18 +29,18 @@ namespace Un
             LessThen,
             GreaterThen,
 
-            Indexer,
-            Pointer,
-            Method,
-
             Equal,
             Unequal,
 
-            LParen,
-            RParen,
+            Indexer,
+            Property,
+            Method,
 
             LBrack,
             RBrack,
+
+            LParen,
+            RParen,
 
             Dot,
             Comma,
@@ -59,7 +59,7 @@ namespace Un
             Comment,
 
             Variable,
-            Function,
+            Function,            
             Integer,
             Float,
             String,

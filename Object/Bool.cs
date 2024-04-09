@@ -1,8 +1,24 @@
 ﻿namespace Un.Object
 {
-    public class Bool(bool value) : Obj("bool")
+    public class Bool : Obj
     {
-        public bool value = value;
+        public bool value;
+
+        public Bool() : base("bool")
+        {
+            value = false;
+        }
+
+        public Bool(bool value) : base("bool")
+        {
+            this.value = value;
+        }
+
+        public override Obj Init(Obj obj)
+        {
+            value = obj.CBool().value;
+            return this;
+        }
 
         public override void Ass(string value, Dictionary<string, Obj> properties)
         {
@@ -10,7 +26,7 @@
             {
                 "True" => true,
                 "False" => false,
-                _ => throw new ObjException("Ass Error")
+                _ => throw new InvalidOperationException("This is a type that can't be assigned.")
             };
         }
 
@@ -18,8 +34,7 @@
         {
             if (value is Bool b)
                 this.value = b.value;
-            else
-                throw new ObjException("Ass Error");
+            throw new InvalidOperationException("This is a type that can't be assigned.");
         }
 
         public override Str Type() => new("bool");
@@ -33,7 +48,7 @@
         public override Int Comp(Obj obj)
         {
             if (obj is Bool b) return new(b.value.CompareTo(value));
-            throw new ObjException("Comp Error");
+            return base.Comp(obj);
         }
 
         public override Obj Clone() => new Bool(value);

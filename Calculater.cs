@@ -5,8 +5,19 @@ namespace Un
 {
     public class Calculator
     {
-        Stack<Token> postfixStack = [];
-        Stack<Obj> calculateStack = [];
+        public readonly static Dictionary<Token.Type, int> Operator = new()
+        {
+            { Token.Type.Assign, 0 }, { Token.Type.RParen, 0 }, { Token.Type.Equal,  0 }, { Token.Type.Unequal, 0 },
+            { Token.Type.LessOrEqual, 0 }, { Token.Type.LessThen, 0 }, { Token.Type.GreaterOrEqual, 0 }, { Token.Type.GreaterThen, 0 },
+            { Token.Type.Plus, 1 }, { Token.Type.Minus, 1 }, { Token.Type.Percent, 1 }, { Token.Type.Bang, 1 },
+            { Token.Type.Asterisk, 2 }, { Token.Type.Slash, 2 }, { Token.Type.DoubleSlash, 2 },
+            { Token.Type.Indexer, 2 }, { Token.Type.Property, 2 },
+            { Token.Type.Function, 3 }, { Token.Type.Method, 3 },
+            { Token.Type.LParen, 4 },
+        };
+
+        private readonly Stack<Token> postfixStack = [];
+        private readonly Stack<Obj> calculateStack = [];
 
         public List<Token> Postfix(List<Token> expression)
         {
@@ -15,7 +26,7 @@ namespace Un
 
             foreach (var token in expression)
             {
-                if (Process.Operator.TryGetValue(token.tokenType, out int value))
+                if (Operator.TryGetValue(token.tokenType, out int value))
                 {
                     if (token.tokenType == Token.Type.RParen)
                     {
@@ -24,7 +35,7 @@ namespace Un
                     }
                     else
                     {
-                        while (postfixStack.TryPeek(out var v) && Process.Operator[v.tokenType] >= value && v.tokenType != Token.Type.LParen)
+                        while (postfixStack.TryPeek(out var v) && Operator[v.tokenType] >= value && v.tokenType != Token.Type.LParen)
                             postfix.Add(postfixStack.Pop());
                         postfixStack.Push(token);
                     }
@@ -47,33 +58,34 @@ namespace Un
             {
                 Token token = postfix[i];
 
-                if (Process.IsOperator(token))
+                if (IsOperator(token))
                 {
-                    if (Process.IsSoloOperator(token))
+                    if (IsSoloOperator(token))
                     {
-                        Obj a = calculateStack.Pop(), b = Obj.None;
+                        Obj a = calculateStack.Pop(), b;
                         if (token.tokenType == Token.Type.Indexer)
                         {
                             b = Obj.Convert(token.value, properties);
+
                             calculateStack.Push(a.GetByIndex(b));
                         }
-                        else if (token.tokenType == Token.Type.Pointer)
+                        else if (token.tokenType == Token.Type.Property)
                         {
                             b = a.Get(token.value);
 
                             if (b is Fun fun)
-                                calculateStack.Push(fun.Call(new Iter([a, calculateStack.TryPop(out var result) ? result : Obj.None])));
-                            else
-                                calculateStack.Push(b);
+                                b = fun.Call(Iter.Arg(a, calculateStack.Pop()));
+
+                            calculateStack.Push(b);
                         }
                         else if (token.tokenType == Token.Type.Bang)
                         {
                             if (a is Bool bo)
                                 calculateStack.Push(new Bool(!bo.value));
                             else
-                                throw new ObjException("Operator Error");
+                                throw new InvalidOperationException("It is not boolean type.");
                         }
-                        else throw new ObjException("Operator Error");
+                        else throw new InvalidOperationException();
                     }
                     else
                     {
@@ -93,35 +105,34 @@ namespace Un
                             Token.Type.LessOrEqual => new Bool(a.Comp(b).value >= 0),
                             Token.Type.GreaterThen => new Bool(a.Comp(b).value < 0),
                             Token.Type.LessThen => new Bool(a.Comp(b).value > 0),
-                            Token.Type.Method => (b.Get(token.value) as Fun).Call(new Iter([b, a])),
-                            _ => throw new ObjException("Operator Error")
+                            Token.Type.Method => ((Fun)b.Get(token.value)).Call(Iter.Arg(b, a)),
+                            _ => throw new InvalidOperationException()
                         };
 
                         calculateStack.Push(c);
                     }
                 }
-                else if (Process.IsClass(token))
+                else if (Process.TryGetClass(token, out var cla))
                 {
-                    calculateStack.Push(Process.GetClass(token.value).Init(calculateStack.TryPop(out var value) ? value : Obj.None));
+                    calculateStack.Push(cla.Init(calculateStack.TryPop(out var value) ? value : Obj.None));
                 }
-                else if (Process.IsStaticClass(token))
+                else if (Process.TryGetStaticClass(token, out var staticCla))
                 {
-                    calculateStack.Push(Process.GetStaticClass(token.value));
+                    calculateStack.Push(staticCla);
                 }
-                else if (properties.TryGetValue(token.value, out var value1))
+                else if (properties.TryGetValue(token.value, out var local))
                 {
-                    if (value1 is Fun fun)
-                        calculateStack.Push(fun.Call(calculateStack.TryPop(out var obj) ? obj : Obj.None));
-                    else
-                        calculateStack.Push(value1);
+                    if (local is Fun fun)
+                        local = fun.Call(calculateStack.TryPop(out var obj) ? obj : Obj.None);
+
+                    calculateStack.Push(local);
                 }
-                else if (Process.IsGlobalVariable(token))
+                else if (Process.TryGetProperty(token, out var global))
                 {
-                    Obj value = Process.GetProperty(token.value);
-                    if (value is Fun fun)
-                        calculateStack.Push(fun.Call(calculateStack.TryPop(out var obj) ? obj : Obj.None));
-                    else
-                        calculateStack.Push(value);
+                    if (global is Fun fun)
+                        global = fun.Call(calculateStack.TryPop(out var obj) ? obj : Obj.None);
+                    
+                    calculateStack.Push(global);
                 }
                 else
                 {
@@ -131,5 +142,39 @@ namespace Un
 
             return calculateStack.TryPop(out var v) ? v : Obj.None;
         }
+
+        public static bool IsOperator(Token token) => IsOperator(token.tokenType);
+
+        public static bool IsOperator(Token.Type type) => type switch
+        {
+            >= Token.Type.Assign and <= Token.Type.RParen => true,
+            _ => false
+        };
+
+        public static bool IsOperator(char chr) => IsOperator(Token.GetType(chr));
+
+        public static bool IsOperator(string str) => IsOperator(Token.GetType(str));
+
+        public static bool IsSoloOperator(Token token) => IsSoloOperator(token.tokenType);
+
+        public static bool IsSoloOperator(Token.Type type) => type switch
+        {
+            Token.Type.Bang or Token.Type.Indexer or Token.Type.Property => true,
+            _ => false,
+        };
+
+        public static bool IsSoloOperator(char chr) => IsSoloOperator(Token.GetType(chr));
+
+        public static bool IsSoloOperator(string str) => IsSoloOperator(Token.GetType(str));
+
+        public static bool IsBasicOperator(Token.Type type) => type switch
+        {
+            >= Token.Type.Assign and <= Token.Type.Unequal => true,
+            _ => false,
+        };
+
+        public static bool IsBasicOperator(char chr) => IsBasicOperator(Token.GetType(chr));
+
+        public static bool IsBasicOperator(string str) => IsBasicOperator(Token.GetType(str));
     }
 }

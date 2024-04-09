@@ -11,17 +11,17 @@ namespace Un
     {
         public Obj ReturnValue = null;
 
-        public int index = index;
-        public int line = line;
-        public int nesting = nesting;
-        public string[] code = code;
-        public Dictionary<string, Obj> properties = properties;
-        public Calculator calculator = new();
+        private int index = index;
+        private int line = line;
+        private int nesting = nesting;
+        private readonly string[] code = code;
+        private readonly Dictionary<string, Obj> properties = properties;
+        private readonly Calculator calculator = new();
 
         public bool TryInterpret()
         {
-            if (ReturnValue is not null) return false;
-            if (line >= code.Length) return false;
+            if (ReturnValue is not null || line >= code.Length) return false;
+
             if (string.IsNullOrWhiteSpace(code[line]))
             {
                 line++;
@@ -45,10 +45,10 @@ namespace Un
                 else if (code[index] == '#') return [];
                 else if (code[index] == '\"') tokens.Add(String(code));
                 else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
-                else if (char.IsDigit(code[index]) || (code[index] == '-' && char.IsDigit(code[index + 1]))) tokens.Add(Number(code));
-                else if (Process.IsOperator(code[index])) tokens.Add(Operator(code));
+                else if (char.IsDigit(code[index])) tokens.Add(Number(code));
+                else if (Calculator.IsOperator(code[index])) tokens.Add(Operator(code));
                 else if (code[index] == ',' || code[index] == '.') tokens.Add(new(code[index++]));
-                else throw new ScanException("scan Error");
+                else throw new SyntaxException("Invalid Syntax");
             }
 
             return tokens;
@@ -56,15 +56,22 @@ namespace Un
 
         void Parse(List<Token> analyzedTokens)
         {
-            int assign = -1;
-
-            for (int i = 0; assign == -1 && i < analyzedTokens.Count; i++)
-                if (analyzedTokens[i].tokenType >= Token.Type.Assign && analyzedTokens[i].tokenType <= Token.Type.PercentAssign)
-                    assign = i;            
+            int assign = IndexOfAssign(analyzedTokens);       
 
             if (analyzedTokens.Count == 0 || analyzedTokens[0].tokenType == Token.Type.Comment) return;
             else if (assign >= 1)
             {
+                Obj AssignCalculate(Token token, Obj a, Obj b) => token.tokenType switch
+                {
+                    Token.Type.PlusAssign => a.Add(b),
+                    Token.Type.MinusAssign => a.Sub(b),
+                    Token.Type.AsteriskAssign => a.Mul(b),
+                    Token.Type.SlashAssign => a.Div(b),
+                    Token.Type.DoubleSlashAssign => a.IDiv(b),
+                    Token.Type.PercentAssign => a.Mod(b),
+                    _ => b
+                };
+
                 Token token = analyzedTokens[0];
                 Obj var = Obj.None;
 
@@ -81,9 +88,9 @@ namespace Un
                 {
                     if (analyzedTokens[i].tokenType == Token.Type.Indexer)
                         var = var.GetByIndex(Obj.Convert(analyzedTokens[i].value, properties));
-                    else if (analyzedTokens[i].tokenType == Token.Type.Pointer)
+                    else if (analyzedTokens[i].tokenType == Token.Type.Property)
                         var = var.Get(analyzedTokens[i].value);
-                    else throw new ObjException("Parse Error");
+                    else throw new InterpreterParseException();
                 }
 
                 if (assign == 1)
@@ -96,13 +103,13 @@ namespace Un
                     {
                         var.SetByIndex(new Iter([Obj.Convert(last.value, properties), AssignCalculate(analyzedTokens[assign], var, value)]));
                     }
-                    else if (last.tokenType == Token.Type.Pointer)
+                    else if (last.tokenType == Token.Type.Property)
                     {
-                        if (var.Properties.ContainsKey(last.value))
-                            var.Properties[last.value] = AssignCalculate(analyzedTokens[assign], var.Get(last.value), value);
-                        else throw new ObjException("Parse Error");
+                        if (var.HasProperty(last.value))
+                            var.Set(last.value, AssignCalculate(analyzedTokens[assign], var.Get(last.value), value));
+                        else throw new InterpreterParseException();
                     }
-                    else throw new ObjException("Parse Error");
+                    else throw new InterpreterParseException();
                 }
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Import)
@@ -116,7 +123,7 @@ namespace Un
                         Process.Import(name.value);
                     }
                 }
-                else throw new ObjException("Import Error");
+                else throw new ArgumentException("Invalid import statement.");
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Class)
             {
@@ -145,9 +152,9 @@ namespace Un
 
                         if (var is IIndexable indexable)
                             var = indexable.GetByIndex(index);
-                        else throw new ObjException("Parse Error");
+                        else throw new IndexerException("It is not indexable type");
                     }
-                    else if (analyzedTokens[next].tokenType == Token.Type.Pointer ||
+                    else if (analyzedTokens[next].tokenType == Token.Type.Property ||
                              analyzedTokens[next].tokenType == Token.Type.Method)
                     {
                         if (var.Get(analyzedTokens[next].value) is Fun func)
@@ -167,14 +174,13 @@ namespace Un
                             next = last;
                         }
                     }
-                    else throw new ObjException("Parse Error");
+                    else throw new InvalidOperationException("Invalid assign statement");
                     next++;
                 }
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Function)
             {
-                Obj value = Process.GetProperty(analyzedTokens[0].value);
-                if (value is Fun fun)
+                if (Process.TryGetProperty(analyzedTokens[0].value, out var value) && value is Fun fun)
                     fun.Call(calculator.Calculate(analyzedTokens[1..], properties));
             }
             else if (Process.IsClass(analyzedTokens[0].value))
@@ -195,6 +201,8 @@ namespace Un
 
                     if (line < code.Length)
                         SkipConditional();
+
+                    line--;
                 }
                 else
                 {
@@ -215,7 +223,7 @@ namespace Un
                 {
                     Obj obj = calculator.Calculate(analyzedTokens[3..], properties), prev = Obj.None;
 
-                    if (obj is not Iter iter) throw new ObjException("Arg Error");
+                    if (obj is not Iter iter) throw new ("Arg Error");
 
                     string var = analyzedTokens[1].value;
 
@@ -271,9 +279,9 @@ namespace Un
                     line--;
                     nesting--;
                 }
-                else throw new ParseException("Parse Error");
+                else throw new SyntaxException("It's not a loop syntax");
             }
-            else throw new ParseException("Parse Error");
+            else throw new InterpreterParseException();
         }
 
         string[] GetBody(bool includeHeader = false)
@@ -293,16 +301,16 @@ namespace Un
             return [..buffer];
         }
 
-        Obj AssignCalculate(Token token, Obj a, Obj b) => token.tokenType switch
+        int IndexOfAssign(List<Token> analyzedTokens)
         {
-            Token.Type.PlusAssign => a.Add(b),
-            Token.Type.MinusAssign => a.Sub(b),
-            Token.Type.AsteriskAssign => a.Mul(b),
-            Token.Type.SlashAssign => a.Div(b),
-            Token.Type.DoubleSlashAssign => a.IDiv(b),
-            Token.Type.PercentAssign => a.Mod(b),
-            _ => b
-        };
+            int index = -1;
+
+            for (int i = 0; index == -1 && i < analyzedTokens.Count; i++)
+                if (analyzedTokens[i].tokenType >= Token.Type.Assign && analyzedTokens[i].tokenType <= Token.Type.PercentAssign)
+                    index = i;
+
+            return index;
+        }
 
         bool IsBody()
         {
@@ -345,6 +353,7 @@ namespace Un
 
                 while (line < code.Length && IsBody())
                     line++;
+                
                 nesting--;
             }
         }
@@ -482,7 +491,7 @@ namespace Un
             while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_'))
                 str += code[index++];
 
-            if (Process.IsGlobalVariable(str) && Process.GetProperty(str) is Fun)
+            if (Process.TryGetProperty(str, out var property) && property is Fun)
                 return new(str, Token.Type.Function);
             if (Token.GetType(str) != Token.Type.None)
                 return new(str);         
@@ -490,18 +499,4 @@ namespace Un
             return new Token(str, Token.Type.Variable);
         }        
     }   
-
-    public class ScanException : Exception
-    {
-        public ScanException() { }
-        public ScanException(string message) : base(message) { }
-        public ScanException(string message, Exception inner) : base(message, inner) { }
-    }
-
-    public class ParseException : Exception
-    {
-        public ParseException() { }
-        public ParseException(string message) : base(message) { }
-        public ParseException(string message, Exception inner) : base(message, inner) { }
-    } 
 }

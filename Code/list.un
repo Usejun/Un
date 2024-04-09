@@ -10,19 +10,18 @@
 			this.array = item
 			this.count = len(item)
 		else
-			this.add(item)
+			this.add(item)	
 
 	fn add(key)
 		this = key[0]
-		item = key[1]
-		readln()
+		item = key[1]		
 
 		for i in [] + item
 			if (len(this.array) == this.count)
 				this.array += i 	
 			else
-				this.array[this.count] = i
-			
+				this.array[this.count] = i		
+
 			this.count += 1
 
 	fn get(key)   		
@@ -40,7 +39,8 @@
 
 	fn remove(key)
 		this = key[0]
-		item = key[1]				
+		item = key[1]	
+
 		for i in range([0, this.count])
 			if (this.array[i] == item)		
 				return this.remove_at(i)	
@@ -54,8 +54,8 @@
 		if (this.count > 0)
 			for i in range([index, this.count - index - 1])
 				this.array[i] = this.array[i + 1]		
-
-			this.count -= 1			
+			this.count -= 1
+			
 			return True
 		return False
 

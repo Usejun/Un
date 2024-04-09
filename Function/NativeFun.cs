@@ -6,7 +6,7 @@ namespace Un.Function
     {
         public Func<Obj, Obj> function;
 
-        public NativeFun(string name, string argName, Func<Obj, Obj> func)
+        public NativeFun(string name, Func<Obj, Obj> func)
         {
             code = [];
             this.name = name;
@@ -21,7 +21,7 @@ namespace Un.Function
 
         public override Fun Clone()
         {
-            return new NativeFun(name, argName, function);
+            return new NativeFun(name, function);
         }
     }
 }
