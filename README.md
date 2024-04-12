@@ -82,8 +82,8 @@ fib[0] = 1
 fib[1] = 1
 i = 2
 while (i < 20)
-	fib[i] = fib[i - 1] + fib[i - 2]
-	i = i + 1
+    fib[i] = fib[i - 1] + fib[i - 2]
+    i = i + 1
 writeln(fib)
 ```
 
