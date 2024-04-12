@@ -4,19 +4,18 @@ namespace Un.Function
 {
     public class NativeFun : Fun
     {
-        public Func<Obj, Obj> function;
+        public Func<Iter, Obj> function;
 
-        public NativeFun(string name, Func<Obj, Obj> func)
+        public NativeFun(string name, Func<Iter, Obj> func)
         {
             code = [];
-            this.name = name;
-            this.argName = argName;            
+            this.name = name;         
             function = func;
         }
 
-        public override Obj Call(Obj arg)
+        public override Obj Call(Iter paras)
         {
-            return function(arg);
+            return function(paras);
         }
 
         public override Fun Clone()

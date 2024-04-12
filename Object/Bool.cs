@@ -14,9 +14,9 @@
             this.value = value;
         }
 
-        public override Obj Init(Obj obj)
+        public override Obj Init(Iter arg)
         {
-            value = obj.CBool().value;
+            value = arg[0].CBool().value;
             return this;
         }
 
@@ -45,10 +45,10 @@
 
         public override Bool CBool() => this;
 
-        public override Int Comp(Obj obj)
+        public override Bool Equals(Obj obj)
         {
-            if (obj is Bool b) return new(b.value.CompareTo(value));
-            return base.Comp(obj);
+            if (obj is Bool b) return new(value == b.value);
+            return base.Equals(obj);
         }
 
         public override Obj Clone() => new Bool(value);

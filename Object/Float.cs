@@ -14,9 +14,9 @@
             this.value = value;
         }
 
-        public override Obj Init(Obj obj)
+        public override Obj Init(Iter arg)
         {
-            value = obj.CFloat().value;
+            value = arg[0].CFloat().value;
             return this;
         }
 
@@ -97,12 +97,20 @@
             return new(true);
         }
 
-        public override Str CStr() => new($"{value}");
+        public override Str CStr() => new($"{value}"); 
 
-        public override Int Comp(Obj obj)
+        public override Bool LessThen(Obj obj)
         {
-            if (obj is Float f) return new(f.value.CompareTo(value));
-            return base.Comp(obj);
+            if (obj is Float f) return new(value < f.value);
+            if (obj is Int i) return new(value < i.value);
+            return base.LessThen(obj);
+        }
+
+        public override Bool Equals(Obj obj)
+        {
+            if (obj is Float f) return new(value == f.value);
+            if (obj is Int i) return new(value == i.value);
+            return base.LessThen(obj);
         }
 
         public override Obj Clone() => new Float(value);

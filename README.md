@@ -15,21 +15,17 @@ C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한
 	<li>Str : 문자열
 	<li>Bool : Boolean 
 	<li>Iter : 다양한 자료형이 반복적으로 있는 구조
+	<li>Date : 날짜
 </ul>
 
 ## 함수
 
-모든 함수의 매개변수는 **1개**로 고정되어 있고, 모든 함수는 **필수적**으로 인수를 넣어주어야 한다.
-다수의 인수를 넣으려면 **iter**형으로 넘겨주어야 한다.
-
-만약에 함수의 인수 값에서 사칙연산이 필요하지 않는 값이라면 괄호를 생략 할 수 있다.
-
-**fn 키워드를 사용해서 직접 함수를 만들 수 있다.**
+**fn [Function Name] ([Parameter Names ... ])** 형식으로 함수를 만들 수 있다. 다수의 매개변수를 입력하려면 ',' 를 사용해 구분해준다. 
 
 
 ```
 fn my_function(arg)
-    writeln arg
+    writeln(arg)
     return 2
 ```
 
@@ -43,7 +39,6 @@ fn my_function(arg)
 	<li> func : 구현된 모든 함수를 Iter로 반환
 	<li> len : Iter나 Str의 길이를 반환
 	<li> range : [start, length] 형식의 인자를 받아 iter를 반환
-	<li> int, float, str, iter, bool : 인수를 자료형으로 변환해서 반환
 </ul>
 
 ## 조건문
@@ -92,8 +87,52 @@ while (i < 20)
 writeln(fib)
 ```
 
-## TODO
+## 클래스
 
-함수 인수 확장
+class 키워드 후에 클래스의 이름을 지어준다.
+클래스는 필드와 메서드를 가지고 있다.
 
-클래스 초기화
+클래스의 예약 함수를 통해 여러 연산 기능을 추가할 수 있다.
+
+### 예약 함수
+<ul>
+	<li> __init__ : 클래스 생성자
+	<li> __add__ : 덧셈
+	<li> __sub__ : 뺄셈
+	<li> __mul__ : 곱셉
+	<li> __div__ : 나눗셈
+	<li> __idiv__ : 정수 나눗셈
+	<li> __mod__ : 나머지
+	<li> __eq__ : 같음 비교
+	<li> __lt__ : 미만
+	<li> __len__ : len()
+	<li> __type__ : type()
+	<li> __hash__ : hash()
+	<li> __str__ : str로의 형변환
+	<li> __int__ : int로의 형변환
+	<li> __float__ : float로의 형변환
+	<li> __bool__ : bool로의 형변환
+	<li> __iter__ : iter로의 형변환
+</ul>
+
+```
+v1 = vector2(3, 8)
+v2 = vector2(6, 1)
+
+writeln("__type__ : " + type(v1))
+writeln("__eq__ : " + (v1 == v2))
+writeln("__eq__ : " + (v1 == vector2([3, 8])))
+writeln("__lt__ : " + (v1 < v2))
+writeln("__eq__ : " + (v1 > v2))
+writeln("__lt__ : " + (v1 <= v2))
+writeln("__eq__ : " + (v1 >= v2))
+writeln("__str__ : " + v1)
+writeln("__str__ : " + v2)
+writeln("__add__ : " + (v1 + v2))
+writeln("__sub__ : " + (v1 - v2))
+writeln("__mul__ : " + v1 * v2)
+writeln("__div__ : " + v1 / v2)
+writeln("__idiv__ : " + (v1 // v2))
+writeln("__mod__ : " + (v1 % v2))
+```
+

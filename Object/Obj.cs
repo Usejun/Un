@@ -39,6 +39,9 @@ namespace Un.Object
                 assign = -1;
                 tokens = Tokenizer.All(code[line], local);
 
+                if (tokens.Count == 0)
+                    continue;
+
                 for (int i = 0; assign == -1 && i < tokens.Count; i++)
                     if (tokens[i].tokenType == Token.Type.Assign)
                         assign = i;
@@ -78,10 +81,15 @@ namespace Un.Object
 
         }
 
-        public virtual Obj Init(Obj obj)
+        public virtual Obj Init(Iter args)
         {
             if (properties.TryGetValue("__init__", out var value) && value is Fun fun)
-                fun.Call(new Iter([this, obj]));
+            {
+                Iter paras = [];
+                paras.Append(this, false);
+                paras.Append(args);
+                fun.Call(paras);            
+            }
             return this;
         }
 
@@ -139,16 +147,29 @@ namespace Un.Object
             throw new InvalidOperationException("Types that cannot be divided to each other.");
         }
 
-        public virtual Int Comp(Obj obj)
+        public virtual Bool Equals(Obj obj)
         {
             if (obj.ClassName == "None" && ClassName == "None")
-                return new(0);
-            if (obj.ClassName == "None" || ClassName == "None")
-                return new(1);
-            if (properties.TryGetValue("__comp__", out var value) && value is Fun fun && fun.Call(new Iter([this, obj])) is Int i)
-                return i;
+                return new(true);
+            if (properties.TryGetValue("__eq__", out var value) && value is Fun fun && fun.Call(new Iter([this, obj])) is Bool b)
+                return b;
             throw new InvalidOperationException("Types that are not comparable to each other.");
         }
+
+        public virtual Bool Unequals(Obj obj) => new(!Equals(obj).value);
+
+        public virtual Bool LessThen(Obj obj)
+        {
+            if (properties.TryGetValue("__lt__", out var value) && value is Fun fun && fun.Call(new Iter([this, obj])) is Bool b)
+                return b;
+            throw new InvalidOperationException("Types that are not comparable to each other.");
+        }
+
+        public virtual Bool GreaterThen(Obj obj) => new(!LessThen(obj).value);
+
+        public virtual Bool LessOrEquals(Obj obj) => new(LessThen(obj).value || Equals(obj).value);
+
+        public virtual Bool GreaterOrEquals(Obj obj) => new(!LessThen(obj).value || !Equals(obj).value);
 
         public virtual Int Len()
         {
@@ -213,10 +234,10 @@ namespace Un.Object
             throw new IndexerException("It is not Indexable type");
         }
 
-        public virtual Obj SetByIndex(Obj obj)
+        public virtual Obj SetByIndex(Iter obj)
         {
             if (properties.TryGetValue("__set__", out var value) && value is Fun fun)
-                return fun.Call(new Iter([this, obj]));
+                return fun.Call(new Iter([this, obj[0], obj[1]]));
             throw new IndexerException("It is not Indexable type");
         }
 

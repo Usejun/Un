@@ -4,8 +4,10 @@ namespace Un.Object
 {
     public class Iter : Obj, IEnumerable<Obj>
     {
+        public static Iter Empty => [];
+
         public Obj[] value;
-        public bool IsFull => Count >= value.Length;
+        public bool IsFull => Count + 1 >= value.Length;
         public int Count { get; protected set; }
 
         public Obj this[int index]
@@ -51,8 +53,8 @@ namespace Un.Object
             while (str.Length - 2 > index)
             {
                 index++;
-                if (str[index] == '[') depth++;
-                if (str[index] == ']') depth--;
+                if (str[index] == '[' || str[index] == '(') depth++;
+                if (str[index] == ']' || str[index] == ')') depth--;
 
                 if (depth == 0 && str[index] == ',')
                 {
@@ -74,40 +76,72 @@ namespace Un.Object
             Count = value.Length;
         }
 
-        public override Obj Init(Obj obj)
+        public override Obj Init(Iter arg)
         {
-            var iter = obj.CIter();
+            var iter = arg[0].CIter();
             value = iter.value;
             Count = iter.Count;
 
             return this;
         }
 
-        public void Append(Obj obj)
+        public Iter Append(Obj obj, bool doClone = true)
         {
             if (IsFull)
                 Resize();
 
-            if (obj != None)
-                value[Count++] = obj.Clone();
+            value[Count++] = doClone ? obj.Clone() : obj;
+
+            return this;
         }
 
-        public void Append(Iter iter)
+        public Iter Append(Iter iter, bool doClone = true)
         {
             foreach (var item in iter)
-                Append(item);            
+                Append(item, doClone);
+            return this;
         }
 
-        public void Append(Obj[] objs)
+        public Iter Append(Obj[] objs, bool doClone = true)
         {
             foreach (var obj in objs)
-                Append(obj);           
+                Append(obj, doClone);
+            return this;
+        }
+
+        public Iter Insert(Obj obj, int index, bool doClone = true)
+        {
+            if (OutOfRange(index)) throw new IndexOutOfRangeException();
+
+            if (IsFull)
+                Resize();
+
+            for (int i = Count - 1; i >= index; i--)
+                value[i + 1] = value[i];
+            value[index] = doClone ? obj.Clone() : obj;
+            Count++;
+
+            return this;
+        }
+
+        public Iter Insert(Iter iter, int index, bool doClone = true)
+        {
+            foreach (var item in iter)
+                Insert(item, index, doClone);
+            return this;
+        }
+
+        public Iter Insert(Obj[] objs, int index, bool doClone = true)
+        {
+            foreach (var obj in objs)
+                Insert(obj, index, doClone);
+            return this;
         }
 
         public bool Remove(Obj obj)
         {
             for (int i = 0; i < Count; i++)
-                if (value[i].Comp(obj).value == 0)
+                if (value[i].Equals(obj).value)
                     return RemoveAt(i);
             return false;
         }
@@ -177,10 +211,16 @@ namespace Un.Object
 
         public override Int Hash() => new(value.GetHashCode());
 
-        public override Int Comp(Obj obj)
+        public override Bool LessThen(Obj obj)
         {
-            if (obj is Iter iter) return new(iter.Count.CompareTo(Count));
-            return base.Comp(obj);
+            if (obj is Iter i) return new(Count.CompareTo(i.Count) < 0);
+            return base.LessThen(obj);
+        }
+
+        public override Bool Equals(Obj obj)
+        {
+            if (obj is Iter i) return new(Count.CompareTo(i.Count) == 0);
+            return base.Equals(obj);
         }
 
         public override Iter CIter() => this;
@@ -193,11 +233,10 @@ namespace Un.Object
             return value[iIndex];
         }
 
-        public override Obj SetByIndex(Obj parameter)
+        public override Obj SetByIndex(Iter parameter)
         {
-            if (parameter is not Iter iter) throw new ArgumentException("The argument is not an Iter.");
-            if (iter[0] is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
-            value[iIndex] = iter[1];
+            if (parameter[0] is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
+            value[iIndex] = parameter[1];
             return value[iIndex];
         }
 
@@ -223,8 +262,6 @@ namespace Un.Object
         }
 
         public static bool IsIter(string str) => str[0] == '[' && str[^1] == ']';
-
-        public static Iter Arg(params Obj[] args) => new(args);
     }
 
 }

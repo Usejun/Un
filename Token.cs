@@ -64,8 +64,8 @@ namespace Un
             Float,
             String,
             Boolean,
-            Class,
             Iterator,
+            Class,
         }
 
         public Token(char c)
@@ -95,6 +95,8 @@ namespace Un
         public Type tokenType;
         public string value;
 
+        public override string ToString() => $"{tokenType} : {value}";
+        
         public static Type GetType(char chr) => chr switch
         {
             '=' => Type.Assign,

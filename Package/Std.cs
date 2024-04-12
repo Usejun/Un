@@ -5,23 +5,23 @@ namespace Un.Package
 {
     public class Std(string packageName) : Pack(packageName)
     {
-        Obj Write(Obj parameter)
+        Obj Write(Iter paras)
         {
-            Console.Write(parameter.CStr().value);
+            Console.Write(paras[0].CStr().value);
             return None;
         }
 
-        Obj Writeln(Obj parameter)
+        Obj Writeln(Iter paras)
         {
-            Console.WriteLine(parameter.CStr().value);
+            Console.WriteLine(paras[0].CStr().value);
             return None;
         }
 
-        Str Readln(Obj parameter) => new(Console.ReadLine()!);
+        Str Readln(Iter paras) => new(Console.ReadLine()!);
 
-        Str Type(Obj parameter) => parameter.Type();
+        Str Type(Iter paras) => paras[0].Type();
 
-        Iter Func(Obj parameter)
+        Iter Func(Iter paras)
         {
             List<string> func = [];
 
@@ -32,26 +32,22 @@ namespace Un.Package
             return new Iter(func.Select(i => new Str(i)).ToArray());
         }
 
-        Iter Range(Obj parameter)
+        Iter Range(Iter paras)
         {
-            if (parameter is Iter iter)
-            {
-                if (iter[0] is not Int i1 || !i1.value.TryInt(out int start)) return [];
-                if (iter[1] is not Int i2 || !i2.value.TryInt(out int count)) return [];
-                Obj[] objs = new Obj[count];
+            if (paras[0] is not Int i1 || !i1.value.TryInt(out int start)) return [];
+            if (paras[1] is not Int i2 || !i2.value.TryInt(out int count)) return [];
 
-                for (int i = 0; i < count; i++)
-                    objs[i] = new Int(start + i);
+            Obj[] objs = new Obj[count];
 
-                return new Iter(objs);
-            }
+            for (int i = 0; i < count; i++)
+                objs[i] = new Int(start + i);
 
-            return [];
+            return new Iter(objs);
         }
 
-        Int Len(Obj parameter) => parameter.Len();
+        Int Len(Iter paras) => paras[0].Len();
 
-        Int Hash(Obj parameter) => parameter.Hash();
+        Int Hash(Iter paras) => paras[0].Hash();
 
         public override IEnumerable<Fun> Import() =>
         [
@@ -64,7 +60,6 @@ namespace Un.Package
             new NativeFun("len", Len),
             new NativeFun("hash", Hash)
         ];
-        
-
+       
     }
 }

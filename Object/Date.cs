@@ -32,53 +32,53 @@ namespace Un.Object
             properties.TryAdd("minute", new Int(value.Minute)); 
             properties.TryAdd("second", new Int(value.Second));
             properties.TryAdd("milliseconds", new Int(value.Millisecond));
-            properties.TryAdd("add_years", new NativeFun("add_years", (obj) =>
+            properties.TryAdd("add_years", new NativeFun("add_years", para =>
             {
-                if (obj is Int i && i.value.TryInt(out int years))                
+                if (para[0] is Int i && i.value.TryInt(out int years))                
                     return new Date(value.AddYears(years));
-                return None;
+                throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_months", new NativeFun("add_months", (obj) =>
+            properties.TryAdd("add_months", new NativeFun("add_months", para =>
             {
-                if (obj is Int i && i.value.TryInt(out int months))
+                if (para[0] is Int i && i.value.TryInt(out int months))
                     return new Date(value.AddMonths(months));
-                return None;
+                throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_days", new NativeFun("add_days", (obj) =>
+            properties.TryAdd("add_days", new NativeFun("add_days", para =>
             {
-                if (obj is Int i && i.value.TryInt(out int days))
+                if (para[0] is Int i && i.value.TryInt(out int days))
                     return new Date(value.AddDays(days));
-                return None;
+                throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_hours", new NativeFun("add_hours", (obj) =>
+            properties.TryAdd("add_hours", new NativeFun("add_hours", para =>
             {
-                if (obj is Int i && i.value.TryInt(out int hours))
+                if (para[0] is Int i && i.value.TryInt(out int hours))
                     return new Date(value.AddHours(hours));
-                return None;
+                throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_minutes", new NativeFun("add_minutes", (obj) =>
+            properties.TryAdd("add_minutes", new NativeFun("add_minutes", para =>
             {
-                if (obj is Int i && i.value.TryInt(out int minutes))
+                if (para[0] is Int i && i.value.TryInt(out int minutes))
                     return new Date(value.AddMinutes(minutes));
-                return None;
+                throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_seconds", new NativeFun("add_seconds", (obj) =>
+            properties.TryAdd("add_seconds", new NativeFun("add_seconds", para =>
             {
-                if (obj is Int i && i.value.TryInt(out int seconds))
+                if (para[0] is Int i && i.value.TryInt(out int seconds))
                     return new Date(value.AddSeconds(seconds));
-                return None;
+                throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_milliseconds", new NativeFun("add_milliseconds", (obj) =>
+            properties.TryAdd("add_milliseconds", new NativeFun("add_milliseconds", para =>
             {
-                if (obj is Int i && i.value.TryInt(out int milliseconds))
+                if (para[0] is Int i && i.value.TryInt(out int milliseconds))
                     return new Date(value.AddMilliseconds(milliseconds));
-                return None;
+                throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
         }
 
-        public override Obj Init(Obj obj)
+        public override Obj Init(Iter arg)
         {
-            if (obj is not Str str) throw new InitializationException();
+            if (arg[0] is not Str str) throw new InitializationException();
             if (!DateTime.TryParse(str.value, out value)) throw new InitializationException();
             return this;
         }
@@ -86,5 +86,17 @@ namespace Un.Object
         public override Str CStr() => new($"{value:yyyy:MM:dd HH:mm:ss:ffff}");
 
         public override Int Hash() => new(value.GetHashCode());
+
+        public override Bool LessThen(Obj obj)
+        {
+            if (obj is Date date) return new(value < date.value);
+            return base.LessThen(obj);
+        }
+
+        public override Bool Equals(Obj obj)
+        {
+            if (obj is Date date) return new(value.CompareTo(date.value) == 0);
+            return base.Equals(obj);
+        }
     }
 }

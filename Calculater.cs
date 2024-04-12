@@ -11,9 +11,9 @@ namespace Un
             { Token.Type.LessOrEqual, 0 }, { Token.Type.LessThen, 0 }, { Token.Type.GreaterOrEqual, 0 }, { Token.Type.GreaterThen, 0 },
             { Token.Type.Plus, 1 }, { Token.Type.Minus, 1 }, { Token.Type.Percent, 1 }, { Token.Type.Bang, 1 },
             { Token.Type.Asterisk, 2 }, { Token.Type.Slash, 2 }, { Token.Type.DoubleSlash, 2 },
-            { Token.Type.Indexer, 2 }, { Token.Type.Property, 2 },
-            { Token.Type.Function, 3 }, { Token.Type.Method, 3 },
-            { Token.Type.LParen, 4 },
+            { Token.Type.Indexer, 3 }, { Token.Type.Property, 3 },
+            { Token.Type.Function, 4 }, { Token.Type.Method, 4 },
+            { Token.Type.LParen, 5 },
         };
 
         private readonly Stack<Token> postfixStack = [];
@@ -74,7 +74,7 @@ namespace Un
                             b = a.Get(token.value);
 
                             if (b is Fun fun)
-                                b = fun.Call(Iter.Arg(a, calculateStack.Pop()));
+                                b = fun.Call(calculateStack.Pop().CIter().Insert(a, 0, false));
 
                             calculateStack.Push(b);
                         }
@@ -99,13 +99,13 @@ namespace Un
                             Token.Type.Slash => b.Div(a),
                             Token.Type.DoubleSlash => b.IDiv(a),
                             Token.Type.Percent => b.Mod(a),
-                            Token.Type.Equal => new Bool(a.Comp(b).value == 0),
-                            Token.Type.Unequal => new Bool(a.Comp(b).value != 0),
-                            Token.Type.GreaterOrEqual => new Bool(a.Comp(b).value <= 0),
-                            Token.Type.LessOrEqual => new Bool(a.Comp(b).value >= 0),
-                            Token.Type.GreaterThen => new Bool(a.Comp(b).value < 0),
-                            Token.Type.LessThen => new Bool(a.Comp(b).value > 0),
-                            Token.Type.Method => ((Fun)b.Get(token.value)).Call(Iter.Arg(b, a)),
+                            Token.Type.Equal => a.Equals(b),
+                            Token.Type.Unequal => a.Unequals(b),
+                            Token.Type.GreaterOrEqual => a.GreaterOrEquals(b),
+                            Token.Type.LessOrEqual => a.LessOrEquals(b),
+                            Token.Type.GreaterThen => a.GreaterThen(b),
+                            Token.Type.LessThen => a.LessThen(b),
+                            Token.Type.Method => ((Fun)b.Get(token.value)).Call(a.CIter().Insert(b, 0, false)),
                             _ => throw new InvalidOperationException()
                         };
 
@@ -114,7 +114,7 @@ namespace Un
                 }
                 else if (Process.TryGetClass(token, out var cla))
                 {
-                    calculateStack.Push(cla.Init(calculateStack.TryPop(out var value) ? value : Obj.None));
+                    calculateStack.Push(cla.Clone().Init(calculateStack.TryPop(out var value) && value is Iter args ? args : Iter.Empty));
                 }
                 else if (Process.TryGetStaticClass(token, out var staticCla))
                 {
@@ -123,14 +123,14 @@ namespace Un
                 else if (properties.TryGetValue(token.value, out var local))
                 {
                     if (local is Fun fun)
-                        local = fun.Call(calculateStack.TryPop(out var obj) ? obj : Obj.None);
+                        local = fun.Call(calculateStack.TryPop(out var obj) && obj is Iter args ? args : Iter.Empty);
 
                     calculateStack.Push(local);
                 }
                 else if (Process.TryGetProperty(token, out var global))
                 {
                     if (global is Fun fun)
-                        global = fun.Call(calculateStack.TryPop(out var obj) ? obj : Obj.None);
+                        global = fun.Call(calculateStack.TryPop(out var obj) && obj is Iter args ? args : Iter.Empty);
                     
                     calculateStack.Push(global);
                 }

@@ -1,15 +1,13 @@
-﻿using Un.Object;
+﻿    using Un.Object;
 
 namespace Un.Function
 {
     public class Fun : Obj
     {
         public string name = "";
-        public string argName = "";
+        public List<string> args = [];
         public string[] code = [];
         public int nesting = 0;
-        public Obj arg = None;
-        public Dictionary<string, Obj> properties = [];
 
         public Fun() { }               
 
@@ -17,20 +15,27 @@ namespace Un.Function
         {
             this.code = code;
             List<Token> tokens = Tokenizer.Tokenization(code[0]);
-            name = tokens[1].value;        
-            argName = tokens[3].value;
+            int i = 3;
+            name = tokens[1].value;
+
+            while (tokens[i].tokenType != Token.Type.RParen)
+            { 
+                if (tokens[i].tokenType != Token.Type.Comma)
+                    args.Add(tokens[i].value);
+                i++;
+            }
 
             foreach (var chr in code[0])
                 if (chr == '\t')
                     nesting++;            
         }
 
-        public virtual Obj Call(Obj arg)
-        {
-            this.arg = arg;
+        public virtual Obj Call(Iter paras)
+        {                    
             Interpreter interpreter = new(code, properties, line: 1, nesting: nesting + 1);
 
-            properties.Add(argName, arg);
+            for (int i = 0; i < args.Count; i++)
+                properties.Add(args[i], paras[i]);            
 
             while (interpreter.TryInterpret());
 
@@ -43,9 +48,9 @@ namespace Un.Function
         {
             return new() {
                 name = name,
-                argName = argName,
                 code = code,
                 nesting = nesting,
+                args = args,
                 properties = []
             };
         }

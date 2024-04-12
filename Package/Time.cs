@@ -5,9 +5,9 @@ namespace Un.Package
 {
     public class Time(string packageName) : Pack(packageName), IStatic
     {
-        Obj Sleep(Obj parameter)
+        Obj Sleep(Iter paras)
         {
-            if (parameter is Int i &&
+            if (paras[0] is Int i &&
                 i.value.TryInt(out var milliseconds))
                 Thread.Sleep(milliseconds);
             return None;

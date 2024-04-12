@@ -1,18 +1,16 @@
 ﻿import ["list"]
 
 writeln("list에 0 ~ 10의 숫자 추가")
-l = list(range([0, 10]))
-# l.append(range([0, 10]))
+l = list(range(0, 10))
+# l.add(range(0, 10))
 
 writeln(l + "\n")
 
 writeln("list에 1과 5를 삭제")
 writeln(l.remove(1))
-
 writeln(l + "\n")
 
 writeln(l.remove(5))
-
 writeln(l + "\n")
 
 writeln("list에 1번 값과 3번 값을 삭제")
@@ -56,11 +54,11 @@ writeln("list의 1번째 값 : " + l.get(1))
 writeln("list의 2번째 값 : " + l.get(2) + "\n")
 
 writeln("list의 3번째 값을 102로 변경")
-l.set([3, 102])
+l.set(3, 102)
 writeln("list의 4번째 값을 103로 변경")
-l.set([4, 103])
+l.set(4, 103)
 writeln("list의 4번째 값을 104로 변경\n")
-l.set([5, 104])
+l.set(5, 104)
 
 writeln("list의 길이 : " + len(l) + "\n")
 

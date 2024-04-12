@@ -157,7 +157,7 @@ namespace Un
             {
                 string str = "";
 
-                while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_'))
+                while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_' || char.IsDigit(code[index])))
                     str += code[index++];
 
                 if (Process.TryGetProperty(str, out var property) && property is Fun)
@@ -241,12 +241,38 @@ namespace Un
                         analyzedTokens.Add(new Token($"-{tokens[i + 1].value}", tokens[++i].tokenType));
                     else analyzedTokens.Add(tokens[i]);
                 }
+                else if (tokens[i].tokenType == Token.Type.LParen &&
+                        (analyzedTokens[^1].tokenType == Token.Type.Function ||
+                         analyzedTokens[^1].tokenType == Token.Type.Method))
+                {
+                    string value = "[";
+                    int j = i + 1, depth = 1;
+
+                    while (j < tokens.Count)
+                    {
+                        if (tokens[j].tokenType == Token.Type.LParen)
+                            depth++;
+                        if (tokens[j].tokenType == Token.Type.RParen)
+                            depth--;
+                        if (depth <= 0) break;
+                        value += tokens[j++].value;
+                    }
+
+                    value += "]";
+
+                    analyzedTokens.Add(new(value, Token.Type.Iterator));
+
+                    i = j;
+                }
                 else analyzedTokens.Add(tokens[i]);
 
                 if (analyzedTokens[^1].tokenType == Token.Type.Variable && Process.IsClass(tokens[i]))
                     analyzedTokens[^1].tokenType = Token.Type.Function;
-
             }
+
+            //Console.WriteLine();
+            //Console.WriteLine(string.Join("\n", analyzedTokens));
+            //Console.WriteLine();
 
             return analyzedTokens;
         }

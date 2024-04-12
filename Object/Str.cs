@@ -32,9 +32,9 @@
             }
         }
 
-        public override Obj Init(Obj obj)
+        public override Obj Init(Iter arg)
         {
-            value = obj.CStr().value;
+            value = arg[0].CStr().value;
             return this;
         }
 
@@ -88,10 +88,16 @@
 
         public override Int Len() => new(value.Length);
 
-        public override Int Comp(Obj obj)
+        public override Bool LessThen(Obj obj)
         {
-            if (obj is Str s) return new(s.value.CompareTo(value));
-            return base.Comp(obj);
+            if (obj is Str s) return new(value.CompareTo(s.value) < 0);
+            return base.LessThen(obj);
+        }
+
+        public override Bool Equals(Obj obj)
+        {
+            if (obj is Str s) return new(value.CompareTo(s.value) == 0);
+            return base.Equals(obj);
         }
 
         protected bool OutOfRange(int index) => 0 > index || index >= value.Length;
@@ -104,7 +110,7 @@
             return new Str($"{value[index]}");
         }
 
-        public override Obj SetByIndex(Obj obj)
+        public override Obj SetByIndex(Iter obj)
         {
             throw new IndexerException("Can't be assigned as an index.");
         }

@@ -132,7 +132,7 @@ namespace Un
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Func)
             {
-                Process.Properties.Add(analyzedTokens[1].value, new Fun(GetBody()));
+                Process.Properties.Add(analyzedTokens[1].value, new Fun(GetBody(includeHeader:true)));
                 line--;
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Return)
@@ -159,29 +159,16 @@ namespace Un
                     {
                         if (var.Get(analyzedTokens[next].value) is Fun func)
                         {
-                            int start = next + 1, last = next + 2, depth = 1;
-
-                            while (depth > 0)
-                            {
-                                if (analyzedTokens[last].tokenType == Token.Type.LParen)
-                                    depth++;
-                                else if (analyzedTokens[last].tokenType == Token.Type.RParen)
-                                    depth--;
-                                last++;
-                            }
-
-                            var = func.Call(new Iter([var, Tokenizer.Calculator.Calculate(analyzedTokens[start..last], properties)]));
-                            next = last;
+                            var = func.Call(Obj.Convert(analyzedTokens[next + 1].value, properties).CIter().Insert(var, 0, false));
                         }
                     }
-                    else throw new InvalidOperationException("Invalid assign statement");
                     next++;
                 }
             }
             else if (analyzedTokens[0].tokenType == Token.Type.Function)
             {
                 if (Process.TryGetProperty(analyzedTokens[0].value, out var value) && value is Fun fun)
-                    fun.Call(calculator.Calculate(analyzedTokens[1..], properties));
+                    fun.Call(Obj.Convert(analyzedTokens[1].value, properties).CIter());
             }
             else if (Process.IsClass(analyzedTokens[0].value))
             {       
@@ -488,7 +475,7 @@ namespace Un
         {
             string str = "";
 
-            while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_'))
+            while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_' || char.IsDigit(code[index])))
                 str += code[index++];
 
             if (Process.TryGetProperty(str, out var property) && property is Fun)

@@ -1,0 +1,48 @@
+﻿class vector2
+	x = 0
+	y = 0
+
+	fn __init__(this, x, y)
+		this.x = x
+		this.y = y
+	
+	fn __add__(this, other)
+		return vector2(this.x + other.x, this.y + other.y)
+
+	fn __sub__(this, other)
+		return vector2(this.x - other.x, this.y - other.y)
+
+	fn __mul__(this, other)
+		return vector2(this.x * other.x, this.y * other.y)
+
+	fn __div__(this, other)
+		return vector2(this.x / other.x, this.y / other.y)
+
+	fn __idiv__(this, other)
+		return vector2(this.x // other.x, this.y // other.y)
+
+	fn __mod__(this, other)
+		return vector2(this.x % other.x, this.y % other.y)
+
+	fn __len__()
+		return 2
+	
+	fn __type__()
+		return "Vector2"
+
+	fn __str__(this)
+		return "(" + this.x + ", " + this.y + ")"
+
+	fn __int__(this)
+		return this.x + this.y / 2
+
+	fn __eq__(this, other)
+		if (this.x == other.x)
+			if (this.y == other.y)
+				return True
+		return False
+
+	fn __lt__(this, other)
+		if (this.x == other.x)
+			return this.y < other.y
+		return this.x < this.y 

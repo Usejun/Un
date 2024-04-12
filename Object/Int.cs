@@ -14,9 +14,9 @@
             this.value = value;
         }
 
-        public override Obj Init(Obj obj)
+        public override Obj Init(Iter arg)
         {
-            value = obj.CInt().value;
+            value = arg[0].CInt().value;
             return this;
         }
 
@@ -99,10 +99,18 @@
             return new(true);
         }
 
-        public override Int Comp(Obj obj)
+        public override Bool LessThen(Obj obj)
         {
-            if (obj is Int i) return new(i.value.CompareTo(value));
-            return base.Comp(obj);
+            if (obj is Int i) return new(value < i.value);
+            if (obj is Float f) return new(value < f.value);
+            return base.LessThen(obj);
+        }
+
+        public override Bool Equals(Obj obj)
+        {
+            if (obj is Int i) return new(value == i.value);
+            if (obj is Float f) return new(value == f.value);
+            return base.LessThen(obj);
         }
 
         public override Obj Clone() => new Int(value);
