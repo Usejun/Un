@@ -67,7 +67,7 @@ in 키워드 후에는 **반드시 Iter 형식의 값**이 와야한다.
 Iter 내부를 순회를 끝내면 반복문이 끝난다.
 
 ```
-for i in range([1, 100])
+for i in range(1, 100)
     writeln(i)
 ```
 
@@ -82,8 +82,8 @@ fib[0] = 1
 fib[1] = 1
 i = 2
 while (i < 20)
-	fib[i] = fib[i - 1] + fib[i - 2]
-	i = i + 1
+    fib[i] = fib[i - 1] + fib[i - 2]
+    i = i + 1
 writeln(fib)
 ```
 
