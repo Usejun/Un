@@ -25,7 +25,7 @@
 		this.array[index] = item
 
 	fn remove(this, item)
-		for i in range(0, this.count)
+		for i in range(0, this.count)			
 			if (this.array[i] == item)		
 				return this.remove_at(i)	
 
@@ -67,10 +67,10 @@
 	fn __len__(this)
 		return this.count
 
-	fn __get__(this, index)
+	fn __getitem__(this, index)
 		return this.array[index]
 	
-	fn __set__(this, index, value)
+	fn __setitem__(this, index, value)
 		this.array[index] = value
 
 		return this.array[index]

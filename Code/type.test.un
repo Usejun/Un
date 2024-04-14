@@ -1,0 +1,34 @@
+﻿d = date("2022.10.11")
+i = int("123")
+f = 123.2
+s = "hello, world!"
+b = True
+it1 = [1, 2, 3, 4, 5]
+it2 = [i, f, s, d, b]
+
+# 정수형
+type(i)
+type(float(i))
+type(str(i))
+
+# 실수형
+type(f)
+type(int(f))
+type(str(f))
+
+# 문자열
+type(s)
+
+# 날짜
+type(d)
+d.format("yyyy년 MM월 dd일")
+
+# 불
+type(b)
+type(str(b))
+
+# 이터레이터
+type(it1)
+type(it2)
+type(str(it1))
+type(str(it2))

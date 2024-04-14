@@ -1,4 +1,5 @@
-﻿    using Un.Object;
+﻿using Un.Object;
+using Un.Supporter;
 
 namespace Un.Function
 {
@@ -14,13 +15,13 @@ namespace Un.Function
         public Fun(string[] code)
         {
             this.code = code;
-            List<Token> tokens = Tokenizer.Tokenization(code[0]);
+            List<Token> tokens = Tokenizer.Tokenize(code[0]);
             int i = 3;
             name = tokens[1].value;
 
-            while (tokens[i].tokenType != Token.Type.RParen)
+            while (tokens[i].type != Token.Type.RParen)
             { 
-                if (tokens[i].tokenType != Token.Type.Comma)
+                if (tokens[i].type != Token.Type.Comma)
                     args.Add(tokens[i].value);
                 i++;
             }

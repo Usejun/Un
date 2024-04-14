@@ -1,4 +1,6 @@
-﻿namespace Un.Object
+﻿using Un.Supporter;
+
+namespace Un.Object
 {
     public class Str : Obj
     {

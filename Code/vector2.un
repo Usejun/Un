@@ -24,6 +24,15 @@
 	fn __mod__(this, other)
 		return vector2(this.x % other.x, this.y % other.y)
 
+	fn __or__(this, other)
+		return vector2(this.x | other.x, this.y | other.y)
+
+	fn __and__(this, other)
+		return vector2(this.x & other.x, this.y & other.y)
+
+	fn __xor__(this, other)
+		return vector2(this.x ^ other.x, this.y ^ other.y)
+
 	fn __len__()
 		return 2
 	
@@ -34,7 +43,7 @@
 		return "(" + this.x + ", " + this.y + ")"
 
 	fn __int__(this)
-		return this.x + this.y / 2
+		return int(this.x + this.y / 2)
 
 	fn __eq__(this, other)
 		if (this.x == other.x)

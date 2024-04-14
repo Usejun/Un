@@ -83,6 +83,27 @@
             return base.Mod(obj);
         }
 
+        public override Obj And(Obj obj)
+        {
+            if (obj is Int i)
+                return new Int(value & i.value);
+            throw new InvalidOperationException();
+        }
+
+        public override Obj Or(Obj obj)
+        {
+            if (obj is Int i)
+                return new Int(value | i.value);
+            throw new InvalidOperationException();
+        }
+
+        public override Obj Xor(Obj obj)
+        {
+            if (obj is Int i)
+                return new Int(value ^ i.value);
+            throw new InvalidOperationException();
+        }
+
         public override Str Type() => new("int");
 
         public override Int Hash() => new(value.GetHashCode());

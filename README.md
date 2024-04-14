@@ -113,26 +113,9 @@ class 키워드 후에 클래스의 이름을 지어준다.
 	<li> __float__ : float로의 형변환
 	<li> __bool__ : bool로의 형변환
 	<li> __iter__ : iter로의 형변환
+	<li> __getitem__ : getter
+	<li> __setitem__ : setter
+	<li> __and__ : and 연산
+	<li> __or__ : or 연산
+	<li> __xor__ : xor 연산
 </ul>
-
-```
-v1 = vector2(3, 8)
-v2 = vector2(6, 1)
-
-writeln("__type__ : " + type(v1))
-writeln("__eq__ : " + (v1 == v2))
-writeln("__eq__ : " + (v1 == vector2([3, 8])))
-writeln("__lt__ : " + (v1 < v2))
-writeln("__eq__ : " + (v1 > v2))
-writeln("__lt__ : " + (v1 <= v2))
-writeln("__eq__ : " + (v1 >= v2))
-writeln("__str__ : " + v1)
-writeln("__str__ : " + v2)
-writeln("__add__ : " + (v1 + v2))
-writeln("__sub__ : " + (v1 - v2))
-writeln("__mul__ : " + v1 * v2)
-writeln("__div__ : " + v1 / v2)
-writeln("__idiv__ : " + (v1 // v2))
-writeln("__mod__ : " + (v1 % v2))
-```
-

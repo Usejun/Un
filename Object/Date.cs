@@ -1,4 +1,5 @@
 ﻿using Un.Function;
+using Un.Supporter;
 
 namespace Un.Object
 {
@@ -6,74 +7,87 @@ namespace Un.Object
     {
         public DateTime value;
 
-        public Date() 
+        public Date() : base("date")
         {
-            value = DateTime.MinValue;
+            value = DateTime.MinValue;            
         }
 
         public Date(DateTime value) : base("date")
         {
             this.value = value;
-            Init();
+            properties["year"] = new Int(value.Year);
+            properties["month"] = new Int(value.Month);
+            properties["day"] = new Int(value.Day);
+            properties["hour"] = new Int(value.Hour);
+            properties["minute"] = new Int(value.Minute);
+            properties["second"] = new Int(value.Second);
+            properties["milliseconds"] = new Int(value.Millisecond);
         }
 
         public Date(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0, int milliseconds = 0) : base("date")
         {
             value = new(year, month, day, hour, minute, second, milliseconds);
-            Init();
+        }
+
+        public Str Format(Iter arg)
+        {
+            if (arg[0] is Date date && arg[1] is Str format)
+                return new(date.value.ToString(format.value));
+            throw new ArgumentException();
         }
 
         public override void Init()
         {
-            properties.TryAdd("year", new Int(value.Year));
-            properties.TryAdd("month", new Int(value.Month));
-            properties.TryAdd("days", new Int(value.Day));
-            properties.TryAdd("hour", new Int(value.Hour));
-            properties.TryAdd("minute", new Int(value.Minute)); 
-            properties.TryAdd("second", new Int(value.Second));
-            properties.TryAdd("milliseconds", new Int(value.Millisecond));
-            properties.TryAdd("add_years", new NativeFun("add_years", para =>
+            properties.Add("year", new Int(value.Year));
+            properties.Add("month", new Int(value.Month));
+            properties.Add("days", new Int(value.Day));
+            properties.Add("hour", new Int(value.Hour));
+            properties.Add("minute", new Int(value.Minute)); 
+            properties.Add("second", new Int(value.Second));
+            properties.Add("milliseconds", new Int(value.Millisecond));
+            properties.Add("add_years", new NativeFun("add_years", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int years))                
                     return new Date(value.AddYears(years));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_months", new NativeFun("add_months", para =>
+            properties.Add("add_months", new NativeFun("add_months", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int months))
                     return new Date(value.AddMonths(months));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_days", new NativeFun("add_days", para =>
+            properties.Add("add_days", new NativeFun("add_days", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int days))
                     return new Date(value.AddDays(days));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_hours", new NativeFun("add_hours", para =>
+            properties.Add("add_hours", new NativeFun("add_hours", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int hours))
                     return new Date(value.AddHours(hours));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_minutes", new NativeFun("add_minutes", para =>
+            properties.Add("add_minutes", new NativeFun("add_minutes", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int minutes))
                     return new Date(value.AddMinutes(minutes));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_seconds", new NativeFun("add_seconds", para =>
+            properties.Add("add_seconds", new NativeFun("add_seconds", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int seconds))
                     return new Date(value.AddSeconds(seconds));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
-            properties.TryAdd("add_milliseconds", new NativeFun("add_milliseconds", para =>
+            properties.Add("add_milliseconds", new NativeFun("add_milliseconds", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int milliseconds))
                     return new Date(value.AddMilliseconds(milliseconds));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
+            properties.Add("format", new NativeFun("format", Format));
         }
 
         public override Obj Init(Iter arg)
@@ -98,5 +112,7 @@ namespace Un.Object
             if (obj is Date date) return new(value.CompareTo(date.value) == 0);
             return base.Equals(obj);
         }
+
+        public override Obj Clone() => new Date(value) { properties = properties };
     }
 }

@@ -1,79 +1,47 @@
 ﻿import ["list"]
 
-writeln("list에 0 ~ 10의 숫자 추가")
 l = list(range(0, 10))
-# l.add(range(0, 10))
 
-writeln(l + "\n")
+writeln(l)
 
-writeln("list에 1과 5를 삭제")
-writeln(l.remove(1))
-writeln(l + "\n")
+l.remove(1)
 
-writeln(l.remove(5))
-writeln(l + "\n")
+writeln(l)
 
-writeln("list에 1번 값과 3번 값을 삭제")
 l.remove_at(1)
 l.remove_at(3)
 
-writeln(l + "\n")
+writeln(l)
 
-writeln("0번째 : " + l[0])
-writeln("1번째 : " + l[1])
-writeln("2번째 : " + l[2] + "\n")
+l.contains(1)
+l.contains(9)
+l.contains(0)
 
-writeln("list에 1이 존재 유무 : " + l.contains(1))
-writeln("list에 9이 존재 유무 : " + l.contains(9))
-writeln("list에 0이 존재 유무 : " + l.contains(0) + "\n")
-
-writeln("list에 2의 위치 : " + l.index_of(2))
-writeln("list에 7의 위치 : " + l.index_of(7))
-writeln("list에 9의 위치 : " + l.index_of(9) + "\n")
-
-writeln("list의 0번째 값을 99로 변경")
+l.index_of(2)
+l.index_of(7)
+l.index_of(9)
 
 l[0] = 99
-
-writeln(l + "\n")
-
-writeln("list의 0번째 값을 99로 변경")
-
 l[1] = 100
-
-writeln(l + "\n")
-
-writeln("list의 0번째 값을 99로 변경")
-
 l[2] = 101
 
-writeln(l + "\n")
+writeln(l)
 
-writeln("list의 0번째 값 : " + l.get(0))
-writeln("list의 1번째 값 : " + l.get(1))
-writeln("list의 2번째 값 : " + l.get(2) + "\n")
+l.get(0)
+l.get(1)
+l.get(2)
 
-writeln("list의 3번째 값을 102로 변경")
 l.set(3, 102)
-writeln("list의 4번째 값을 103로 변경")
 l.set(4, 103)
-writeln("list의 4번째 값을 104로 변경\n")
 l.set(5, 104)
 
-writeln("list의 길이 : " + len(l) + "\n")
+writeln(l)
 
-writeln("list에 정수 더하기 연산")
+len(l)
+
 l += 77
-writeln(l + "\n")
-
-writeln("list에 실수 더하기 연산")
 l += 2.75
-writeln(l + "\n")
-
-writeln("list에 Bool 더하기 연산")
 l += True
-writeln(l + "\n")
-
-writeln("list에 문자열 더하기 연산")
 l += "hello"
-writeln(l + "\n")
+
+writeln(l)

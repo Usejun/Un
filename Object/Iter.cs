@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Un.Supporter;
 
 namespace Un.Object
 {
@@ -46,20 +47,21 @@ namespace Un.Object
         public Iter(string str, Dictionary<string, Obj> properties) : base("iter")
         {
             value = [];
-            Calculator calculator = new();
             int index = 0, depth = 0;
+            bool isString = false;
             string buffer = "";
 
             while (str.Length - 2 > index)
             {
                 index++;
+                if (str[index] == '\"') isString = !isString;
                 if (str[index] == '[' || str[index] == '(') depth++;
                 if (str[index] == ']' || str[index] == ')') depth--;
 
-                if (depth == 0 && str[index] == ',')
+                if (depth == 0 && !isString && str[index] == ',')
                 {
                     if (IsIter(buffer)) Append(new Iter(buffer, properties));
-                    else Append(calculator.Calculate(Tokenizer.All(buffer, properties), properties));
+                    else Append(Calculator.Calculate(Interpreter.All(buffer, properties), properties));
                     buffer = "";
                 }
                 else
@@ -67,7 +69,7 @@ namespace Un.Object
             }
 
             if (!string.IsNullOrEmpty(buffer))
-                Append(calculator.Calculate(Tokenizer.All(buffer, properties), properties));            
+                Append(Calculator.Calculate(Interpreter.All(buffer, properties), properties));            
         }
 
         public Iter(Obj[] value) : base("iter")

@@ -1,5 +1,6 @@
 ﻿using Un.Function;
 using Un.Object;
+using Un.Supporter;
 
 namespace Un.Package
 {
@@ -7,13 +8,15 @@ namespace Un.Package
     {
         Obj Write(Iter paras)
         {
-            Console.Write(paras[0].CStr().value);
+            foreach (var para in paras)
+                Console.Write(para.CStr().value);
             return None;
         }
 
         Obj Writeln(Iter paras)
         {
-            Console.WriteLine(paras[0].CStr().value);
+            Write(paras);
+            Console.Write('\n');
             return None;
         }
 
@@ -49,6 +52,23 @@ namespace Un.Package
 
         Int Hash(Iter paras) => paras[0].Hash();
 
+        Obj Exit(Iter paras)
+        {
+            Environment.Exit(0);
+            return None;
+        }
+
+        Obj Assert(Iter paras)
+        {
+            if (!paras[0].CBool().value)
+            {
+                Console.Write(paras[1].CStr().value);
+                Environment.Exit(0);
+            }
+
+            return None;
+        }
+
         public override IEnumerable<Fun> Import() =>
         [
             new NativeFun("write", Write),
@@ -58,7 +78,9 @@ namespace Un.Package
             new NativeFun("func", Func),
             new NativeFun("range", Range),
             new NativeFun("len", Len),
-            new NativeFun("hash", Hash)
+            new NativeFun("hash", Hash),
+            new NativeFun("assert", Assert),
+            new NativeFun("exit", Exit),
         ];
        
     }

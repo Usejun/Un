@@ -1,7 +1,10 @@
 ﻿using Un.Function;
+using Un.Supporter;
 
 namespace Un.Object
 {
+    // TODO : 비트 연산, 불 연산
+
     public class Obj : IIndexable
     {
         public static Obj None => new();
@@ -10,22 +13,17 @@ namespace Un.Object
 
         protected Dictionary<string, Obj> properties = [];
 
-        public Obj()
-        {
-            Init();
-        }
+        public Obj() { }
 
         public Obj(string className)
         {
             ClassName = className;
-            Init();
         }
 
         public Obj(string[] code, Dictionary<string, Obj> local)
         {            
-            List<Token> tokens = Tokenizer.All(code[0], local);
+            List<Token> tokens = Interpreter.All(code[0], local);
             ClassName = tokens[1].value;
-            Init();
 
             int line = 0, nesting = 1, assign;
 
@@ -37,13 +35,13 @@ namespace Un.Object
                     continue;
 
                 assign = -1;
-                tokens = Tokenizer.All(code[line], local);
+                tokens = Interpreter.All(code[line], local);
 
                 if (tokens.Count == 0)
                     continue;
 
                 for (int i = 0; assign == -1 && i < tokens.Count; i++)
-                    if (tokens[i].tokenType == Token.Type.Assign)
+                    if (tokens[i].type == Token.Type.Assign)
                         assign = i;
 
                 if (assign > 0)
@@ -51,9 +49,9 @@ namespace Un.Object
                     Token token = tokens[0];
 
                     properties.TryAdd(token.value, None);
-                    properties[token.value] = Tokenizer.Calculator.Calculate(tokens[(assign + 1)..], properties);
+                    properties[token.value] = Calculator.Calculate(tokens[(assign + 1)..], properties);
                 }
-                else if (tokens[0].tokenType == Token.Type.Func)
+                else if (tokens[0].type == Token.Type.Func)
                 {
                     int start = line;
 
@@ -147,6 +145,27 @@ namespace Un.Object
             throw new InvalidOperationException("Types that cannot be divided to each other.");
         }
 
+        public virtual Obj And(Obj obj)
+        {
+            if (properties.TryGetValue("__and__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this, obj]));
+            throw new InvalidOperationException("Types that cannot be divided to each other.");
+        }
+
+        public virtual Obj Or(Obj obj)
+        {
+            if (properties.TryGetValue("__or__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this, obj]));
+            throw new InvalidOperationException("Types that cannot be divided to each other.");
+        }
+
+        public virtual Obj Xor(Obj obj)
+        {
+            if (properties.TryGetValue("__xor__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this, obj]));
+            throw new InvalidOperationException("Types that cannot be divided to each other.");
+        }
+
         public virtual Bool Equals(Obj obj)
         {
             if (obj.ClassName == "None" && ClassName == "None")
@@ -229,14 +248,14 @@ namespace Un.Object
 
         public virtual Obj GetByIndex(Obj obj)
         {
-            if (properties.TryGetValue("__get__", out var value) && value is Fun fun)
+            if (properties.TryGetValue("__getitem__", out var value) && value is Fun fun)
                 return fun.Call(new Iter([this, obj]));
             throw new IndexerException("It is not Indexable type");
         }
 
         public virtual Obj SetByIndex(Iter obj)
         {
-            if (properties.TryGetValue("__set__", out var value) && value is Fun fun)
+            if (properties.TryGetValue("__setitem__", out var value) && value is Fun fun)
                 return fun.Call(new Iter([this, obj[0], obj[1]]));
             throw new IndexerException("It is not Indexable type");
         }

@@ -37,6 +37,27 @@
             throw new InvalidOperationException("This is a type that can't be assigned.");
         }
 
+        public override Obj And(Obj obj)
+        {
+            if (obj is Bool b)
+                return new Bool(value & b.value);
+            throw new InvalidOperationException();
+        }
+
+        public override Obj Or(Obj obj)
+        {
+            if (obj is Bool b)
+                return new Bool(value || b.value);
+            throw new InvalidOperationException();
+        }
+
+        public override Obj Xor(Obj obj)
+        {
+            if (obj is Bool b)
+                return new Bool(value ^ b.value);
+            throw new InvalidOperationException();
+        }
+
         public override Str Type() => new("bool");
 
         public override Int Hash() => new(value.GetHashCode());

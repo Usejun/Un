@@ -1,13 +1,10 @@
 ﻿using Un.Function;
-using Un.Object;
 
-namespace Un
+namespace Un.Supporter
 {
     public static class Tokenizer
     {
-        public readonly static Calculator Calculator = new();
-
-        public static List<Token> Tokenization(string code)
+        public static List<Token> Tokenize(string code)
         {
             List<Token> tokens = [];
             int index = 0;
@@ -16,11 +13,11 @@ namespace Un
             {
                 SkipWhitespace(code);
                 if (index >= code.Length) break;
-                else if (code[index] == '#') return [];
+                else if (Token.IsComment(code[index])) return [];
                 else if (code[index] == '\"') tokens.Add(String(code));
                 else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
                 else if (char.IsDigit(code[index])) tokens.Add(Number(code));
-                else if (Calculator.IsOperator(code[index])) tokens.Add(Operator(code));
+                else if (Token.IsOperator(code[index])) tokens.Add(Operator(code));
                 else if (code[index] == ',' || code[index] == '.') tokens.Add(new(code[index++]));
                 else throw new SyntaxException("Invalid Syntax");
             }
@@ -168,116 +165,6 @@ namespace Un
                 return new Token(str, Token.Type.Variable);
             }
         }
-
-        public static List<Token> Analyzation(List<Token> tokens, Dictionary<string, Obj> properties)
-        {
-            List<Token> analyzedTokens = [];
-
-            for (int i = 0; i < tokens.Count; i++)
-            {
-                if (tokens[i].tokenType == Token.Type.LBrack)
-                {
-                    int j = i + 1, depth = 1;
-                    while (j < tokens.Count && depth > 0)
-                    {
-                        if (tokens[j].tokenType == Token.Type.LBrack)
-                            depth++;
-                        if (tokens[j].tokenType == Token.Type.RBrack)
-                            depth--;
-                        j++;
-                    }
-
-                    if (analyzedTokens.Count > 0 &&
-                       (analyzedTokens[^1].tokenType == Token.Type.Variable ||
-                        analyzedTokens[^1].tokenType == Token.Type.Iterator ||
-                        analyzedTokens[^1].tokenType == Token.Type.String ||
-                        analyzedTokens[^1].tokenType == Token.Type.Indexer ||
-                        analyzedTokens[^1].tokenType == Token.Type.Property))
-                    {
-                        j--;
-                        Obj index = Calculator.Calculate(Analyzation(tokens[(i + 1)..j], properties), properties);
-
-                        if (index is Str)
-                            analyzedTokens.Add(new Token($"\"{index.CStr().value}\"", Token.Type.Indexer));
-                        else
-                            analyzedTokens.Add(new Token(index.CStr().value, Token.Type.Indexer));
-                    }
-                    else
-                    {
-                        string value = "[";
-                        depth = 1;
-
-                        j = i + 1;
-
-                        while (j < tokens.Count && depth > 0)
-                        {
-                            Token token = tokens[j];
-                            value += token.value;
-                            j++;
-
-                            if (token.tokenType == Token.Type.LBrack)
-                                depth++;
-                            else if (token.tokenType == Token.Type.RBrack)
-                                depth--;
-                        }
-
-                        j--;
-                        analyzedTokens.Add(new(value, Token.Type.Iterator));
-                    }
-
-                    i = j;
-                }
-                else if (tokens[i].tokenType == Token.Type.Dot)
-                {
-                    analyzedTokens.Add(new(tokens[i + 1].value, Token.Type.Property));
-                    i++;
-                    if (tokens.Count > i + 1 && tokens[i + 1].tokenType == Token.Type.LParen)
-                        analyzedTokens[^1].tokenType = Token.Type.Method;
-                }
-                else if (tokens[i].tokenType == Token.Type.Minus)
-                {
-                    if (Calculator.IsBasicOperator(analyzedTokens[^1].tokenType) ||
-                        analyzedTokens[^1].tokenType == Token.Type.Return)
-                        analyzedTokens.Add(new Token($"-{tokens[i + 1].value}", tokens[++i].tokenType));
-                    else analyzedTokens.Add(tokens[i]);
-                }
-                else if (tokens[i].tokenType == Token.Type.LParen &&
-                        (analyzedTokens[^1].tokenType == Token.Type.Function ||
-                         analyzedTokens[^1].tokenType == Token.Type.Method))
-                {
-                    string value = "[";
-                    int j = i + 1, depth = 1;
-
-                    while (j < tokens.Count)
-                    {
-                        if (tokens[j].tokenType == Token.Type.LParen)
-                            depth++;
-                        if (tokens[j].tokenType == Token.Type.RParen)
-                            depth--;
-                        if (depth <= 0) break;
-                        value += tokens[j++].value;
-                    }
-
-                    value += "]";
-
-                    analyzedTokens.Add(new(value, Token.Type.Iterator));
-
-                    i = j;
-                }
-                else analyzedTokens.Add(tokens[i]);
-
-                if (analyzedTokens[^1].tokenType == Token.Type.Variable && Process.IsClass(tokens[i]))
-                    analyzedTokens[^1].tokenType = Token.Type.Function;
-            }
-
-            //Console.WriteLine();
-            //Console.WriteLine(string.Join("\n", analyzedTokens));
-            //Console.WriteLine();
-
-            return analyzedTokens;
-        }
-
-        public static List<Token> All(string code, Dictionary<string, Obj> properties) => Analyzation(Tokenization(code), properties);
 
         public static bool IsBody(string code, int nesting)
         {
