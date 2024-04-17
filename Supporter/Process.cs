@@ -5,9 +5,11 @@ namespace Un.Supporter
 {
     public static class Process
     {
-        public static string File { get; private set; } = "";
+        public static string PackagePath { get; private set; } = "";
 
-        public static string Path { get; private set; } = "";
+        public static string CodePath { get; private set; } = "";
+
+        public static string File { get; private set; } = "";
 
         public static string[] Code { get; private set; } = [];
 
@@ -32,9 +34,11 @@ namespace Un.Supporter
 
         public readonly static Dictionary<string, Obj> Properties = [];
 
-        public static void Initialize(string path)
+
+
+        public static void Initialize(string packagePath, string codePath)
         {
-            using StreamReader config = new(new FileStream($"{path}\\config.txt", FileMode.Open));
+            using StreamReader config = new(new FileStream($"D:\\User\\Un\\config.txt", FileMode.Open));
 
             while (!config.EndOfStream)
             {
@@ -48,7 +52,8 @@ namespace Un.Supporter
             foreach ((_, Obj obj) in Class)
                 obj.Init();
 
-            Path = path;
+            PackagePath = packagePath;
+            CodePath = codePath;
         }
 
         public static void Run(string file)
@@ -57,7 +62,7 @@ namespace Un.Supporter
 
             Import("std");
 
-            using StreamReader r = new(new FileStream($"{Path}\\{file}", FileMode.Open));
+            using StreamReader r = new(new FileStream($"{CodePath}\\{file}", FileMode.Open));
 
             File = file;
             Code = r.ReadToEnd().Split('\n');
@@ -81,7 +86,7 @@ namespace Un.Supporter
                 if (IsClass(name))
                     return;
 
-                using StreamReader r = new(new FileStream($"{Path}\\{name}.un", FileMode.Open));
+                using StreamReader r = new(new FileStream($"{PackagePath}\\{name}.un", FileMode.Open));
 
                 Interpreter interpreter = new(r.ReadToEnd().Split('\n'), []);
 
@@ -112,6 +117,8 @@ namespace Un.Supporter
             Console.WriteLine();
             Console.WriteLine(string.Join("\n", logs));
         }
+
+
 
         public static bool TryGetProperty(string name, out Obj property) => Properties.TryGetValue(name, out property);
 

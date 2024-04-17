@@ -97,6 +97,12 @@ namespace Un.Object
             return this;
         }
 
+        public override Obj Add(Obj obj)
+        {
+            if (obj is Str) return CStr().Add(obj);
+            return base.Add(obj);
+        }
+
         public override Str CStr() => new($"{value:yyyy:MM:dd HH:mm:ss:ffff}");
 
         public override Int Hash() => new(value.GetHashCode());

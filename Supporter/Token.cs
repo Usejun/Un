@@ -6,14 +6,21 @@ namespace Un.Supporter
     {
         public readonly static Dictionary<Type, int> Operator = new()
         {
-            { Type.Assign, 0 }, { Type.RParen, 0 }, { Type.Equal,  0 }, { Type.Unequal, 0 },
-            { Type.LessOrEqual, 0 }, { Type.LessThen, 0 }, { Type.GreaterOrEqual, 0 }, { Type.GreaterThen, 0 },
+            { Type.Assign, 0 }, { Type.RParen, 0 }, 
             { Type.And, 0 }, { Type.Or, 0 }, { Type.Caret , 0 },
-            { Type.Plus, 1 }, { Type.Minus, 1 }, { Type.Percent, 1 }, { Type.Bang, 1 },
-            { Type.Asterisk, 2 }, { Type.Slash, 2 }, { Type.DoubleSlash, 2 },
-            { Type.Indexer, 3 }, { Type.Property, 3 },
-            { Type.Function, 4 }, { Type.Method, 4 },
-            { Type.LParen, 5 },
+
+            { Type.Equal,  1 }, { Type.Unequal, 1 },
+            { Type.LessOrEqual, 1 }, { Type.LessThen, 1 }, { Type.GreaterOrEqual, 1 }, { Type.GreaterThen, 1 },
+
+            { Type.Plus, 3 }, { Type.Minus, 3 }, { Type.Percent, 3 }, { Type.Bang, 3 },
+
+            { Type.Asterisk, 4 }, { Type.Slash, 4 }, { Type.DoubleSlash, 4 },
+
+            { Type.Indexer, 5 }, { Type.Property, 5 },
+
+            { Type.Function, 6 }, { Type.Method, 6 },
+
+            { Type.LParen, 7 },
         };
 
         public readonly static Dictionary<string, Type> Control = new()

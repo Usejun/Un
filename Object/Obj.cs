@@ -3,8 +3,6 @@ using Un.Supporter;
 
 namespace Un.Object
 {
-    // TODO : 비트 연산, 불 연산
-
     public class Obj : IIndexable
     {
         public static Obj None => new();
@@ -279,6 +277,7 @@ namespace Un.Object
             if (Process.TryGetStaticClass(str, out var staticCla)) return staticCla;
             if (Process.TryGetProperty(str, out var property)) return property;
             if (str[0] == '\"' && str[^1] == '\"') return new Str(str.Trim('\"'));
+            if (str[0] == '\'' && str[^1] == '\'') return new Str(str.Trim('\''));
             if (str[0] == '[' && str[^1] == ']') return new Iter(str, properties);
             if (str == "True") return new Bool(true);
             if (str == "False") return new Bool(false);

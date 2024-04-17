@@ -14,13 +14,17 @@ namespace Un.Supporter
                 SkipWhitespace(code);
                 if (index >= code.Length) break;
                 else if (Token.IsComment(code[index])) return [];
-                else if (code[index] == '\"') tokens.Add(String(code));
+                else if (code[index] == '\"' || code[index] == '\'') tokens.Add(String(code));
                 else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
                 else if (char.IsDigit(code[index])) tokens.Add(Number(code));
                 else if (Token.IsOperator(code[index])) tokens.Add(Operator(code));
                 else if (code[index] == ',' || code[index] == '.') tokens.Add(new(code[index++]));
                 else throw new SyntaxException("Invalid Syntax");
             }
+
+            Console.WriteLine();
+            Console.WriteLine(string.Join("\n", tokens.Select(i => $"{i.type} {i.value}")));
+            Console.WriteLine();
 
             return tokens;
 
@@ -34,24 +38,18 @@ namespace Un.Supporter
             {
                 string str = $"{code[index++]}";
 
-                while (index < code.Length && code[index] != '\"')
+                while (index < code.Length)
                 {
                     if (code[index] == '\\')
                     {
-                        str += code[index + 1] switch
-                        {
-                            'n' => "\n",
-                            't' => "\t",
-                            'r' => "\r",
-                            '\\' => "\\",
-                            _ => $"\\{code[index + 1]}"
-                        };
-                        index += 2;
+                        index++;
+                        str += $"\\{code[index]}";
+                        index++;
                     }
                     else str += code[index++];
-                }
 
-                str += code[index++];
+                    if (str[^1] == str[0]) break;
+                }
 
                 return new(str, Token.Type.String);
             }

@@ -16,6 +16,11 @@ namespace Un.Object
             this.value = value;
         }
 
+        public Str(char value) : base("str")
+        {
+            this.value = $"{value}";
+        }
+
         public Str this[int index]
         {
             get
@@ -83,7 +88,12 @@ namespace Un.Object
 
         public override Iter CIter()
         {
-            return new Iter(value, Process.Properties);
+            Iter iter = new();
+
+            foreach (char c in value)            
+                iter.Append(new Str(c));            
+
+            return iter;
         }
 
         public override Str CStr() => this;

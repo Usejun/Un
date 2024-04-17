@@ -1,0 +1,56 @@
+﻿// TODO : vector3 값 변경
+
+class vector3
+	x = 0
+	y = 0
+	z = 0
+
+	fn __init__(this, x, y, z)
+		this.x = x
+		this.y = y
+		this.z = z
+	
+	fn __add__(this, other)
+		return vector2(this.x + other.x, this.y + other.y, this.z + other.z)
+
+	fn __sub__(this, other)
+		return vector2(this.x - other.x, this.y - other.y, this.z - other.z)
+
+	fn __mul__(this, other)
+		return vector2(this.x * other.x, this.y * other.y, this.z * other.z)
+
+	fn __div__(this, other)
+		return vector2(this.x / other.x, this.y / other.y, this.z / other.z)
+
+	fn __idiv__(this, other)
+		return vector2(this.x // other.x, this.y // other.y, this.z // other.z)
+
+	fn __mod__(this, other)
+		return vector2(this.x % other.x, this.y % other.y, , this.z % other.z)
+
+	fn __or__(this, other)
+		return vector2(this.x | other.x, this.y | other.y, this.z | other.z)
+
+	fn __and__(this, other)
+		return vector2(this.x & other.x, this.y & other.y, , this.z & other.z)
+
+	fn __xor__(this, other)
+		return vector2(this.x ^ other.x, this.y ^ other.y, , this.z ^ other.z)
+
+	fn __len__()
+		return 3
+	
+	fn __type__()
+		return "Vector3"
+
+	fn __str__(this)
+		return "(" + this.x + ", " + this.y +  + ", " + this.z + ")"
+
+	fn __int__(this)
+		return int(this.x + this.y + this.z / 3)
+
+	fn __eq__(this, other)
+		return this.x == other.x & this.y == other.y & this.z == other.z
+
+	fn __lt__(this, other)
+		return this.x == other.x | this.y == other.y | this.z == other.z

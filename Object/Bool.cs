@@ -37,6 +37,12 @@
             throw new InvalidOperationException("This is a type that can't be assigned.");
         }
 
+        public override Obj Add(Obj obj)
+        {
+            if (obj is Str) return CStr().Add(obj);
+            return base.Add(obj);
+        }
+
         public override Obj And(Obj obj)
         {
             if (obj is Bool b)

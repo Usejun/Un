@@ -46,12 +46,7 @@
 		return int(this.x + this.y / 2)
 
 	fn __eq__(this, other)
-		if (this.x == other.x)
-			if (this.y == other.y)
-				return True
-		return False
+		return this.x == other.x & this.y == other.y
 
 	fn __lt__(this, other)
-		if (this.x == other.x)
-			return this.y < other.y
-		return this.x < this.y 
+		return this.x == other.x | this.y == other.y

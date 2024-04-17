@@ -55,9 +55,6 @@
 		return True
 
 	fn __add__(this, other)
-		if (type(other) == "str")
-			return str(this) + other		
-
 		result = list(this.array)
 		result.count = this.count
 		result.add(other)
@@ -78,8 +75,12 @@
 	fn __str__(this)
 		text = "["
 
-		for	i in range(0, this.count)
+		for	i in range(0, this.count)	
+			if (type(this.array[i]) == "str")
+				text += "'"
 			text += str(this.array[i])
+			if (type(this.array[i]) == "str")
+				text += "'"
 			if (i != len(this) - 1)
 				text += ", "
 

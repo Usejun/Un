@@ -5,30 +5,22 @@ namespace Un.Package
 {
     public class Math(string packageName) : Pack(packageName), IStatic
     {
-        Obj Sum(Obj parameter)
+        Obj Sum(Iter para)
         {
-            if (parameter is Iter iter)
-            {
-                Obj result = iter[0];
-                for (int i = 1; i < iter.Count; i++)
-                    result = result.Add(iter[i]);
-                return result;
-            }
-            else throw new ArgumentException();
+            Obj result = para[0];
+            for (int i = 1; i < para.Count; i++)
+                result = result.Add(para[i]);
+            return result;
         }
 
-        Obj Pow(Obj parameter)
+        Obj Pow(Iter para)
         {
-            Obj result;
+            if (para[1] is not Int count) throw new ArgumentException();
 
-            if (parameter is Iter iter && iter[1] is Int count)
-            {
-                result = new Int(1);
-                for (int i = 0; i < count.value; i++)
-                    result = result.Mul(iter[0]);
-                return result;
-            }
-            throw new ArgumentException();
+            Obj result = para[0];
+            for (int i = 0; i < count.value; i++)
+                result = result.Mul(para[0]);
+            return result.Div(para[0]);
         }
 
         public override IEnumerable<Fun> Import() =>

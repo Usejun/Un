@@ -38,6 +38,7 @@
         {
             if (obj is Int i) return new Float(value + i.value);
             if (obj is Float f) return new Float(value + f.value);
+            if (obj is Str) return CStr().Add(obj);
 
             return base.Add(obj);
         }
