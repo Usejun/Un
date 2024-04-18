@@ -113,6 +113,12 @@ namespace Un.Object
 
         public Iter Insert(Obj obj, int index, bool doClone = true)
         {
+            if (Count == 0)
+            {
+                Append(obj, doClone);
+                return this;
+            }
+
             if (OutOfRange(index)) throw new IndexOutOfRangeException();
 
             if (IsFull)

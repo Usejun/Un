@@ -1,3 +1,10 @@
-﻿import ["math"]
+﻿import ["timer"]
 
-write("\"[1 + '1'])
+t1 = timer()
+
+t1.run()
+sleep(1000)
+t1.stop()
+
+write(t1.elapsed())
+

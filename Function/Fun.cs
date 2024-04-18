@@ -10,9 +10,9 @@ namespace Un.Function
         public string[] code = [];
         public int nesting = 0;
 
-        public Fun() { }               
+        public Fun() { }
 
-        public Fun(string[] code)
+        public Fun(string[] code) 
         {
             this.code = code;
             List<Token> tokens = Tokenizer.Tokenize(code[0]);

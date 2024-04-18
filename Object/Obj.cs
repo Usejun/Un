@@ -9,13 +9,15 @@ namespace Un.Object
 
         public string ClassName { get; protected set; } = "None";
 
-        protected Dictionary<string, Obj> properties = [];
+        public Dictionary<string, Obj> properties = [];
 
         public Obj() { }
 
         public Obj(string className)
         {
-            ClassName = className;
+            ClassName = className;            
+            if (Process.Class is not null && Process.TryGetClass(className, out var cla))
+                properties = cla.properties;
         }
 
         public Obj(string[] code, Dictionary<string, Obj> local)
@@ -258,15 +260,7 @@ namespace Un.Object
             throw new IndexerException("It is not Indexable type");
         }
 
-        public virtual Obj Clone()
-        {
-            Obj clone = new(ClassName);
-
-            foreach ((string key, Obj property) in properties)
-                clone.properties.Add(key, property.Clone());
-
-            return clone;
-        }
+        public virtual Obj Clone() => new(ClassName);
 
         public bool HasProperty(string key) => properties.ContainsKey(key);
 

@@ -28,6 +28,7 @@ namespace Un.Supporter
             {"bool", new Bool() },
             {"str", new Str() },
             {"date", new Date() },
+            {"times", new Times() },
         };
 
         public readonly static Dictionary<string, Obj> StaticClass = [];

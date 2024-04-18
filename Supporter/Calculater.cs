@@ -118,7 +118,7 @@ namespace Un.Supporter
                 else if (Process.TryGetProperty(token, out var global))
                 {
                     if (global is Fun fun)
-                        global = fun.Call(calculateStack.TryPop(out var obj) && obj is Iter args ? args : Iter.Empty);
+                        global = fun.Clone().Call(calculateStack.TryPop(out var obj) && obj is Iter args ? args : Iter.Empty);
 
                     calculateStack.Push(global);
                 }

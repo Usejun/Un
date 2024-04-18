@@ -9,12 +9,12 @@ namespace Un.Object
 
         public Date() : base("date")
         {
-            value = DateTime.MinValue;            
+            value = DateTime.MinValue;
         }
 
         public Date(DateTime value) : base("date")
         {
-            this.value = value;
+            this.value = value;                   
             properties["year"] = new Int(value.Year);
             properties["month"] = new Int(value.Month);
             properties["day"] = new Int(value.Day);
@@ -27,6 +27,12 @@ namespace Un.Object
         public Date(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0, int milliseconds = 0) : base("date")
         {
             value = new(year, month, day, hour, minute, second, milliseconds);
+        }
+
+        public override void Ass(Obj value, Dictionary<string, Obj> properties)
+        {
+            if (value is Date date) this.value = date.value;
+            else base.Ass(value, properties);
         }
 
         public Str Format(Iter arg)
@@ -90,17 +96,24 @@ namespace Un.Object
             properties.Add("format", new NativeFun("format", Format));
         }
 
-        public override Obj Init(Iter arg)
+        public override Obj Init(Iter args)
         {
-            if (arg[0] is not Str str) throw new InitializationException();
+            if (args[0] is not Str str) throw new InitializationException();
             if (!DateTime.TryParse(str.value, out value)) throw new InitializationException();
             return this;
         }
 
         public override Obj Add(Obj obj)
         {
+            if (obj is Date date) return new Times(value - date.value);
             if (obj is Str) return CStr().Add(obj);
             return base.Add(obj);
+        }
+
+        public override Obj Sub(Obj obj)
+        {
+            if (obj is Date date) return new Times(value.Ticks - date.value.Ticks);
+            return base.Sub(obj);
         }
 
         public override Str CStr() => new($"{value:yyyy:MM:dd HH:mm:ss:ffff}");

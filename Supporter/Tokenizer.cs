@@ -22,9 +22,9 @@ namespace Un.Supporter
                 else throw new SyntaxException("Invalid Syntax");
             }
 
-            Console.WriteLine();
-            Console.WriteLine(string.Join("\n", tokens.Select(i => $"{i.type} {i.value}")));
-            Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine(string.Join("\n", tokens.Select(i => $"{i.type} {i.value}")));
+            //Console.WriteLine();
 
             return tokens;
 

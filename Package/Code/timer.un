@@ -1,0 +1,19 @@
+﻿import ["time"]
+
+class timer
+	is_running = False
+	start_time = 0
+	end_time = 0
+
+	fn run(this)
+		if (!this.is_running)
+			this.start_time = time.now()
+			this.is_running = True
+
+	fn stop(this)
+		if (this.is_running)
+			this.end_time = time.now()
+			this.is_running = False
+
+	fn elapsed(this)
+		return this.end_time - this.start_time
