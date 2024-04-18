@@ -15,9 +15,11 @@ namespace Un.Object
 
         public Obj(string className)
         {
-            ClassName = className;            
-            if (Process.Class is not null && Process.TryGetClass(className, out var cla))
-                properties = cla.properties;
+            ClassName = className;
+
+            if (Process.Class is not null && Process.TryGetClass(ClassName, out Obj cla))
+                foreach ((string key, Obj obj) in cla.properties)
+                    properties.Add(key, obj);
         }
 
         public Obj(string[] code, Dictionary<string, Obj> local)
@@ -83,10 +85,8 @@ namespace Un.Object
         {
             if (properties.TryGetValue("__init__", out var value) && value is Fun fun)
             {
-                Iter paras = [];
-                paras.Append(this, false);
-                paras.Append(args);
-                fun.Call(paras);            
+                Iter paras = [];               
+                fun.Call(paras.Append(this, false).Append(args));            
             }
             return this;
         }
@@ -260,7 +260,15 @@ namespace Un.Object
             throw new IndexerException("It is not Indexable type");
         }
 
-        public virtual Obj Clone() => new(ClassName);
+        public virtual Obj Clone()
+        {
+            Obj clone = new(ClassName);
+
+            foreach ((string key, Obj property) in properties)
+                clone.properties.TryAdd(key, property.Clone());
+
+            return clone;
+        }
 
         public bool HasProperty(string key) => properties.ContainsKey(key);
 

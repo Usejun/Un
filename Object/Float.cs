@@ -115,6 +115,5 @@
         }
 
         public override Obj Clone() => new Float(value);
-
     }
 }

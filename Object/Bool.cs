@@ -6,7 +6,7 @@
 
         public Bool() : base("bool")
         {
-            value = false;
+            value = false;            
         }
 
         public Bool(bool value) : base("bool")

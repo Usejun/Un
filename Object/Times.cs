@@ -73,6 +73,6 @@ namespace Un.Object
 
         public override Int Hash() => new(value.GetHashCode());
 
-        public override Obj Clone() => new Times(value) { properties = properties };
+        public override Obj Clone() => new Times(value);
     }
 }

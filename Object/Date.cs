@@ -14,7 +14,7 @@ namespace Un.Object
 
         public Date(DateTime value) : base("date")
         {
-            this.value = value;                   
+            this.value = value;
             properties["year"] = new Int(value.Year);
             properties["month"] = new Int(value.Month);
             properties["day"] = new Int(value.Day);
@@ -132,6 +132,7 @@ namespace Un.Object
             return base.Equals(obj);
         }
 
-        public override Obj Clone() => new Date(value) { properties = properties };
+        public override Obj Clone() => new Date(value);
+
     }
 }
