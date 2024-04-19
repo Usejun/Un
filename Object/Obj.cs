@@ -265,7 +265,8 @@ namespace Un.Object
             Obj clone = new(ClassName);
 
             foreach ((string key, Obj property) in properties)
-                clone.properties.TryAdd(key, property.Clone());
+                if(!clone.properties.TryAdd(key, property.Clone()))
+                    clone.properties[key] = property.Clone();
 
             return clone;
         }

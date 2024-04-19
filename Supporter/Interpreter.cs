@@ -137,7 +137,7 @@ namespace Un.Supporter
                     {
                         if (var.Get(analyzedTokens[next].value) is Fun func)
                         {
-                            var = func.Call(Obj.Convert(analyzedTokens[next + 1].value, properties).CIter().Insert(var, 0, false));
+                            var = func.Clone().Call(Obj.Convert(analyzedTokens[next + 1].value, properties).CIter().Insert(var, 0, false));
                         }
                     }
                     next++;
@@ -183,7 +183,7 @@ namespace Un.Supporter
                 {
                     Obj obj = Calculator.Calculate(analyzedTokens[3..], properties), prev = Obj.None;
 
-                    if (obj is not Iter iter) throw new("Arg Error");
+                    if (obj.CIter() is not Iter iter) throw new("Arg Error");
 
                     string var = analyzedTokens[1].value;
 

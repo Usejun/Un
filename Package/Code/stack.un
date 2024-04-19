@@ -1,0 +1,63 @@
+﻿class stack
+	arr = []
+	count = 0
+
+	fn __init__(this, size)
+		this.arr = [0] * size
+
+	fn push(this, item)
+		if (type(item) == "iter")
+			for i in item
+				this.push(i)
+		else
+			if (this.is_full())
+				this.resize()
+
+			this.arr[this.count] = item
+			this.count += 1
+
+	fn pop(this)
+		assert(this.is_empty(), "queue is empty")
+
+		item = this.arr[this.count]
+		this.count -= 1
+
+		return item
+
+	fn is_full(this)
+		return this.count == len(this.arr)
+
+	fn is_empty(this)
+		return this.count == 0
+
+	fn resize(this)
+		resized = [0] * (2 * len(this.arr))
+
+		for i in range(0, this.count)
+			resized[i] = this.arr[i]
+
+		this.arr = resized
+
+	fn __len__(this)
+		return this.count
+
+	fn __str__(this)
+		text = "["
+
+		for i in range(0, this.count)
+			text += this.arr[this.count - i]
+			if (i != this.count)
+				text += ", "
+
+		text += "]"
+		
+		return text
+
+	fn __iter__(this)
+		enum = []
+		i = this.count
+
+		for k in range(0, this.count + 1)
+			enum += this.arr[i - k]
+
+		return enum

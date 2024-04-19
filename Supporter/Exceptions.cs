@@ -48,4 +48,11 @@
         public SyntaxException(string message) : base(message) { }
         public SyntaxException(string message, Exception inner) : base(message, inner) { }
     }
+
+    public class AssertException : Exception
+    {
+        public AssertException() { }
+        public AssertException(string message) : base(message) { }
+        public AssertException(string message, Exception inner) : base(message, inner) { }
+    }
 }

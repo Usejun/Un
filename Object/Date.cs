@@ -12,6 +12,11 @@ namespace Un.Object
             value = DateTime.MinValue;
         }
 
+        public Date(Times times) : base("date")
+        {
+            value = new DateTime(times.value.Ticks);
+        }
+
         public Date(DateTime value) : base("date")
         {
             this.value = value;

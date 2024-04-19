@@ -1,10 +1,13 @@
-﻿import ["timer"]
+﻿import ["queue", "stack"]
 
-t1 = timer()
+q = queue(9)
+s = stack(9)
 
-t1.run()
-sleep(1000)
-t1.stop()
+q.enqueue(range(0, 10))
+s.push(range(0, 10))
 
-write(t1.elapsed())
+for i in q
+	writeln(i)
 
+for i in s
+	writeln(i)

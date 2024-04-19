@@ -16,6 +16,7 @@ C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한
 	<li>Bool : Boolean 
 	<li>Iter : 다양한 자료형이 반복적으로 있는 구조
 	<li>Date : 날짜
+	<li>Times : 시간
 </ul>
 
 ## 함수

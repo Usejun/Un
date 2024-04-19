@@ -60,11 +60,8 @@ namespace Un.Package
 
         Obj Assert(Iter paras)
         {
-            if (!paras[0].CBool().value)
-            {
-                Console.Write(paras[1].CStr().value);
-                Environment.Exit(0);
-            }
+            if (paras[0].CBool().value)            
+                throw new AssertException(paras[1].CStr().value);            
 
             return None;
         }
