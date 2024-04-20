@@ -106,9 +106,7 @@
 
         public override Str Type() => new("int");
 
-        public override Int Hash() => new(value.GetHashCode());
-
-        public override Int CInt() => this;
+        public override Int CInt() => new(value);
 
         public override Float CFloat() => new(value);
 
@@ -135,5 +133,7 @@
         }
 
         public override Obj Clone() => new Int(value);
+
+        public override int GetHashCode() => value.GetHashCode();
     }
 }

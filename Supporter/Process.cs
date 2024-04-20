@@ -13,11 +13,12 @@ namespace Un.Supporter
 
         public static string[] Code { get; private set; } = [];
 
-        public static Interpreter Main = new([], []);
+        public static Parser Main = new([], []);
 
         public readonly static Dictionary<string, Pack> Package = new()
         {
-            {"std", new Std("std")}, {"math", new Package.Math("math")}, {"time", new Time("time")}
+            {"std", new Std("std")}, {"math", new Package.Math("math")}, {"time", new Time("time")},
+            {"https", new Https("https")}
         };
 
         public readonly static Dictionary<string, Obj> Class = new()
@@ -29,6 +30,8 @@ namespace Un.Supporter
             {"str", new Str() },
             {"date", new Date() },
             {"times", new Times() },
+            {"dict", new Dict() },
+            {"json", new JObj() },
         };
 
         public readonly static Dictionary<string, Obj> StaticClass = [];
@@ -43,7 +46,7 @@ namespace Un.Supporter
 
             while (!config.EndOfStream)
             {
-                var data = config.ReadLine().Split();
+                var data = config.ReadLine()!.Split();
                 string keyword = data[0];
                 string text = data[1];
 
@@ -89,7 +92,7 @@ namespace Un.Supporter
 
                 using StreamReader r = new(new FileStream($"{PackagePath}\\{name}.un", FileMode.Open));
 
-                Interpreter interpreter = new(r.ReadToEnd().Split('\n'), []);
+                Parser interpreter = new(r.ReadToEnd().Split('\n'), []);
 
                 while (interpreter.TryInterpret()) ;
             }

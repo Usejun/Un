@@ -34,28 +34,84 @@ namespace Un.Object
             value = new(year, month, day, hour, minute, second, milliseconds);
         }
 
+        public override void Ass(string value, Dictionary<string, Obj> properties)
+        {
+            if (DateTime.TryParse(value, out var result))
+                this.value = result;
+            else base.Ass(value, properties);
+        }
+
         public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Date date) this.value = date.value;
             else base.Ass(value, properties);
         }
 
-        public Str Format(Iter arg)
+        public Str Format(Iter para)
         {
-            if (arg[0] is Date date && arg[1] is Str format)
+            if (para[0] is Date date && para[1] is Str format)
                 return new(date.value.ToString(format.value));
-            throw new ArgumentException();
+            throw new ArgumentException("invaild argument");
+        }
+
+        public Int Year(Iter para)
+        {
+            if (para[0] is not Date date)
+                throw new ArgumentException("invaild argument");
+            return new(date.value.Year);
+        }
+
+        public Int Month(Iter para)
+        {
+            if (para[0] is not Date date)
+                throw new ArgumentException("invaild argument");
+            return new(date.value.Month);
+        }
+
+        public Int Day(Iter para)
+        {
+            if (para[0] is not Date date)
+                throw new ArgumentException("invaild argument");
+            return new(date.value.Day);
+        }
+
+        public Int Hour(Iter para)
+        {
+            if (para[0] is not Date date)
+                throw new ArgumentException("invaild argument");
+            return new(date.value.Hour);
+        }
+
+        public Int Minute(Iter para)
+        {
+            if (para[0] is not Date date)
+                throw new ArgumentException("invaild argument");
+            return new(date.value.Minute);
+        }
+
+        public Int Second(Iter para)
+        {
+            if (para[0] is not Date date)
+                throw new ArgumentException("invaild argument");
+            return new(date.value.Second);
+        }
+
+        public Int Millisecond(Iter para)
+        {
+            if (para[0] is not Date date)
+                throw new ArgumentException("invaild argument");
+            return new(date.value.Millisecond);
         }
 
         public override void Init()
         {
-            properties.Add("year", new Int(value.Year));
-            properties.Add("month", new Int(value.Month));
-            properties.Add("days", new Int(value.Day));
-            properties.Add("hour", new Int(value.Hour));
-            properties.Add("minute", new Int(value.Minute)); 
-            properties.Add("second", new Int(value.Second));
-            properties.Add("milliseconds", new Int(value.Millisecond));
+            properties.Add("year", new NativeFun("year", Year));
+            properties.Add("month", new NativeFun("month", Month));
+            properties.Add("day", new NativeFun("day", Day));
+            properties.Add("hour", new NativeFun("hour", Hour));
+            properties.Add("minute", new NativeFun("minute", Minute)); 
+            properties.Add("second", new NativeFun("second", Second));
+            properties.Add("milliseconds", new NativeFun("milliseconds", Millisecond));
             properties.Add("add_years", new NativeFun("add_years", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int years))                
@@ -123,8 +179,6 @@ namespace Un.Object
 
         public override Str CStr() => new($"{value:yyyy:MM:dd HH:mm:ss:ffff}");
 
-        public override Int Hash() => new(value.GetHashCode());
-
         public override Bool LessThen(Obj obj)
         {
             if (obj is Date date) return new(value < date.value);
@@ -138,6 +192,8 @@ namespace Un.Object
         }
 
         public override Obj Clone() => new Date(value);
+
+        public override int GetHashCode() => value.GetHashCode();
 
     }
 }

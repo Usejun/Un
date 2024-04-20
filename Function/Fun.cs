@@ -33,7 +33,7 @@ namespace Un.Function
 
         public virtual Obj Call(Iter paras)
         {                    
-            Interpreter interpreter = new(code, properties, line: 1, nesting: nesting + 1);
+            Parser interpreter = new(code, properties, line: 1, nesting: nesting + 1);
 
             for (int i = 0; i < args.Count; i++)
                 properties.Add(args[i], paras[i]);            

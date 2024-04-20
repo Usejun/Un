@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Un.Function;
 using Un.Supporter;
 
 namespace Un.Object
@@ -61,7 +62,7 @@ namespace Un.Object
                 if (depth == 0 && !isString && str[index] == ',')
                 {
                     if (IsIter(buffer)) Append(new Iter(buffer, properties));
-                    else Append(Calculator.Calculate(Interpreter.All(buffer, properties), properties));
+                    else Append(Calculator.Calculate(Parser.All(buffer, properties), properties));
                     buffer = "";
                 }
                 else
@@ -69,7 +70,7 @@ namespace Un.Object
             }
 
             if (!string.IsNullOrEmpty(buffer))
-                Append(Calculator.Calculate(Interpreter.All(buffer, properties), properties));            
+                Append(Calculator.Calculate(Parser.All(buffer, properties), properties));            
         }
 
         public Iter(Obj[] value) : base("iter")
@@ -78,11 +79,79 @@ namespace Un.Object
             Count = value.Length;
         }
 
+        public override void Init()
+        {
+            properties.Add("add", new NativeFun("add", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                if (para[1] is Iter iter) return self.Append(iter);
+                return self.Append(para[1]);
+            }));
+            properties.Add("insert", new NativeFun("insert", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+                if (para[2] is not Int i || !i.value.TryInt(out var index))
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                if (para[1] is Iter iter) return self.Insert(iter, index);
+                else return self.Insert(para[1], index);
+            }));
+            properties.Add("remove", new NativeFun("remove", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                if (para[1] is Obj obj) return new Bool(self.Remove(obj));
+                throw new ArgumentException("invalid argument", nameof(para));
+            }));
+            properties.Add("remove_at", new NativeFun("remove_at", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                if (para[1] is Int i && i.value.TryInt(out var index)) return new Bool(self.RemoveAt(index));
+                throw new ArgumentException("invalid argument", nameof(para));
+            }));
+            properties.Add("index_of", new NativeFun("index_of", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                if (para[1] is Obj obj) return new Int(self.IndexOf(obj));
+                throw new ArgumentException("invalid argument", nameof(para));
+            }));
+            properties.Add("contains", new NativeFun("contains", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                if (para[1] is Obj obj) return new Bool(self.Contains(obj));
+                throw new ArgumentException("invalid argument", nameof(para));
+            })); 
+            properties.Add("clone", new NativeFun("clone", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                return self.Clone();
+            }));
+        }
+
         public override Obj Init(Iter arg)
         {
-            var iter = arg[0].CIter();
-            value = iter.value;
-            Count = iter.Count;
+            if (arg[0] is Int i && i.value.TryInt(out var size))
+            {
+                value = new Obj[size];
+            }
+            else
+            {
+                var iter = arg[0].CIter();
+                value = iter.value;
+                Count = iter.Count;
+            }
 
             return this;
         }
@@ -162,18 +231,28 @@ namespace Un.Object
             return true;
         }
 
+        public int IndexOf(Obj obj)
+        {
+            for (int i = 0; i < Count; i++)
+                if (value[i].Equals(obj).value)
+                    return i;
+            return -1;            
+        }
+
+        public bool Contains(Obj obj) => IndexOf(obj) != -1;
+
         public override void Ass(string value, Dictionary<string, Obj> properties)
         {
             if (Convert(value, properties) is Iter iter)
                 this.value = iter.value;
-            base.Ass(value, properties);
+            else base.Ass(value, properties);
         }
 
         public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Iter i)
                 this.value = i.value;
-            base.Ass(value, properties);
+            else base.Ass(value, properties);
         }
 
         public override Obj Add(Obj obj)
@@ -217,8 +296,6 @@ namespace Un.Object
 
         public override Str Type() => new("iter");
 
-        public override Int Hash() => new(value.GetHashCode());
-
         public override Bool LessThen(Obj obj)
         {
             if (obj is Iter i) return new(Count.CompareTo(i.Count) < 0);
@@ -231,13 +308,13 @@ namespace Un.Object
             return base.Equals(obj);
         }
 
-        public override Iter CIter() => this;
+        public override Iter CIter() => Clone() as Iter;
 
         public override Str CStr() => new($"[{string.Join(", ", value.Take(Count).Select(i => i.CStr().value))}]");
 
-        public override Obj GetByIndex(Obj parameter)
+        public override Obj GetByIndex(Iter parameter)
         {
-            if (parameter is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
+            if (parameter[0] is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
             return value[iIndex];
         }
 
@@ -268,6 +345,8 @@ namespace Un.Object
             for (int i = 0; i < Count; i++)
                 yield return value[i];
         }
+
+        public override int GetHashCode() => value.GetHashCode();
 
         public static bool IsIter(string str) => str[0] == '[' && str[^1] == ']';
     }

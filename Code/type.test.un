@@ -7,28 +7,47 @@ it1 = [1, 2, 3, 4, 5]
 it2 = [i, f, s, d, b]
 
 # 정수형
-type(i)
-type(float(i))
-type(str(i))
+writeln(i)
+writeln(type(i))
+writeln(type(float(i)))
+writeln(float(i))
+writeln(type(str(i)))
+writeln(str(i))
+writeln()
 
 # 실수형
-type(f)
-type(int(f))
-type(str(f))
+writeln(type(f))
+writeln(f)
+writeln(type(int(f)))
+writeln(int(f))
+writeln(type(str(f)))
+writeln(str(f))
+writeln()
 
 # 문자열
-type(s)
+writeln(type(s))
+writeln(s)
+writeln()
 
 # 날짜
-type(d)
-d.format("yyyy년 MM월 dd일")
+writeln(type(d))
+writeln(d.format("yyyy년 MM월 dd일"))
+writeln()
 
 # 불
-type(b)
-type(str(b))
+writeln(type(b))
+writeln(b)
+writeln(str(b))
+writeln(type(str(b)))
+writeln()
 
 # 이터레이터
-type(it1)
-type(it2)
-type(str(it1))
-type(str(it2))
+writeln(type(it1))
+writeln(type(it2))
+writeln(it1)
+writeln(it2)
+writeln(type(str(it1)))
+writeln(type(str(it2)))
+writeln(str(it1))
+writeln(str(it2))
+writeln()

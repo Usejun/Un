@@ -1,6 +1,4 @@
-﻿using Un.Supporter;
-
-namespace Un.Object
+﻿namespace Un.Object
 {
     public class Str : Obj
     {
@@ -63,8 +61,6 @@ namespace Un.Object
 
         public override Str Type() => new ("str");
 
-        public override Int Hash() => new (value.GetHashCode());
-
         public override Int CInt()
         {
             if (long.TryParse(value, out var l))
@@ -96,7 +92,7 @@ namespace Un.Object
             return iter;
         }
 
-        public override Str CStr() => this;
+        public override Str CStr() => new(value);
 
         public override Int Len() => new(value.Length);
 
@@ -116,15 +112,12 @@ namespace Un.Object
 
         public override Obj Clone() => new Str(value);
 
-        public override Obj GetByIndex(Obj obj)
+        public override Obj GetByIndex(Iter para)
         {
-            if (obj is not Int i || !i.value.TryInt(out int index) || OutOfRange(index)) throw new IndexOutOfRangeException();
+            if (para[0] is not Int i || !i.value.TryInt(out int index) || OutOfRange(index)) throw new IndexOutOfRangeException();
             return new Str($"{value[index]}");
         }
 
-        public override Obj SetByIndex(Iter obj)
-        {
-            throw new IndexerException("Can't be assigned as an index.");
-        }
+        public override int GetHashCode() => value.GetHashCode();
     }
 }

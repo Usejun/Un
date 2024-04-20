@@ -13,7 +13,9 @@ namespace Un.Package
             return None;
         }
 
-        Date Now(Iter iter) => new(DateTime.Now);               
+        Date Now(Iter iter) => new(DateTime.Now);
+
+        Date Today(Iter iter) => new(DateTime.Today);
 
         public override IEnumerable<Fun> Import() =>
         [
@@ -24,7 +26,7 @@ namespace Un.Package
         {
             Time time = new(packageName);
             time.properties.Add("now", new NativeFun("now", Now));
-            time.properties.Add("today", new Date(DateTime.Today));
+            time.properties.Add("today", new NativeFun("today", Today));
             return time;
         }
     }

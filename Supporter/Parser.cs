@@ -3,7 +3,7 @@ using Un.Function;
 
 namespace Un.Supporter
 {
-    public class Interpreter(string[] code,
+    public class Parser(string[] code,
                              Dictionary<string, Obj> properties,
                              int index = 0,
                              int line = 0,
@@ -65,7 +65,7 @@ namespace Un.Supporter
                 for (int i = 1; i < assign - 1; i++)
                 {
                     if (analyzedTokens[i].type == Token.Type.Indexer)
-                        var = var.GetByIndex(Obj.Convert(analyzedTokens[i].value, properties));
+                        var = var.GetByIndex(new Iter([Obj.Convert(analyzedTokens[i].value, properties)]));
                     else if (analyzedTokens[i].type == Token.Type.Property)
                         var = var.Get(analyzedTokens[i].value);
                     else throw new InterpreterParseException();
@@ -127,10 +127,7 @@ namespace Un.Supporter
                     if (analyzedTokens[next].type == Token.Type.Indexer)
                     {
                         Obj index = Obj.Convert(analyzedTokens[next].value, properties);
-
-                        if (var is IIndexable indexable)
-                            var = indexable.GetByIndex(index);
-                        else throw new IndexerException("It is not indexable type");
+                        var = var.GetByIndex(new Iter([index]));
                     }
                     else if (analyzedTokens[next].type == Token.Type.Property ||
                              analyzedTokens[next].type == Token.Type.Method)

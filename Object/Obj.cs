@@ -3,7 +3,7 @@ using Un.Supporter;
 
 namespace Un.Object
 {
-    public class Obj : IIndexable
+    public class Obj
     {
         public static Obj None => new();
 
@@ -24,7 +24,7 @@ namespace Un.Object
 
         public Obj(string[] code, Dictionary<string, Obj> local)
         {            
-            List<Token> tokens = Interpreter.All(code[0], local);
+            List<Token> tokens = Parser.All(code[0], local);
             ClassName = tokens[1].value;
 
             int line = 0, nesting = 1, assign;
@@ -37,7 +37,7 @@ namespace Un.Object
                     continue;
 
                 assign = -1;
-                tokens = Interpreter.All(code[line], local);
+                tokens = Parser.All(code[line], local);
 
                 if (tokens.Count == 0)
                     continue;
@@ -197,12 +197,7 @@ namespace Un.Object
             return new(1);
         }
 
-        public virtual Int Hash()
-        {
-            if (properties.TryGetValue("__hash__", out var value) && value is Fun fun && fun.Call(new Iter([this])) is Int i)
-                return i;
-            return new(GetHashCode());
-        }
+        public virtual Int Hash() => new(GetHashCode());
 
         public virtual Str Type()
         {
@@ -246,17 +241,17 @@ namespace Un.Object
             throw new InvalidCastException("This type cannot cast iter.");
         }
 
-        public virtual Obj GetByIndex(Obj obj)
+        public virtual Obj GetByIndex(Iter para)
         {
             if (properties.TryGetValue("__getitem__", out var value) && value is Fun fun)
-                return fun.Call(new Iter([this, obj]));
+                return fun.Call(para.Insert(this, 0, false));
             throw new IndexerException("It is not Indexable type");
         }
 
-        public virtual Obj SetByIndex(Iter obj)
+        public virtual Obj SetByIndex(Iter para)
         {
             if (properties.TryGetValue("__setitem__", out var value) && value is Fun fun)
-                return fun.Call(new Iter([this, obj[0], obj[1]]));
+                return fun.Call(para.Insert(this, 0, false));
             throw new IndexerException("It is not Indexable type");
         }
 
@@ -292,5 +287,11 @@ namespace Un.Object
         }
         
         public static bool IsNone(Obj obj) => obj.ClassName == "None";
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Obj o) return Equals(o).value;
+            return false;
+        }
     }
 }

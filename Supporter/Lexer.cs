@@ -73,7 +73,8 @@ namespace Un.Supporter
                 }
                 else if (tokens[i].type == Token.Type.Minus)
                 {
-                    if (Token.IsBasicOperator(analyzedTokens[^1].type) ||
+                    if (analyzedTokens.Count == 0 ||
+                        Token.IsBasicOperator(analyzedTokens[^1].type) ||
                         analyzedTokens[^1].type == Token.Type.Return)
                         analyzedTokens.Add(new Token($"-{tokens[i + 1].value}", tokens[++i].type));
                     else analyzedTokens.Add(tokens[i]);

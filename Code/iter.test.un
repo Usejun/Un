@@ -1,6 +1,4 @@
-﻿import ["list"]
-
-l = list(range(1, 10))
+﻿l = range(1, 10)
 
 writeln(l)
 
@@ -27,21 +25,16 @@ l[2] = 101
 
 writeln(l)
 
-l.get(0)
-l.get(1)
-l.get(2)
-
-l.set(3, 102)
-l.set(4, 103)
-l.set(5, 104)
-
-writeln(l)
-
-len(l)
+writeln(len(l))
 
 l += 77
 l += 2.75
 l += True
 l += "hello"
 
+l.add(1)
+l2 = l.clone()
+l.add(2)
+
 writeln(l)
+writeln(l2)

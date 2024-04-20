@@ -15,5 +15,5 @@ class timer
 			this.end_time = time.now()
 			this.is_running = False
 
-	fn elapsed(this)
+	fn time(this)
 		return this.end_time - this.start_time

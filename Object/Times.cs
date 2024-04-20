@@ -39,6 +39,13 @@ namespace Un.Object
             return base.Init(args);
         }
 
+        public override void Ass(string value, Dictionary<string, Obj> properties)
+        {
+            if (TimeSpan.TryParse(value, out var result))
+                this.value = result;
+            else base.Ass(value, properties);
+        }
+
         public override void Ass(Obj value, Dictionary<string, Obj> properties)
         {
             if (value is Times times) this.value = times.value;
@@ -71,8 +78,8 @@ namespace Un.Object
 
         public override Str CStr() => new($"{value}");
 
-        public override Int Hash() => new(value.GetHashCode());
-
         public override Obj Clone() => new Times(value);
+
+        public override int GetHashCode() => value.GetHashCode();
     }
 }

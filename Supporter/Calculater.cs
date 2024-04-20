@@ -52,7 +52,7 @@ namespace Un.Supporter
                         {
                             b = Obj.Convert(token.value, properties);
 
-                            calculateStack.Push(a.GetByIndex(b));
+                            calculateStack.Push(a.GetByIndex(new Iter([b])));
                         }
                         else if (token.type == Token.Type.Property)
                         {

@@ -66,11 +66,9 @@
 
         public override Str Type() => new("bool");
 
-        public override Int Hash() => new(value.GetHashCode());
-
         public override Str CStr() => new ($"{value}");
 
-        public override Bool CBool() => this;
+        public override Bool CBool() => new(value);
 
         public override Bool Equals(Obj obj)
         {
@@ -80,5 +78,6 @@
 
         public override Obj Clone() => new Bool(value);
 
+        public override int GetHashCode() => value.GetHashCode();
     }
 }
