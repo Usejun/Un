@@ -1,5 +1,8 @@
 ﻿using Un.Object;
-using Un.Function;
+using Un.Object.Interfaces;
+using Un.Object.Value;
+using Un.Object.Reference;
+using Un.Object.Function;
 
 namespace Un.Supporter
 {
@@ -16,18 +19,24 @@ namespace Un.Supporter
         private int nesting = nesting;
         private readonly string[] code = code;
         private readonly Dictionary<string, Obj> properties = properties;
+        private readonly List<string> usings = [];
 
         public bool TryInterpret()
         {
-            if (ReturnValue is not null || line >= code.Length) return false;
-
+            if (ReturnValue is not null || line >= code.Length)
+            {
+                foreach (var name in usings)
+                    if (properties[name] is IUsing u)
+                        u.Close();
+                return false;
+            }
             if (string.IsNullOrWhiteSpace(code[line]))
             {
                 line++;
                 return true;
             }
 
-            Parse(All(code[line], properties));
+            Parse(Lexer.Lex(Tokenizer.Tokenize(code[line]), properties));
             line++;
             return true;
         }
@@ -37,6 +46,11 @@ namespace Un.Supporter
             int assign = IndexOfAssign(analyzedTokens);
 
             if (analyzedTokens.Count == 0 || Token.IsComment(analyzedTokens[0].type)) return;
+            else if (analyzedTokens[0].type == Token.Type.Using)
+            {
+                usings.Add(analyzedTokens[1].value);
+                Parse(analyzedTokens[1..]);
+            }
             else if (assign >= 1)
             {
                 Obj AssignCalculate(Token token, Obj a, Obj b) => token.type switch
@@ -65,7 +79,7 @@ namespace Un.Supporter
                 for (int i = 1; i < assign - 1; i++)
                 {
                     if (analyzedTokens[i].type == Token.Type.Indexer)
-                        var = var.GetByIndex(new Iter([Obj.Convert(analyzedTokens[i].value, properties)]));
+                        var = var.GetItem(new Iter([Obj.Convert(analyzedTokens[i].value, properties)]));
                     else if (analyzedTokens[i].type == Token.Type.Property)
                         var = var.Get(analyzedTokens[i].value);
                     else throw new InterpreterParseException();
@@ -79,7 +93,7 @@ namespace Un.Supporter
 
                     if (last.type == Token.Type.Indexer)
                     {
-                        var.SetByIndex(new Iter([Obj.Convert(last.value, properties), AssignCalculate(analyzedTokens[assign], var, value)]));
+                        var.SetItem(new Iter([Obj.Convert(last.value, properties), AssignCalculate(analyzedTokens[assign], var, value)]));
                     }
                     else if (last.type == Token.Type.Property)
                     {
@@ -127,7 +141,7 @@ namespace Un.Supporter
                     if (analyzedTokens[next].type == Token.Type.Indexer)
                     {
                         Obj index = Obj.Convert(analyzedTokens[next].value, properties);
-                        var = var.GetByIndex(new Iter([index]));
+                        var = var.GetItem(new Iter([index]));
                     }
                     else if (analyzedTokens[next].type == Token.Type.Property ||
                              analyzedTokens[next].type == Token.Type.Method)
@@ -318,7 +332,5 @@ namespace Un.Supporter
             while (line < code.Length && IsBody())
                 line++;
         }
-
-        public static List<Token> All(string code, Dictionary<string, Obj> properties) => Lexer.Lex(Tokenizer.Tokenize(code), properties);
     }
 }

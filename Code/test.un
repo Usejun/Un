@@ -1,3 +1,2 @@
-﻿import ["https"]
-
-write(json(https.get("https://kanjiapi.dev/v1/kanji/蛍"))["meanings"][0])
+﻿using w = open("D:\\User\\Un\\Code\\type.test.un")
+writeln(w.readln())

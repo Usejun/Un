@@ -1,0 +1,25 @@
+﻿import ["dict"]
+
+d = dict()
+
+for i in range(0, 5)
+	d.add(i, i)
+
+d.add("key", 123.1)
+d.add(42.1, "##a")
+d.add(true, "!@#123")
+
+writeln(d[1])
+writeln(d["key"])
+writeln(d[42.1])
+writeln(d[true])
+writeln(d.keys())
+writeln(d.values())
+writeln(d.contains_key("key"))
+writeln(d.contains_key("key2"))
+writeln(d.contains_value("xe"))
+writeln(d.contains_value("##a"))
+writeln(d.remove("key"))
+writeln(d.remove(3))
+writeln(d.keys())
+writeln(d.values())

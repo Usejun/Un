@@ -1,51 +1,18 @@
-﻿using Un.Function;
+﻿using Un.Object.Function;
+using Un.Object.Reference;
 using Un.Supporter;
 
-namespace Un.Object
+namespace Un.Object.Value
 {
-    public class Date : Obj
+    public class Date : Val<DateTime>
     {
-        public DateTime value;
+        public Date() : base("date", DateTime.MinValue) { }
 
-        public Date() : base("date")
-        {
-            value = DateTime.MinValue;
-        }
+        public Date(Times times) : base("date", new DateTime(times.value.Ticks)) { }
 
-        public Date(Times times) : base("date")
-        {
-            value = new DateTime(times.value.Ticks);
-        }
+        public Date(DateTime value) : base("date", value) { }
 
-        public Date(DateTime value) : base("date")
-        {
-            this.value = value;
-            properties["year"] = new Int(value.Year);
-            properties["month"] = new Int(value.Month);
-            properties["day"] = new Int(value.Day);
-            properties["hour"] = new Int(value.Hour);
-            properties["minute"] = new Int(value.Minute);
-            properties["second"] = new Int(value.Second);
-            properties["milliseconds"] = new Int(value.Millisecond);
-        }
-
-        public Date(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0, int milliseconds = 0) : base("date")
-        {
-            value = new(year, month, day, hour, minute, second, milliseconds);
-        }
-
-        public override void Ass(string value, Dictionary<string, Obj> properties)
-        {
-            if (DateTime.TryParse(value, out var result))
-                this.value = result;
-            else base.Ass(value, properties);
-        }
-
-        public override void Ass(Obj value, Dictionary<string, Obj> properties)
-        {
-            if (value is Date date) this.value = date.value;
-            else base.Ass(value, properties);
-        }
+        public Date(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0, int milliseconds = 0) : base("date", new(year, month, day, hour, minute, second, milliseconds)) { }
 
         public Str Format(Iter para)
         {
@@ -109,12 +76,12 @@ namespace Un.Object
             properties.Add("month", new NativeFun("month", Month));
             properties.Add("day", new NativeFun("day", Day));
             properties.Add("hour", new NativeFun("hour", Hour));
-            properties.Add("minute", new NativeFun("minute", Minute)); 
+            properties.Add("minute", new NativeFun("minute", Minute));
             properties.Add("second", new NativeFun("second", Second));
             properties.Add("milliseconds", new NativeFun("milliseconds", Millisecond));
             properties.Add("add_years", new NativeFun("add_years", para =>
             {
-                if (para[0] is Int i && i.value.TryInt(out int years))                
+                if (para[0] is Int i && i.value.TryInt(out int years))
                     return new Date(value.AddYears(years));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
@@ -179,21 +146,6 @@ namespace Un.Object
 
         public override Str CStr() => new($"{value:yyyy:MM:dd HH:mm:ss:ffff}");
 
-        public override Bool LessThen(Obj obj)
-        {
-            if (obj is Date date) return new(value < date.value);
-            return base.LessThen(obj);
-        }
-
-        public override Bool Equals(Obj obj)
-        {
-            if (obj is Date date) return new(value.CompareTo(date.value) == 0);
-            return base.Equals(obj);
-        }
-
         public override Obj Clone() => new Date(value);
-
-        public override int GetHashCode() => value.GetHashCode();
-
     }
 }

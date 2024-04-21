@@ -1,5 +1,7 @@
-﻿using Un.Function;
-using Un.Object;
+﻿using Un.Object;
+using Un.Object.Function;
+using Un.Object.Reference;
+using Un.Object.Value;
 using Un.Supporter;
 
 namespace Un.Package
@@ -52,6 +54,8 @@ namespace Un.Package
 
         Int Hash(Iter paras) => paras[0].Hash();
 
+        Object.Reference.File Open(Iter paras) => new(paras[0].CStr());
+
         Obj Exit(Iter paras)
         {
             Environment.Exit(0);
@@ -76,6 +80,7 @@ namespace Un.Package
             new NativeFun("range", Range),
             new NativeFun("len", Len),
             new NativeFun("hash", Hash),
+            new NativeFun("open", Open),
             new NativeFun("assert", Assert),
             new NativeFun("exit", Exit),
         ];

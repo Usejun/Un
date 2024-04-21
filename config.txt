@@ -28,8 +28,8 @@ RParen )
 Dot .
 Comma ,
 Func func
-True True
-False False
+True true
+False false
 If if
 ElIf elif
 Else else
@@ -41,3 +41,4 @@ Return return
 Comment #
 Class class
 Func fn
+Using using

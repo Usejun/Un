@@ -1,4 +1,6 @@
 ﻿using Un.Object;
+using Un.Object.Value;
+using Un.Object.Reference;
 using Un.Package;
 
 namespace Un.Supporter
@@ -32,6 +34,7 @@ namespace Un.Supporter
             {"times", new Times() },
             {"dict", new Dict() },
             {"json", new JObj() },
+            {"file", new Object.Reference.File() },
         };
 
         public readonly static Dictionary<string, Obj> StaticClass = [];
@@ -108,12 +111,15 @@ namespace Un.Supporter
                 {
                     Console.WriteLine($"{file} : Start");
                     Run(file);
-                    Console.WriteLine($"{file} : End");
                 }
                 catch
                 {
                     logs.Add($"{file} : Failed");
                     continue;
+                }
+                finally
+                {
+                    Console.WriteLine($"{file} : End");
                 }
                 logs.Add($"{file} : Succeed");
             }

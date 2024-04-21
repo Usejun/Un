@@ -1,5 +1,7 @@
 ﻿using Un.Object;
-using Un.Function;
+using Un.Object.Value;
+using Un.Object.Reference;
+using Un.Object.Function;
 
 namespace Un.Supporter
 {
@@ -52,7 +54,7 @@ namespace Un.Supporter
                         {
                             b = Obj.Convert(token.value, properties);
 
-                            calculateStack.Push(a.GetByIndex(new Iter([b])));
+                            calculateStack.Push(a.GetItem(new Iter([b])));
                         }
                         else if (token.type == Token.Type.Property)
                         {

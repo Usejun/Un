@@ -1,37 +1,17 @@
-﻿namespace Un.Object
-{
-    public class Int : Obj
+﻿using Un.Object.Reference;
+
+namespace Un.Object.Value
+{    
+    public class Int : Val<long>
     {
-        public long value;
+        public Int() : base("int", 0) { }        
 
-        public Int() : base("int")
-        { 
-            value = 0;
-        }
-
-        public Int(long value) : base("int")
-        {
-            this.value = value;
-        }
+        public Int(long value) : base("int", value) { }
 
         public override Obj Init(Iter arg)
         {
             value = arg[0].CInt().value;
             return this;
-        }
-
-        public override void Ass(string value, Dictionary<string, Obj> properties)
-        {
-            if (long.TryParse(value, out var v))
-                this.value = v;
-            throw new InvalidOperationException("This is a type that can't be assigned.");
-        }
-
-        public override void Ass(Obj value, Dictionary<string, Obj> properties)
-        {
-            if (value is Int i)
-                this.value = i.value;
-            throw new InvalidOperationException("This is a type that can't be assigned.");
         }
 
         public override Obj Add(Obj obj)
@@ -104,13 +84,9 @@
             throw new InvalidOperationException();
         }
 
-        public override Str Type() => new("int");
-
         public override Int CInt() => new(value);
 
         public override Float CFloat() => new(value);
-
-        public override Str CStr() => new ($"{value}");
 
         public override Bool CBool()
         {
@@ -118,22 +94,6 @@
             return new(true);
         }
 
-        public override Bool LessThen(Obj obj)
-        {
-            if (obj is Int i) return new(value < i.value);
-            if (obj is Float f) return new(value < f.value);
-            return base.LessThen(obj);
-        }
-
-        public override Bool Equals(Obj obj)
-        {
-            if (obj is Int i) return new(value == i.value);
-            if (obj is Float f) return new(value == f.value);
-            return base.LessThen(obj);
-        }
-
         public override Obj Clone() => new Int(value);
-
-        public override int GetHashCode() => value.GetHashCode();
     }
 }

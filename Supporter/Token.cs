@@ -1,4 +1,6 @@
 ﻿using Un.Object;
+using Un.Object.Reference;
+using Un.Object.Value;
 
 namespace Un.Supporter
 {
@@ -100,6 +102,7 @@ namespace Un.Supporter
             Boolean,
             Iterator,
             Class,
+            Using,
         }
 
         public Token(char c)

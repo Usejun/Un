@@ -1,4 +1,4 @@
-﻿using Un.Function;
+﻿using Un.Object.Function;
 
 namespace Un.Supporter
 {
@@ -64,7 +64,7 @@ namespace Un.Supporter
                 if (index < code.Length && code[index] == '.')
                 {
                     str += code[index++];
-                    while (char.IsDigit(code[index]))
+                    while (index < code.Length && char.IsDigit(code[index]))
                         str += code[index++];
 
                     return new(str, Token.Type.Float);

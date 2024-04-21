@@ -1,4 +1,7 @@
-﻿using Un.Function;
+﻿using System;
+using Un.Object.Function;
+using Un.Object.Reference;
+using Un.Object.Value;
 using Un.Supporter;
 
 namespace Un.Object
@@ -24,7 +27,8 @@ namespace Un.Object
 
         public Obj(string[] code, Dictionary<string, Obj> local)
         {            
-            List<Token> tokens = Parser.All(code[0], local);
+            List<Token> tokens = Lexer.Lex(Tokenizer.Tokenize(code[0]), local);
+
             ClassName = tokens[1].value;
 
             int line = 0, nesting = 1, assign;
@@ -37,7 +41,7 @@ namespace Un.Object
                     continue;
 
                 assign = -1;
-                tokens = Parser.All(code[line], local);
+                tokens = Lexer.Lex(Tokenizer.Tokenize(code[line]), local);
 
                 if (tokens.Count == 0)
                     continue;
@@ -71,11 +75,7 @@ namespace Un.Object
                 else throw new SyntaxException();
             }
         }
-
-        public virtual void Ass(string value, Dictionary<string, Obj> properties) => throw new InvalidOperationException("This is a type that can't be assigned.");
-
-        public virtual void Ass(Obj value, Dictionary<string, Obj> properties) => throw new InvalidOperationException("This is a type that can't be assigned.");
-
+        
         public virtual void Init()
         {
 
@@ -91,6 +91,8 @@ namespace Un.Object
             return this;
         }
 
+
+
         public virtual Obj Get(string str)
         {
             if (properties.TryGetValue(str, out var property))
@@ -102,6 +104,8 @@ namespace Un.Object
         {
             properties[str] = value;
         }
+
+
 
         public virtual Obj Add(Obj obj)
         {
@@ -166,6 +170,8 @@ namespace Un.Object
             throw new InvalidOperationException("Types that cannot be divided to each other.");
         }
 
+
+
         public virtual Bool Equals(Obj obj)
         {
             if (obj.ClassName == "None" && ClassName == "None")
@@ -190,6 +196,8 @@ namespace Un.Object
 
         public virtual Bool GreaterOrEquals(Obj obj) => new(!LessThen(obj).value || !Equals(obj).value);
 
+
+
         public virtual Int Len()
         {
             if (properties.TryGetValue("__len__", out var value) && value is Fun fun && fun.Call(new Iter([this])) is Int i)
@@ -197,14 +205,16 @@ namespace Un.Object
             return new(1);
         }
 
-        public virtual Int Hash() => new(GetHashCode());
+        public Int Hash() => new(GetHashCode());
 
-        public virtual Str Type()
+        public Str Type()
         {
             if (properties.TryGetValue("__type__", out var value) && value is Fun fun && fun.Call(new Iter([this])) is Str s)
                 return s;
             return new(ClassName);
         }
+
+
 
         public virtual Str CStr()
         {
@@ -241,14 +251,16 @@ namespace Un.Object
             throw new InvalidCastException("This type cannot cast iter.");
         }
 
-        public virtual Obj GetByIndex(Iter para)
+
+
+        public virtual Obj GetItem(Iter para)
         {
             if (properties.TryGetValue("__getitem__", out var value) && value is Fun fun)
                 return fun.Call(para.Insert(this, 0, false));
             throw new IndexerException("It is not Indexable type");
         }
 
-        public virtual Obj SetByIndex(Iter para)
+        public virtual Obj SetItem(Iter para)
         {
             if (properties.TryGetValue("__setitem__", out var value) && value is Fun fun)
                 return fun.Call(para.Insert(this, 0, false));
@@ -266,8 +278,18 @@ namespace Un.Object
             return clone;
         }
 
+
+
         public bool HasProperty(string key) => properties.ContainsKey(key);
 
+        public override bool Equals(object? obj)
+        {
+            if (obj is Obj o) return Equals(o).value;
+            return false;
+        }
+
+
+        
         public static Obj Convert(string str, Dictionary<string, Obj> properties)
         {
             if (string.IsNullOrEmpty(str)) return None;
@@ -277,21 +299,15 @@ namespace Un.Object
             if (str[0] == '\"' && str[^1] == '\"') return new Str(str.Trim('\"'));
             if (str[0] == '\'' && str[^1] == '\'') return new Str(str.Trim('\''));
             if (str[0] == '[' && str[^1] == ']') return new Iter(str, properties);
-            if (str == "True") return new Bool(true);
-            if (str == "False") return new Bool(false);
+            if (str == "true") return new Bool(true);
+            if (str == "false") return new Bool(false);
             if (str == "None") return None;
             if (long.TryParse(str, out var l)) return new Int(l);
             if (double.TryParse(str, out var d)) return new Float(d);
 
             throw new InvalidConvertException(str);
         }
-        
-        public static bool IsNone(Obj obj) => obj.ClassName == "None";
 
-        public override bool Equals(object? obj)
-        {
-            if (obj is Obj o) return Equals(o).value;
-            return false;
-        }
+        public static bool IsNone(Obj obj) => obj.ClassName == "None";
     }
 }

@@ -18,6 +18,7 @@ C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한
 	<li>Dict : 사전, (키:값) 구조
 	<li>Date : 날짜
 	<li>Times : 시간
+	<li>JObj : JSON
 </ul>
 
 ## 함수
@@ -121,3 +122,9 @@ class 키워드 후에 클래스의 이름을 지어준다.
 	<li> __or__ : or 연산
 	<li> __xor__ : xor 연산
 </ul>
+
+
+TODO
+	
+값 복사, 레퍼런스 복사 구분
+using문 추가

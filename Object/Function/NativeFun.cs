@@ -1,6 +1,7 @@
 ﻿using Un.Object;
+using Un.Object.Reference;
 
-namespace Un.Function
+namespace Un.Object.Function
 {
     public class NativeFun : Fun
     {
@@ -9,7 +10,7 @@ namespace Un.Function
         public NativeFun(string name, Func<Iter, Obj> func)
         {
             code = [];
-            this.name = name;         
+            this.name = name;
             function = func;
         }
 

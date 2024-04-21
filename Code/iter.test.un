@@ -3,6 +3,7 @@
 writeln(l)
 
 l.remove(1)
+l.remove(5)
 
 writeln(l)
 
@@ -29,7 +30,7 @@ writeln(len(l))
 
 l += 77
 l += 2.75
-l += True
+l += true
 l += "hello"
 
 l.add(1)

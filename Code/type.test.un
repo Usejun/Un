@@ -2,7 +2,7 @@
 i = int("123")
 f = 123.2
 s = "hello, world!"
-b = True
+b = true
 it1 = [1, 2, 3, 4, 5]
 it2 = [i, f, s, d, b]
 

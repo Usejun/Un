@@ -1,7 +1,9 @@
 ﻿using Un.Object;
+using Un.Object.Reference;
+using Un.Object.Value;
 using Un.Supporter;
 
-namespace Un.Function
+namespace Un.Object.Function
 {
     public class Fun : Obj
     {
@@ -12,7 +14,7 @@ namespace Un.Function
 
         public Fun() { }
 
-        public Fun(string[] code) 
+        public Fun(string[] code)
         {
             this.code = code;
             List<Token> tokens = Tokenizer.Tokenize(code[0]);
@@ -20,7 +22,7 @@ namespace Un.Function
             name = tokens[1].value;
 
             while (tokens[i].type != Token.Type.RParen)
-            { 
+            {
                 if (tokens[i].type != Token.Type.Comma)
                     args.Add(tokens[i].value);
                 i++;
@@ -28,17 +30,17 @@ namespace Un.Function
 
             foreach (var chr in code[0])
                 if (chr == '\t')
-                    nesting++;            
+                    nesting++;
         }
 
         public virtual Obj Call(Iter paras)
-        {                    
+        {
             Parser interpreter = new(code, properties, line: 1, nesting: nesting + 1);
 
             for (int i = 0; i < args.Count; i++)
-                properties.Add(args[i], paras[i]);            
+                properties.Add(args[i], paras[i]);
 
-            while (interpreter.TryInterpret());
+            while (interpreter.TryInterpret()) ;
 
             properties.Clear();
 
@@ -47,7 +49,8 @@ namespace Un.Function
 
         public override Fun Clone()
         {
-            return new() {
+            return new()
+            {
                 name = name,
                 code = code,
                 nesting = nesting,
@@ -55,5 +58,9 @@ namespace Un.Function
                 properties = []
             };
         }
+
+        public override Str CStr() => new(name);
+
+        public override int GetHashCode() => name.GetHashCode();
     }
 }

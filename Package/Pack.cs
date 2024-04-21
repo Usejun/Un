@@ -1,5 +1,5 @@
-﻿using Un.Function;
-using Un.Object;
+﻿using Un.Object;
+using Un.Object.Function;
 
 namespace Un.Package
 {
