@@ -61,16 +61,13 @@ namespace Un.Supporter
                             b = a.Get(token.value);
 
                             if (b is Fun fun)
-                                b = fun.Call(calculateStack.Pop().CIter().Insert(a, 0, false));
+                                b = fun.Call(calculateStack.Pop().CIter().ExtendInsert(a, 0));
 
                             calculateStack.Push(b);
                         }
                         else if (token.type == Token.Type.Bang)
-                        {
-                            if (a is Bool bo)
-                                calculateStack.Push(new Bool(!bo.value));
-                            else
-                                throw new InvalidOperationException("It is not boolean type.");
+                        {                        
+                            calculateStack.Push(new Bool(!a.CBool().value));
                         }
                         else throw new InvalidOperationException();
                     }
@@ -95,7 +92,7 @@ namespace Un.Supporter
                             Token.Type.LessOrEqual => a.LessOrEquals(b),
                             Token.Type.GreaterThen => a.GreaterThen(b),
                             Token.Type.LessThen => a.LessThen(b),
-                            Token.Type.Method => ((Fun)b.Get(token.value)).Call(a.CIter().Insert(b, 0, false)),
+                            Token.Type.Method => ((Fun)b.Get(token.value)).Call(a.CIter().Insert(b, 0)),
                             _ => throw new InvalidOperationException()
                         };
 
@@ -112,15 +109,15 @@ namespace Un.Supporter
                 }
                 else if (properties.TryGetValue(token.value, out var local))
                 {
-                    if (local is Fun fun)
-                        local = fun.Call(calculateStack.TryPop(out var obj) && obj is Iter args ? args : Iter.Empty);
+                    if (local is Fun fun && calculateStack.TryPop(out var obj) && obj is Iter args)
+                        local = fun.Clone().Call(args);
 
                     calculateStack.Push(local);
                 }
                 else if (Process.TryGetProperty(token, out var global))
                 {
-                    if (global is Fun fun)
-                        global = fun.Clone().Call(calculateStack.TryPop(out var obj) && obj is Iter args ? args : Iter.Empty);
+                    if (global is Fun fun && calculateStack.TryPop(out var obj) && obj is Iter args)
+                        global = fun.Clone().Call(args);
 
                     calculateStack.Push(global);
                 }

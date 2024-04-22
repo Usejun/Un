@@ -9,7 +9,8 @@ string[] testcase = [
     "class.test.un",
     "iter.test.un",
     "dict.test.un",
+    "func.test.un"
 ];
 
-//Process.Test(testcase);
-Process.Run("dict.test.un");
+Process.Test(testcase);
+Process.Run("func.test.un");

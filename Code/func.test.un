@@ -1,0 +1,7 @@
+﻿fn test1(f)
+	f("hello")
+
+fn test2()
+	writeln("hello")
+
+test1(int)

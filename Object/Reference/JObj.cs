@@ -135,5 +135,7 @@ namespace Un.Object.Reference
         }
 
         public override Obj Clone() => new JObj() { value = value };
+
+        public override Obj Copy() => this;
     }
 }

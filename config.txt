@@ -15,10 +15,10 @@ And &
 Or |
 Caret ^
 DoubleSlash //
-LessOrEqual >=
-GreaterOrEqual <=
-LessThen >
-GreaterThen <
+LessOrEqual <=
+GreaterOrEqual >=
+LessThen <
+GreaterThen >
 Equal ==
 Unequal !=
 LBrack [

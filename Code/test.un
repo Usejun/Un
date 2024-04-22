@@ -1,2 +1,18 @@
-﻿using w = open("D:\\User\\Un\\Code\\type.test.un")
-writeln(w.readln())
+﻿import ["timer"]
+
+fn fib(k)	
+	if (k < 2)
+		dp[k] = 1
+	if (dp[k] == 0)
+		dp[k] = fib(k - 1) + fib(k - 2)
+
+	return dp[k]
+	
+t = timer()
+dp = iter()
+t.run()
+fib(100)
+t.stop()
+
+writeln(dp)
+writeln(t.time())

@@ -7,8 +7,10 @@ it1 = [1, 2, 3, 4, 5]
 it2 = [i, f, s, d, b]
 
 # 정수형
+writeln("정수형")
 writeln(i)
 writeln(type(i))
+writeln("타입 변환")
 writeln(type(float(i)))
 writeln(float(i))
 writeln(type(str(i)))
@@ -16,8 +18,10 @@ writeln(str(i))
 writeln()
 
 # 실수형
-writeln(type(f))
+writeln("실수형")
 writeln(f)
+writeln(type(f))
+writeln("타입 변환")
 writeln(type(int(f)))
 writeln(int(f))
 writeln(type(str(f)))
@@ -25,27 +29,33 @@ writeln(str(f))
 writeln()
 
 # 문자열
-writeln(type(s))
+writeln("문자열")
 writeln(s)
+writeln(type(s))
 writeln()
 
 # 날짜
-writeln(type(d))
+writeln("날짜")
 writeln(d.format("yyyy년 MM월 dd일"))
+writeln(type(d))
 writeln()
 
 # 불
-writeln(type(b))
+writeln("불")
 writeln(b)
+writeln(type(b))
+writeln("타입 변환")
 writeln(str(b))
 writeln(type(str(b)))
 writeln()
 
 # 이터레이터
-writeln(type(it1))
-writeln(type(it2))
+writeln("이터레이터")
 writeln(it1)
 writeln(it2)
+writeln(type(it1))
+writeln(type(it2))
+writeln("타입 변환")
 writeln(type(str(it1)))
 writeln(type(str(it2)))
 writeln(str(it1))

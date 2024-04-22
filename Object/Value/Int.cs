@@ -95,5 +95,7 @@ namespace Un.Object.Value
         }
 
         public override Obj Clone() => new Int(value);
+
+        public override Obj Copy() => new Int(value);
     }
 }

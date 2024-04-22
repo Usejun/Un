@@ -29,8 +29,8 @@ namespace Un.Object.Function
             }
 
             foreach (var chr in code[0])
-                if (chr == '\t')
-                    nesting++;
+                if (chr != '\t') break;
+                else nesting++;
         }
 
         public virtual Obj Call(Iter paras)

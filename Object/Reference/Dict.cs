@@ -66,10 +66,12 @@ namespace Un.Object.Reference
 
         public override Obj GetItem(Iter para) => value[para[0]];
 
-        public override Obj SetItem(Iter para) => value[para[0]] = para[1].Clone();
+        public override Obj SetItem(Iter para) => value[para[0]] = para[1];
 
         public override Str CStr() => new($"{{{string.Join(", ", value.Select(i => $"{i.Key.CStr().value}:{i.Value.CStr().value}"))}}}");
 
         public override Obj Clone() => new Dict() { value = value };
+
+        public override Obj Copy() => this;
     }
 }

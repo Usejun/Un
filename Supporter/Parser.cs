@@ -86,19 +86,19 @@ namespace Un.Supporter
                 }
 
                 if (assign == 1)
-                    properties[token.value] = AssignCalculate(analyzedTokens[assign], var, value);
+                    properties[token.value] = AssignCalculate(analyzedTokens[assign], var, value).Copy();
                 else
                 {
                     Token last = analyzedTokens[assign - 1];
 
                     if (last.type == Token.Type.Indexer)
                     {
-                        var.SetItem(new Iter([Obj.Convert(last.value, properties), AssignCalculate(analyzedTokens[assign], var, value)]));
+                        var.SetItem(new Iter([Obj.Convert(last.value, properties), AssignCalculate(analyzedTokens[assign], var, value).Copy()]));
                     }
                     else if (last.type == Token.Type.Property)
                     {
                         if (var.HasProperty(last.value))
-                            var.Set(last.value, AssignCalculate(analyzedTokens[assign], var.Get(last.value), value));
+                            var.Set(last.value, AssignCalculate(analyzedTokens[assign], var.Get(last.value), value).Copy());
                         else throw new InterpreterParseException();
                     }
                     else throw new InterpreterParseException();
@@ -148,7 +148,7 @@ namespace Un.Supporter
                     {
                         if (var.Get(analyzedTokens[next].value) is Fun func)
                         {
-                            var = func.Clone().Call(Obj.Convert(analyzedTokens[next + 1].value, properties).CIter().Insert(var, 0, false));
+                            var = func.Call(Obj.Convert(analyzedTokens[next + 1].value, properties).CIter().Insert(var, 0));
                         }
                     }
                     next++;

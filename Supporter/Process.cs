@@ -51,9 +51,9 @@ namespace Un.Supporter
             {
                 var data = config.ReadLine()!.Split();
                 string keyword = data[0];
-                string text = data[1];
+                string str = data[1];
 
-                Token.Types.Add(text, Enum.Parse<Token.Type>(keyword));
+                Token.Types.Add(str, Enum.Parse<Token.Type>(keyword));
             }
 
             foreach ((_, Obj obj) in Class)
@@ -109,7 +109,7 @@ namespace Un.Supporter
             {
                 try
                 {
-                    Console.WriteLine($"{file} : Start");
+                    Console.WriteLine($"\n{file} : Start\n");
                     Run(file);
                 }
                 catch
@@ -119,7 +119,7 @@ namespace Un.Supporter
                 }
                 finally
                 {
-                    Console.WriteLine($"{file} : End");
+                    Console.WriteLine($"\n{file} : End\n");
                 }
                 logs.Add($"{file} : Succeed");
             }

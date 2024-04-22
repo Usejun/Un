@@ -1,4 +1,5 @@
 ﻿using Un.Object;
+using Un.Object.Function;
 using Un.Object.Value;
 
 namespace Un.Supporter
@@ -13,6 +14,7 @@ namespace Un.Supporter
 
             for (int i = 0; i < tokens.Count; i++)
             {
+
                 if (tokens[i].type == Token.Type.LBrack)
                 {
                     int j = i + 1, depth = 1;
@@ -106,6 +108,8 @@ namespace Un.Supporter
                 else analyzedTokens.Add(tokens[i]);
 
                 if (analyzedTokens[^1].type == Token.Type.Variable && Process.IsClass(tokens[i]))
+                    analyzedTokens[^1].type = Token.Type.Function;
+                if (analyzedTokens[^1].type == Token.Type.Variable && properties.TryGetValue(tokens[i].value, out var f) && f is Fun)
                     analyzedTokens[^1].type = Token.Type.Function;
             }
 

@@ -61,6 +61,8 @@ namespace Un.Object.Reference
 
         public override Obj Clone() => new File() { value = value };
 
+        public override Obj Copy() => this;
+
         public void Close()
         {
             w.Close();

@@ -1,4 +1,5 @@
-﻿using Un.Object.Reference;
+﻿using Un.Object.Function;
+using Un.Object.Reference;
 
 namespace Un.Object.Value
 {
@@ -26,6 +27,18 @@ namespace Un.Object.Value
                 if (!i.value.TryInt(out int index) || OutOfRange(index)) throw new IndexOutOfRangeException();
                 return new Str($"{value[index]}");
             }
+        }
+
+        public override void Init()
+        {
+            properties.Add("split", new NativeFun("split", para =>
+            {
+                if (para[0] is not Str self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+                if (para[1] is not Str sep)
+                    throw new ArgumentException("invalid argument", nameof(para));
+                return new Iter(self.value.Split(sep.value));
+            }));
         }
 
         public override Obj Init(Iter arg)
@@ -59,7 +72,7 @@ namespace Un.Object.Value
 
         public override Iter CIter()
         {
-            Iter iter = new();
+            Iter iter = [];
 
             foreach (char c in value)
                 iter.Append(new Str(c));
@@ -76,6 +89,8 @@ namespace Un.Object.Value
         }
 
         public override Obj Clone() => new Str(value);
+
+        public override Obj Copy() => new Str(value);
 
         bool OutOfRange(int index) => 0 > index || index >= value.Length;
     }

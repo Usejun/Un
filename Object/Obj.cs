@@ -85,8 +85,8 @@ namespace Un.Object
         {
             if (properties.TryGetValue("__init__", out var value) && value is Fun fun)
             {
-                Iter paras = [];               
-                fun.Call(paras.Append(this, false).Append(args));            
+                Iter paras = new([this]);               
+                fun.Call(paras.Extend(args));            
             }
             return this;
         }
@@ -251,22 +251,6 @@ namespace Un.Object
             throw new InvalidCastException("This type cannot cast iter.");
         }
 
-
-
-        public virtual Obj GetItem(Iter para)
-        {
-            if (properties.TryGetValue("__getitem__", out var value) && value is Fun fun)
-                return fun.Call(para.Insert(this, 0, false));
-            throw new IndexerException("It is not Indexable type");
-        }
-
-        public virtual Obj SetItem(Iter para)
-        {
-            if (properties.TryGetValue("__setitem__", out var value) && value is Fun fun)
-                return fun.Call(para.Insert(this, 0, false));
-            throw new IndexerException("It is not Indexable type");
-        }
-
         public virtual Obj Clone()
         {
             Obj clone = new(ClassName);
@@ -276,6 +260,29 @@ namespace Un.Object
                     clone.properties[key] = property.Clone();
 
             return clone;
+        }
+
+        public virtual Obj Copy()
+        {
+            if (properties.TryGetValue("__copy__", out var value) && value is Fun fun && fun.Call(new Iter([this])) is Iter it)
+                return it;
+            return this;
+        }
+
+
+
+        public virtual Obj GetItem(Iter para)
+        {
+            if (properties.TryGetValue("__getitem__", out var value) && value is Fun fun)
+                return fun.Call(para.ExtendInsert(this, 0));
+            throw new IndexerException("It is not Indexable type");
+        }
+
+        public virtual Obj SetItem(Iter para)
+        {
+            if (properties.TryGetValue("__setitem__", out var value) && value is Fun fun)
+                return fun.Call(para.ExtendInsert(this, 0));
+            throw new IndexerException("It is not Indexable type");
         }
 
 

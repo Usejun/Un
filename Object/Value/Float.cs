@@ -75,5 +75,7 @@ namespace Un.Object.Value
         }
 
         public override Obj Clone() => new Float(value);
+
+        public override Obj Copy() => new Float(value);
     }
 }

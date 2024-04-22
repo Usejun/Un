@@ -6,8 +6,12 @@ namespace Un.Object.Reference
     {
         public T value = value;
 
-        public override Str CStr() => new($"{value}"); 
+        public override Str CStr() => new($"{value}");
+
+        public override Iter CIter() => new([Copy()]);
 
         public override int GetHashCode() => value.GetHashCode();
+
+        public override Obj Copy() => this;
     }
 }

@@ -39,6 +39,7 @@ namespace Un.Object.Value
         public override Obj Add(Obj obj)
         {
             if (obj is Times times) return new Times(value + times.value);
+            if (obj is Str str) return CStr().Add(str);
             return base.Add(obj);
         }
 
@@ -51,5 +52,7 @@ namespace Un.Object.Value
         public override Int CInt() => new(value.Ticks);
 
         public override Obj Clone() => new Times(value);
+
+        public override Obj Copy() => new Times(value);
     }
 }

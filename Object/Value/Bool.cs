@@ -46,5 +46,7 @@ namespace Un.Object.Value
         public override Bool CBool() => new(value);
 
         public override Obj Clone() => new Bool(value);
+
+        public override Obj Copy() => new Bool(value);
     }
 }
