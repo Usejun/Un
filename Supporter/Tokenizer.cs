@@ -85,11 +85,7 @@ namespace Un.Supporter
                             index += 2;
                             token = new($"{c1}{c2}");
                             return true;
-                        }
-
-                        index++;
-                        token = new(c1);
-                        return true;
+                        }  
                     }
 
                     token = new("None", Token.Type.None);
@@ -108,14 +104,7 @@ namespace Un.Supporter
                                 token = new($"{c1}{c2}{c3}");
                                 return true;
                             }
-                            index += 2;
-                            token = new($"{c1}{c2}");
-                            return true;
                         }
-
-                        index++;
-                        token = new(c1);
-                        return true;
                     }
 
                     token = new("None", Token.Type.None);

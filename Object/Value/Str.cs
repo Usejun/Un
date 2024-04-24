@@ -88,7 +88,7 @@ namespace Un.Object.Value
             return new Str($"{value[index]}");
         }
 
-        public override Obj Clone() => new Str(value);
+        public override Obj Clone() => new Str(value) { };
 
         public override Obj Copy() => new Str(value);
 

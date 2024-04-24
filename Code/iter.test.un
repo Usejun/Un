@@ -15,19 +15,13 @@ l.remove_at(3)
 
 writeln(l)
 
-writeln("값 : 1 존재 유무")
-l.contains(1)
-writeln("값 : 9 존재 유무")
-l.contains(9)
-writeln("값 : 0 존재 유무")
-l.contains(0)
+writeln("값 : 1 존재 유무 : " + l.contains(1))
+writeln("값 : 9 존재 유무 : " + l.contains(9))
+writeln("값 : 0 존재 유무 : " + l.contains(0))
 
-writeln("값 : 2의 위치")
-l.index_of(2)
-writeln("값 : 7의 위치")
-l.index_of(7)
-writeln("값 : 9의 위치")
-l.index_of(9)
+writeln("값 : 2의 위치 : " + l.index_of(2))
+writeln("값 : 7의 위치 : " + l.index_of(7))
+writeln("값 : 9의 위치 : " + l.index_of(9))
 
 writeln("0번째 값을 99 변경")
 l[0] = 99

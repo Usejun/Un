@@ -1,7 +1,39 @@
-﻿fn test1(f)
-	f("hello")
+﻿import ["queue", "stack"]
 
-fn test2()
-	writeln("hello")
+fn bfs(start, visit)	
+	q = queue(10)
+	q += start	
 
-test1(int)
+	while q
+		w = q.dequeue()
+		if (!(w in visit))
+			write(w + " ")
+			visit += w
+			for i in l[w]
+				if (!(i in visit))
+					q += i
+
+fn dfs(start, visit)
+	visit += start
+	for next in l[start]
+		if (!(next in visit))
+			write(next + " ")
+			dfs(next, visit)
+
+n, m, v = map(int, readln().split(" "))
+l = [[]] * (n + 1)  
+
+for i in range(0, m)
+	a, b = map(int, readln().split(" "))
+	l[a] += b
+	l[b] += a
+
+for i in range(0, n+1)
+	l[i].sort()
+
+write(v + " ")
+dfs(v, [])
+writeln()
+
+bfs(v, [])
+

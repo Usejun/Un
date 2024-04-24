@@ -6,7 +6,7 @@ using Un.Supporter;
 
 namespace Un.Object
 {
-    public class Obj
+    public class Obj : IComparable<Obj>
     {
         public static Obj None => new();
 
@@ -295,6 +295,13 @@ namespace Un.Object
             return false;
         }
 
+        public int CompareTo(Obj? other)
+        {
+            if (Equals(other).value) return 0;
+            if (LessThen(other).value) return -1;
+            if (GreaterThen(other).value)return 1;
+            throw new InvalidOperationException("Types that are not comparable to each other.");
+        }
 
         
         public static Obj Convert(string str, Dictionary<string, Obj> properties)
@@ -311,10 +318,12 @@ namespace Un.Object
             if (str == "None") return None;
             if (long.TryParse(str, out var l)) return new Int(l);
             if (double.TryParse(str, out var d)) return new Float(d);
+            if (DateTime.TryParse(str, out var d1)) return new Date(d1);
 
             throw new InvalidConvertException(str);
         }
 
         public static bool IsNone(Obj obj) => obj.ClassName == "None";
+
     }
 }

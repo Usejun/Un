@@ -25,13 +25,13 @@
 		return vector2(this.x % other.x, this.y % other.y)
 
 	fn __or__(this, other)
-		return vector2(this.x | other.x, this.y | other.y)
+		return vector2(this.x or other.x, this.y or other.y)
 
 	fn __and__(this, other)
-		return vector2(this.x & other.x, this.y & other.y)
+		return vector2(this.x and other.x, this.y and other.y)
 
 	fn __xor__(this, other)
-		return vector2(this.x ^ other.x, this.y ^ other.y)
+		return vector2(this.x xor other.x, this.y xor other.y)
 
 	fn __len__()
 		return 2
@@ -43,10 +43,10 @@
 		return "(" + this.x + ", " + this.y + ")"
 
 	fn __int__(this)
-		return int(this.x + this.y / 2)
+		return int((this.x + this.y) / 2)
 
 	fn __eq__(this, other)
-		return this.x == other.x & this.y == other.y
+		return this.x == other.x and this.y == other.y
 
 	fn __lt__(this, other)
-		return this.x == other.x | this.y == other.y
+		return this.x == other.x or this.y == other.y

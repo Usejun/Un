@@ -8,7 +8,7 @@ namespace Un.Supporter
     {
         public readonly static Dictionary<Type, int> Operator = new()
         {
-            { Type.Assign, 0 }, { Type.RParen, 0 }, 
+            { Type.Assign, 0 }, { Type.RParen, 0 }, { Type.In, 0 },
             { Type.And, 0 }, { Type.Or, 0 }, { Type.Caret , 0 },
 
             { Type.Equal,  1 }, { Type.Unequal, 1 },
@@ -68,6 +68,7 @@ namespace Un.Supporter
             Equal,
             Unequal,
 
+            In,
             Indexer,
             Property,
             Method,
@@ -90,7 +91,6 @@ namespace Un.Supporter
             For,
             While,
             Import,
-            In,
             Return,
             Comment,
 
@@ -171,7 +171,7 @@ namespace Un.Supporter
 
         public static bool IsSoloOperator(Type type) => type switch
         {
-            Type.Bang or Type.Indexer or Type.Property or Type.Function => true,
+            Type.Bang or Type.Indexer or Type.Property or Type.Function or Type.In => true,
             _ => false,
         };
 

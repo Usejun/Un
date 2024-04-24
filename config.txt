@@ -11,9 +11,9 @@ Bang !
 Asterisk *
 Slash /
 Percent %
-And &
-Or |
-Caret ^
+And and
+Or or
+Caret xor
 DoubleSlash //
 LessOrEqual <=
 GreaterOrEqual >=

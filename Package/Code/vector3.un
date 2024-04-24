@@ -26,16 +26,16 @@ class vector3
 		return vector2(this.x // other.x, this.y // other.y, this.z // other.z)
 
 	fn __mod__(this, other)
-		return vector2(this.x % other.x, this.y % other.y, , this.z % other.z)
+		return vector2(this.x % other.x, this.y % other.y, this.z % other.z)
 
 	fn __or__(this, other)
-		return vector2(this.x | other.x, this.y | other.y, this.z | other.z)
+		return vector2(this.x or other.x, this.y or other.y, this.z or other.z)
 
 	fn __and__(this, other)
-		return vector2(this.x & other.x, this.y & other.y, , this.z & other.z)
+		return vector2(this.x and other.x, this.y and other.y, this.z and other.z)
 
 	fn __xor__(this, other)
-		return vector2(this.x ^ other.x, this.y ^ other.y, , this.z ^ other.z)
+		return vector2(this.x xor other.x, this.y xor other.y, this.z xor other.z)
 
 	fn __len__()
 		return 3
@@ -47,10 +47,10 @@ class vector3
 		return "(" + this.x + ", " + this.y +  + ", " + this.z + ")"
 
 	fn __int__(this)
-		return int(this.x + this.y + this.z / 3)
+		return int((this.x + this.y + this.z) / 3)
 
 	fn __eq__(this, other)
-		return this.x == other.x & this.y == other.y & this.z == other.z
+		return this.x == other.x and this.y == other.y and this.z == other.z
 
 	fn __lt__(this, other)
-		return this.x == other.x | this.y == other.y | this.z == other.z
+		return this.x == other.x or this.y == other.y or this.z == other.z

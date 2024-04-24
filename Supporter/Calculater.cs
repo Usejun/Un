@@ -38,6 +38,8 @@ namespace Un.Supporter
 
         public static Obj Calculate(List<Token> expression, Dictionary<string, Obj> properties)
         {
+            if (expression.Count == 0) return Obj.None;
+
             Stack<Obj> calculateStack = [];
             List<Token> postfix = Postfix(expression);
 
@@ -69,6 +71,10 @@ namespace Un.Supporter
                         {                        
                             calculateStack.Push(new Bool(!a.CBool().value));
                         }
+                        else if (token.type == Token.Type.In)
+                        {
+                            calculateStack.Push(a.CIter().Contains(calculateStack.Pop()));
+                        }
                         else throw new InvalidOperationException();
                     }
                     else
@@ -88,10 +94,10 @@ namespace Un.Supporter
                             Token.Type.Caret => b.Xor(a),
                             Token.Type.Equal => b.Equals(a),
                             Token.Type.Unequal => b.Unequals(a),
-                            Token.Type.GreaterOrEqual => a.GreaterOrEquals(b),
-                            Token.Type.LessOrEqual => a.LessOrEquals(b),
-                            Token.Type.GreaterThen => a.GreaterThen(b),
-                            Token.Type.LessThen => a.LessThen(b),
+                            Token.Type.GreaterOrEqual => b.GreaterOrEquals(a),
+                            Token.Type.LessOrEqual => b.LessOrEquals(a),
+                            Token.Type.GreaterThen => b.GreaterThen(a),
+                            Token.Type.LessThen => b.LessThen(a),
                             Token.Type.Method => ((Fun)b.Get(token.value)).Call(a.CIter().Insert(b, 0)),
                             _ => throw new InvalidOperationException()
                         };
@@ -101,7 +107,10 @@ namespace Un.Supporter
                 }
                 else if (Process.TryGetClass(token, out var cla))
                 {
-                    calculateStack.Push(cla.Clone().Init(calculateStack.TryPop(out var value) && value is Iter args ? args : Iter.Empty));
+                    if (calculateStack.TryPop(out var obj) && obj is Iter args)
+                        calculateStack.Push(cla.Clone().Init(args));
+                    else
+                        calculateStack.Push(new NativeFun(token.value, cla.Init));
                 }
                 else if (Process.TryGetStaticClass(token, out var staticCla))
                 {

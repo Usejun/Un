@@ -9,8 +9,16 @@ string[] testcase = [
     "class.test.un",
     "iter.test.un",
     "dict.test.un",
-    "func.test.un"
+    "func.test.un",
+    "fib.test.un"
 ];
 
+string[] euler = [
+    "Euler\\1.un",
+    "Euler\\2.un",
+    "Euler\\3.un",
+];
+
+Process.Test(euler);
 Process.Test(testcase);
-Process.Run("func.test.un");
+//Process.Run(euler[2]);

@@ -35,6 +35,7 @@ namespace Un.Supporter
             {"dict", new Dict() },
             {"json", new JObj() },
             {"file", new Object.Reference.File() },
+            {"map", new Map() }
         };
 
         public readonly static Dictionary<string, Obj> StaticClass = [];

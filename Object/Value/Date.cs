@@ -144,7 +144,7 @@ namespace Un.Object.Value
             return base.Sub(obj);
         }
 
-        public override Str CStr() => new($"{value:yyyy:MM:dd HH:mm:ss:ffff}");
+        public override Str CStr() => new($"{value}");
 
         public override Obj Clone() => new Date(value);
 

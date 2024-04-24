@@ -1,5 +1,6 @@
 ﻿using Un.Object;
 using Un.Object.Reference;
+using Un.Object.Value;
 
 namespace Un.Object.Function
 {
@@ -7,12 +8,13 @@ namespace Un.Object.Function
     {
         public Func<Iter, Obj> function;
 
-        public NativeFun(string name, Func<Iter, Obj> func)
+        public NativeFun(string name, Func<Iter, Obj> func) : base()
         {
-            code = [];
             this.name = name;
             function = func;
         }
+
+        public override Str CStr() => new(name);
 
         public override Obj Call(Iter paras)
         {

@@ -70,7 +70,11 @@ namespace Un.Object.Reference
 
         public override Str CStr() => new($"{{{string.Join(", ", value.Select(i => $"{i.Key.CStr().value}:{i.Value.CStr().value}"))}}}");
 
-        public override Obj Clone() => new Dict() { value = value };
+        public override Obj Clone() => new Dict()
+        {
+            value = value,
+            properties = properties,
+        };
 
         public override Obj Copy() => this;
     }

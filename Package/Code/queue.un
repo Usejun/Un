@@ -20,7 +20,7 @@
 			this.count += 1
 
 	fn dequeue(this)
-		assert(this.is_empty(), "queue is empty")
+		assert(!this, "queue is empty")
 
 		item = this.arr[this.front]
 		this.front = (this.front + 1) % len(this.arr)
@@ -30,9 +30,6 @@
 
 	fn is_full(this)
 		return this.count == len(this.arr)
-
-	fn is_empty(this)
-		return this.count == 0
 
 	fn resize(this)
 		resized = [0] * (2 * len(this.arr))
@@ -46,8 +43,15 @@
 		this.front = 0
 		this.arr = resized
 
+	fn __add__(this, other)
+		this.enqueue(other)
+		return this
+
 	fn __len__(this)
 		return this.count
+
+	fn __bool__(this)
+		return this.count != 0
 
 	fn __str__(this)
 		text = "["
@@ -55,10 +59,10 @@
 		i = this.front
 		j = this.back
 
-		for i in range(0, this.count)
+		for k in range(0, this.count)
 			text += this.arr[i]
 			i = (i + 1) % len(this.arr)
-			if (i != this.count)
+			if (k != this.count - 1)
 				text += ", "
 		
 		text += "]"

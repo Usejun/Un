@@ -17,18 +17,15 @@
 			this.count += 1
 
 	fn pop(this)
-		assert(this.is_empty(), "queue is empty")
+		assert(!this, "queue is empty")
 
-		item = this.arr[this.count]
+		item = this.arr[this.count - 1]
 		this.count -= 1
 
 		return item
 
 	fn is_full(this)
 		return this.count == len(this.arr)
-
-	fn is_empty(this)
-		return this.count == 0
 
 	fn resize(this)
 		resized = [0] * (2 * len(this.arr))
@@ -38,6 +35,13 @@
 
 		this.arr = resized
 
+	fn __add__(this, other)
+		this.push(other)
+		return this
+
+	fn __bool__(this)
+		return this.count != 0
+
 	fn __len__(this)
 		return this.count
 
@@ -46,7 +50,7 @@
 
 		for i in range(0, this.count)
 			text += this.arr[this.count - i]
-			if (i != this.count)
+			if (i != this.count - 1)
 				text += ", "
 
 		text += "]"

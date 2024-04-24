@@ -2,6 +2,7 @@
 using Un.Object.Value;
 using Un.Object.Function;
 using Un.Supporter;
+using Un.Package;
 
 namespace Un.Object.Reference
 {
@@ -57,7 +58,7 @@ namespace Un.Object.Reference
 
                 if (depth == 0 && !isString && str[index] == ',')
                 {
-                    if (IsIter(buffer)) Append(new Iter(buffer, properties));
+                    if (!string.IsNullOrWhiteSpace(buffer) && IsIter(buffer)) Append(new Iter(buffer, properties));
                     else Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), properties), properties));
                     buffer = "";
                 }
@@ -65,7 +66,7 @@ namespace Un.Object.Reference
                     buffer += str[index];
             }
 
-            if (!string.IsNullOrEmpty(buffer))
+            if (!string.IsNullOrWhiteSpace(buffer))
                 Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), properties), properties));
         }
 
@@ -160,6 +161,14 @@ namespace Un.Object.Reference
 
                 return self.Clone();
             }));
+            properties.Add("sort", new NativeFun("sort", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                self.Sort();
+                return None;
+            }));
         }
 
         public override Obj Init(Iter arg)
@@ -179,8 +188,8 @@ namespace Un.Object.Reference
         }
 
         public override Obj Add(Obj obj)
-        {
-            if (obj is Iter l) Append([..l.Take(l.Count)]);
+        {     
+            if (obj is Iter l) Append([..l.value.Take(l.Count)]);
             else Append(obj);
 
             return this;
@@ -207,7 +216,7 @@ namespace Un.Object.Reference
 
                 for (int i = 0; i < pow.value; i++)
                     for (int j = 0; j < len; j++)
-                        objs[len * i + j] = value[j];
+                        objs[len * i + j] = value[j].Clone();
 
                 return new Iter(objs);
             }
@@ -234,12 +243,14 @@ namespace Un.Object.Reference
             return this;
         }
 
-        public override Str CStr() => new($"[{string.Join(", ", value.Take(Count).Select(i => i.CStr().value))}]");
+        public override Str CStr() => new($"[{string.Join(", ", value.Take(Count).Select(o => o.CStr().value))}]");
 
         public override Obj GetItem(Iter parameter)
         {
-            if (parameter[0] is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
-            return value[iIndex];
+            if (parameter[0] is not Int i || !i.value.TryInt(out var iIndex)) throw new IndexOutOfRangeException();
+            int index = iIndex < 0 ? Count + iIndex : iIndex;
+            if (OutOfRange(index)) throw new IndexOutOfRangeException();
+            return value[index];
         }
 
         public override Obj SetItem(Iter parameter)
@@ -249,7 +260,11 @@ namespace Un.Object.Reference
             return value[iIndex];
         }
 
-        public override Obj Clone() => new Iter() { value = value, Count = Count };
+        public override Obj Clone() => new Iter() 
+        { 
+            value = value,
+            Count = Count 
+        };
 
         public override Obj Copy() => this;
 
@@ -364,6 +379,11 @@ namespace Un.Object.Reference
         }
 
         public Bool Contains(Obj obj) => new (IndexOf(obj).value != -1);
+
+        public void Sort()
+        {
+            Array.Sort(value, 0, Count);
+        }
 
         void Resize()
         {

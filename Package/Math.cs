@@ -7,14 +7,6 @@ namespace Un.Package
 {
     public class Math(string packageName) : Pack(packageName), IStatic
     {
-        Obj Sum(Iter para)
-        {
-            Obj result = para[0];
-            for (int i = 1; i < para.Count; i++)
-                result = result.Add(para[i]);
-            return result;
-        }
-
         Obj Pow(Iter para)
         {
             if (para[1] is not Int i || !i.value.TryInt(out var count)) throw new ArgumentException("invaild argument", nameof(para));
@@ -24,28 +16,6 @@ namespace Un.Package
             if (count % 2 == 1) return para[0].Mul(Pow(new Iter([para[0], new Int(count - 1)])));
             var p = Pow(new Iter([para[0], new Int(count / 2)]));
             return p.Mul(p);
-        }       
-
-        Obj Max(Iter para)
-        {
-            if (para[0] is Iter iter) return Max(iter);
-
-            Obj max = para[0];
-            for (int i = 1; i < para.Count; i++)
-                if (max.LessThen(para[i]).value)
-                    max = para[i];
-            return max;
-        }
-
-        Obj Min(Iter para)
-        {
-            if (para[0] is Iter iter) return Min(iter);
-
-            Obj min = para[0];
-            for (int i = 1; i < para.Count; i++)
-                if (min.GreaterThen(para[i]).value)
-                    min = para[i];
-            return min;
         }
 
         Int Gcd(Iter para)
@@ -57,14 +27,6 @@ namespace Un.Package
             if (i1.value.TryInt(out var a) && i2.value.TryInt(out var b))
                 return new Int(Gcd(a, b));
             throw new ArgumentException("invaild argument", nameof(para));
-        }
-
-        Int Abs(Iter para)
-        {
-            if (para[0] is not Int i) throw new ArgumentException("invaild argument", nameof(para));
-
-            if (i.value < 0) return new(-i.value);
-            return new Int(i.value);
         }
 
         Obj Round(Iter para)
@@ -130,11 +92,6 @@ namespace Un.Package
 
         public override IEnumerable<Fun> Import() =>
         [
-            new NativeFun("sum", Sum),
-            new NativeFun("pow", Pow),
-            new NativeFun("max", Max),
-            new NativeFun("min", Min),
-            new NativeFun("abs", Abs),
             new NativeFun("gcd", Gcd),
             new NativeFun("round", Round),
         ];

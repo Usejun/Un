@@ -1,18 +1,3 @@
-﻿import ["timer"]
-
-fn fib(k)	
-	if (k < 2)
-		dp[k] = 1
-	if (dp[k] == 0)
-		dp[k] = fib(k - 1) + fib(k - 2)
-
-	return dp[k]
-	
-t = timer()
-dp = iter()
-t.run()
-fib(100)
-t.stop()
-
-writeln(dp)
-writeln(t.time())
+﻿l = [1, 2, 3, 4]
+a = [1 in l, 0 in l]
+writeln(a)

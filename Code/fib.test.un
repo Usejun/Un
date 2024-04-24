@@ -1,0 +1,18 @@
+﻿import ["timer"]
+
+fn fib(k)	
+	if k < 2
+		dp[k] = 1
+	if dp[k] == 0
+		dp[k] = fib(k - 1) + fib(k - 2)
+	return dp[k]
+	
+t = timer()
+n = 32
+dp = [0] * (n + 1)
+t.run()
+fib(n)
+t.stop()
+
+writeln(dp)
+writeln(t.time())

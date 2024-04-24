@@ -6,24 +6,22 @@ namespace Un.Supporter
 {
     public static class Lexer
     {
-        public readonly static Calculator Calculator = new();
-
         public static List<Token> Lex(List<Token> tokens, Dictionary<string, Obj> properties)
         {
             List<Token> analyzedTokens = [];
 
             for (int i = 0; i < tokens.Count; i++)
             {
-
                 if (tokens[i].type == Token.Type.LBrack)
                 {
                     int j = i + 1, depth = 1;
-                    while (j < tokens.Count && depth > 0)
+                    while (j < tokens.Count)
                     {
                         if (tokens[j].type == Token.Type.LBrack)
                             depth++;
                         if (tokens[j].type == Token.Type.RBrack)
                             depth--;
+                        if (depth == 0) break;
                         j++;
                     }
 
@@ -34,7 +32,6 @@ namespace Un.Supporter
                         analyzedTokens[^1].type == Token.Type.Indexer ||
                         analyzedTokens[^1].type == Token.Type.Property))
                     {
-                        j--;
                         Obj index = Calculator.Calculate(Lex(tokens[(i + 1)..j], properties), properties);
 
                         if (index is Str)
@@ -49,19 +46,18 @@ namespace Un.Supporter
 
                         j = i + 1;
 
-                        while (j < tokens.Count && depth > 0)
+                        while (j < tokens.Count)
                         {
-                            Token token = tokens[j];
-                            value += token.value;
-                            j++;
-
-                            if (token.type == Token.Type.LBrack)
+                            if (tokens[j].type == Token.Type.LBrack)
                                 depth++;
-                            else if (token.type == Token.Type.RBrack)
+                            if (tokens[j].type == Token.Type.RBrack)
                                 depth--;
+                            if (depth <= 0) break;
+                            value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].value} " : tokens[j++].value;
                         }
 
-                        j--;
+                        value += "]";
+
                         analyzedTokens.Add(new(value, Token.Type.Iterator));
                     }
 
@@ -83,6 +79,7 @@ namespace Un.Supporter
                     else analyzedTokens.Add(tokens[i]);
                 }
                 else if (tokens[i].type == Token.Type.LParen &&
+                         analyzedTokens.Count > 0 &&
                         (analyzedTokens[^1].type == Token.Type.Function ||
                          analyzedTokens[^1].type == Token.Type.Method))
                 {
@@ -96,7 +93,7 @@ namespace Un.Supporter
                         if (tokens[j].type == Token.Type.RParen)
                             depth--;
                         if (depth <= 0) break;
-                        value += tokens[j++].value;
+                        value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].value} " : tokens[j++].value;
                     }
 
                     value += "]";

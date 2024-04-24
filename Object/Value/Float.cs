@@ -63,6 +63,20 @@ namespace Un.Object.Value
             return base.Mod(obj);
         }
 
+        public override Bool Equals(Obj obj)
+        {
+            if (obj is Int i) return new(value == i.value);
+            if (obj is Float f) return new(value == f.value);
+            return base.Equals(obj);
+        }
+
+        public override Bool LessThen(Obj obj)
+        {
+            if (obj is Int i) return new(value < i.value);
+            if (obj is Float f) return new(value < f.value);
+            return base.LessThen(obj);
+        }
+
         public override Int CInt() => new((long)value);
 
         public override Float CFloat() => new(value);

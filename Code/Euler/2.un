@@ -1,0 +1,9 @@
+﻿l = []
+a, b = 1, 1
+
+while a < 4000000
+	a, b = b, a + b
+	if a % 2 == 0
+		l += a
+
+writeln(sum(l))
