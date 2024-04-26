@@ -51,109 +51,10 @@ namespace Un.Supporter
                 usings.Add(analyzedTokens[1].value);
                 Parse(analyzedTokens[1..]);
             }
-            else if (assign != -1)
-            {
-                int i = assign + 1 , j;
-                Obj var = Obj.None, v;
-                Iter values = [];
-
-                while ((j = NextComma(i)) != -1)
-                {
-                    values.Append(Calculator.Calculate(analyzedTokens[i..j], properties));
-                    i = j + 1;
-                }
-
-                v = Calculator.Calculate(analyzedTokens[i..], properties);
-                if (v is Map) values.Extend(v);
-                else values.Append(v);
-
-                i = 0;
-
-                foreach (var value in values)
-                {
-                    while (i < assign)
-                    {
-                        var token = analyzedTokens[i];
-
-                        if (analyzedTokens[i + 1].type == Token.Type.Comma ||
-                            Token.IsAssigns(analyzedTokens[i + 1]))
-                        {
-                            if (Obj.IsNone(var))
-                            {
-                                if (properties.TryGetValue(token.value, out var local)) var = local;
-                                else if (Process.Properties.TryGetValue(token.value, out var global)) var = global;
-                                else properties.Add(token.value, var);
-
-                                properties[token.value] = AssignCalculate(var, value);
-                            }
-                            else if (token.type == Token.Type.Indexer)
-                                var.SetItem(new Iter([Obj.Convert(token.value, properties), AssignCalculate(var.GetItem(new Iter([Obj.Convert(token.value, properties)])), value).Copy()]));
-                            else if (token.type == Token.Type.Property && var.HasProperty(token.value))
-                                var.Set(token.value, AssignCalculate(var.Get(token.value), value).Copy());
-                            else throw new InterpreterParseException();
-
-                            i+=2;
-
-                            var = Obj.None;
-                            break;
-                        }
-                        else
-                        {
-                            if (Obj.IsNone(var))
-                            {
-                                if (properties.TryGetValue(token.value, out var local))
-                                    var = local;
-                                else if (Process.Properties.TryGetValue(token.value, out var global))
-                                    var = global;
-                                else
-                                    properties.Add(token.value, var);
-                            }
-                            else
-                            {
-                                if (token.type == Token.Type.Indexer)
-                                    var = var.GetItem(new Iter([Obj.Convert(token.value, properties)]));
-                                else if (token.type == Token.Type.Property)
-                                    var = var.Get(token.value);
-                                else throw new InterpreterParseException();
-                            }
-                        }
-                        i++;
-                    }
-                }                
-
-                Obj AssignCalculate(Obj a, Obj b) => analyzedTokens[assign].type switch
-                {
-                    Token.Type.PlusAssign => a.Add(b),
-                    Token.Type.MinusAssign => a.Sub(b),
-                    Token.Type.AsteriskAssign => a.Mul(b),
-                    Token.Type.SlashAssign => a.Div(b),
-                    Token.Type.DoubleSlashAssign => a.IDiv(b),
-                    Token.Type.PercentAssign => a.Mod(b),
-                    _ => b
-                };
-
-                int NextComma(int index)
-                {
-                    int k = -1;
-
-                    for (int i = index; k == -1 && i < analyzedTokens.Count; i++)
-                        if (analyzedTokens[i].type == Token.Type.Comma)
-                            k = i;
-                    return k;
-                }
-            }
             else if (analyzedTokens[0].type == Token.Type.Import)
             {
-                if (Obj.Convert(analyzedTokens[1].value, properties) is not Iter packages)
-                    throw new ArgumentException("Invalid import statement.");
-
-                foreach (var package in packages)
-                {
-                    if (package is not Str name)
-                        throw new ImportException("Package Name is only string type");
-
-                    Process.Import(name.value);
-                }
+                for (int i = 1; i < analyzedTokens.Count; i += 2)
+                    Process.Import(analyzedTokens[i].value);
             }
             else if (analyzedTokens[0].type == Token.Type.Class)
             {
@@ -168,33 +69,6 @@ namespace Un.Supporter
             else if (analyzedTokens[0].type == Token.Type.Return)
             {
                 ReturnValue = analyzedTokens[1..].Count == 0 ? Obj.None : Calculator.Calculate(analyzedTokens[1..], properties);
-            }
-            else if (analyzedTokens[0].type == Token.Type.Variable)
-            {
-                int next = 1;
-                Obj var = Obj.Convert(analyzedTokens[0].value, properties);
-
-                while (analyzedTokens.Count > next)
-                {
-                    if (analyzedTokens[next].type == Token.Type.Indexer)
-                    {
-                        Obj index = Obj.Convert(analyzedTokens[next].value, properties);
-                        var = var.GetItem(new Iter([index]));
-                    }
-                    else if (analyzedTokens[next].type == Token.Type.Property ||
-                             analyzedTokens[next].type == Token.Type.Method)
-                    {
-                        if (var.Get(analyzedTokens[next].value) is Fun func)
-                        {
-                            var = func.Call(Obj.Convert(analyzedTokens[next + 1].value, properties).CIter().Insert(var, 0));
-                        }
-                    }
-                    next++;
-                }
-            }
-            else if (analyzedTokens[0].type == Token.Type.Function)
-            {
-                Calculator.Calculate(analyzedTokens, properties);
             }
             else if (Token.IsControl(analyzedTokens[0].value))
             {
@@ -288,7 +162,125 @@ namespace Un.Supporter
                 }
                 else throw new SyntaxException("It's not a loop syntax");
             }
+            else if (assign != -1)
+            {
+                int i = assign + 1 , j;
+                Obj var = Obj.None, v;
+                Iter values = [];
+
+                while ((j = NextComma(i)) != -1)
+                {
+                    values.Append(Calculator.Calculate(analyzedTokens[i..j], properties));
+                    i = j + 1;
+                }
+
+                v = Calculator.Calculate(analyzedTokens[i..], properties);
+                if (v is Map) values.Extend(v);
+                else values.Append(v);
+
+                i = 0;
+
+                foreach (var value in values)
+                {
+                    while (i < assign)
+                    {
+                        var token = analyzedTokens[i];
+
+                        if (analyzedTokens[i + 1].type == Token.Type.Comma ||
+                            Token.IsAssigns(analyzedTokens[i + 1]))
+                        {
+                            if (Obj.IsNone(var))
+                            {
+                                if (properties.TryGetValue(token.value, out var local)) var = local;
+                                else if (Process.Properties.TryGetValue(token.value, out var global)) var = global;
+                                else properties.Add(token.value, var);
+
+                                properties[token.value] = AssignCalculate(var, value);
+                            }
+                            else if (token.type == Token.Type.Indexer)
+                                var.SetItem(new Iter([Obj.Convert(token.value, properties), AssignCalculate(var.GetItem(new Iter([Obj.Convert(token.value, properties)])), value).Copy()]));
+                            else if (token.type == Token.Type.Property && var.HasProperty(token.value))
+                                var.Set(token.value, AssignCalculate(var.Get(token.value), value).Copy());
+                            else throw new InterpreterParseException();
+
+                            i+=2;
+
+                            var = Obj.None;
+                            break;
+                        }
+                        else
+                        {
+                            if (Obj.IsNone(var))
+                            {
+                                if (properties.TryGetValue(token.value, out var local))
+                                    var = local;
+                                else if (Process.Properties.TryGetValue(token.value, out var global))
+                                    var = global;
+                                else
+                                    properties.Add(token.value, var);
+                            }
+                            else
+                            {
+                                if (token.type == Token.Type.Indexer)
+                                    var = var.GetItem(new Iter([Obj.Convert(token.value, properties)]));
+                                else if (token.type == Token.Type.Property)
+                                    var = var.Get(token.value);
+                                else throw new InterpreterParseException();
+                            }
+                        }
+                        i++;
+                    }
+                }                
+
+                Obj AssignCalculate(Obj a, Obj b) => analyzedTokens[assign].type switch
+                {
+                    Token.Type.PlusAssign => a.Add(b),
+                    Token.Type.MinusAssign => a.Sub(b),
+                    Token.Type.AsteriskAssign => a.Mul(b),
+                    Token.Type.SlashAssign => a.Div(b),
+                    Token.Type.DoubleSlashAssign => a.IDiv(b),
+                    Token.Type.PercentAssign => a.Mod(b),
+                    _ => b
+                };                
+            }
+            else if (analyzedTokens[0].type == Token.Type.Variable)
+            {
+                int next = 1;
+                Obj var = Obj.Convert(analyzedTokens[0].value, properties);
+
+                while (analyzedTokens.Count > next)
+                {
+                    if (analyzedTokens[next].type == Token.Type.Indexer)
+                    {
+                        Obj index = Obj.Convert(analyzedTokens[next].value, properties);
+                        var = var.GetItem(new Iter([index]));
+                    }
+                    else if (analyzedTokens[next].type == Token.Type.Property ||
+                             analyzedTokens[next].type == Token.Type.Method)
+                    {
+                        if (var.Get(analyzedTokens[next].value) is Fun func)
+                        {
+                            var = func.Call(Obj.Convert(analyzedTokens[next + 1].value, properties).CIter().Insert(var, 0));
+                        }
+                    }
+                    next++;
+                }
+            }
+            else if (analyzedTokens[0].type == Token.Type.Function)
+            {
+                Calculator.Calculate(analyzedTokens, properties);
+            }
             else throw new InterpreterParseException();
+
+            int NextComma(int index)
+            {
+                int k = -1;
+
+                for (int i = index; k == -1 && i < analyzedTokens.Count; i++)
+                    if (analyzedTokens[i].type == Token.Type.Comma)
+                        k = i;
+                return k;
+            }
         }
 
         string[] GetBody(bool includeHeader = false)

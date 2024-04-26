@@ -8,5 +8,7 @@ namespace Un.Package
         protected string packageName = packageName;
 
         public virtual IEnumerable<Fun> Import() => [];
+
+        public virtual IEnumerable<Obj> Include() => [];
     }
 }

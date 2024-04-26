@@ -73,7 +73,6 @@ namespace Un.Object.Reference
         public override Obj Clone() => new Dict()
         {
             value = value,
-            properties = properties,
         };
 
         public override Obj Copy() => this;

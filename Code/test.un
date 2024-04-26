@@ -1,3 +1,5 @@
-﻿l = [1, 2, 3, 4]
-a = [1 in l, 0 in l]
-writeln(a)
+﻿import https
+
+response = https.get("https://kanjiapi.dev/v1/kanji/日")
+test = json(response.content().string()) 
+write(test)

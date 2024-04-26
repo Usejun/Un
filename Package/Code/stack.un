@@ -9,6 +9,7 @@
 		if (type(item) == "iter")
 			for i in item
 				this.push(i)
+			this.count += len(item)
 		else
 			if (this.is_full())
 				this.resize()

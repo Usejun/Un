@@ -2,7 +2,6 @@
 using Un.Object.Value;
 using Un.Object.Function;
 using Un.Supporter;
-using Un.Package;
 
 namespace Un.Object.Reference
 {
@@ -76,7 +75,7 @@ namespace Un.Object.Reference
                 Append(i switch
                 {
                     int or long => new Int((long)i),
-                    float or double => new Float((double)i),
+                    float or double or decimal => new Float((double)i),
                     bool => new Bool((bool)i),
                     string => new Str((string)i),
                     _ => throw new InvalidConvertException()
@@ -168,6 +167,27 @@ namespace Un.Object.Reference
 
                 self.Sort();
                 return None;
+            }));
+            properties.Add("binary_search", new NativeFun("binary_search", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                return self.BinarySearch(para[1]);
+            }));
+            properties.Add("lower_bound", new NativeFun("lower_bound", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                return self.LowerBound(para[1]);
+            }));
+            properties.Add("upper_bound", new NativeFun("upper_bound", para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                return self.UpperBound(para[1]);
             }));
         }
 
@@ -383,6 +403,32 @@ namespace Un.Object.Reference
         public void Sort()
         {
             Array.Sort(value, 0, Count);
+        }
+
+        public Int BinarySearch(Obj obj) => new(Array.BinarySearch(value, 0, Count, obj));
+
+        public Int LowerBound(Obj obj)
+        {
+            int l = 0, r = Count, m = 0;
+            while (r > l)
+            {
+                m = (l + r) / 2;
+                if (value[m].LessThen(obj).value) l = m + 1;
+                else r = m;
+            }
+            return new(r);
+        }
+
+        public Int UpperBound(Obj obj)
+        {
+            int l = 0, r = Count, m = 0;
+            while (r > l)
+            {
+                m = (l + r) / 2;
+                if (value[m].LessOrEquals(obj).value) l = m + 1;
+                else r = m;
+            }
+            return new(r);
         }
 
         void Resize()

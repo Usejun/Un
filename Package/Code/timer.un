@@ -1,4 +1,4 @@
-﻿import ["time"]
+﻿import time
 
 class timer
 	start_time = 0

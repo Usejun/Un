@@ -57,7 +57,7 @@ namespace Un.Object.Value
 
         public override Obj Mod(Obj obj)
         {
-            if (obj is Int i) return new Float(value % (double)i.value);
+            if (obj is Int i) return new Float((double)value % i.value);
             if (obj is Float f) return new Float(value % f.value);
 
             return base.Mod(obj);

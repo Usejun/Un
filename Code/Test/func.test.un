@@ -1,4 +1,4 @@
-﻿import ["queue", "stack"]
+﻿import queue, stack
 
 fn bfs(start, visit)	
 	q = queue(10)

@@ -12,38 +12,20 @@ namespace Un.Package
             if (para[1] is not Int i || !i.value.TryInt(out var count)) throw new ArgumentException("invaild argument", nameof(para));
 
             if (count == 0) return new Int(0);
-            if (count == 1) return para[0];
-            if (count % 2 == 1) return para[0].Mul(Pow(new Iter([para[0], new Int(count - 1)])));
-            var p = Pow(new Iter([para[0], new Int(count / 2)]));
+            if (count == 1) return para[1];
+            if (count % 2 == 1) return para[0].Mul(Pow(new Iter([para[1], new Int(count - 1)])));
+            var p = Pow(new Iter([para[1], new Int(count / 2)]));
             return p.Mul(p);
         }
 
         Int Gcd(Iter para)
         {
-            int Gcd(int a, int b) => b == 0 ? a : Gcd(b, a % b);
+            long Gcd(long a, long b) => b == 0 ? a : Gcd(b, a % b);
 
-            if (para[0] is not Int i1 || para[1] is not Int i2)
+            if (para[1] is not Int a || para[2] is not Int b)
                 throw new ArgumentException("invaild argument", nameof(para));
-            if (i1.value.TryInt(out var a) && i2.value.TryInt(out var b))
-                return new Int(Gcd(a, b));
-            throw new ArgumentException("invaild argument", nameof(para));
-        }
-
-        Obj Round(Iter para)
-        {
-            if (para[0] is not Float a || para[1] is not Int digits || digits.value < 0 || digits.value > 15) 
-                throw new ArgumentException("invaild argument", nameof(para));
-
-            if (digits.value == 0) return para[0].CInt();
-
-            Obj pow = Pow(new Iter([new Int(10), digits])), b;
-
-            b = a.Mul(pow);
-            b = b.CInt();
-            b = b.Div(pow);
-
-            return b;
-        }
+            return new Int(Gcd(a.value, b.value));
+        }        
 
         Int Permutation(Iter para)
         {
@@ -90,17 +72,12 @@ namespace Un.Package
             return new(sum);
         }
 
-        public override IEnumerable<Fun> Import() =>
-        [
-            new NativeFun("gcd", Gcd),
-            new NativeFun("round", Round),
-        ];
-
         public Pack Static()
-        {
+        {            
             Math math = new(packageName);
             math.properties.Add("pi", new Float(3.14159265));
             math.properties.Add("e", new Float(2.718281828));
+            math.properties.Add("gcd", new NativeFun("gcd", Gcd));
             math.properties.Add("permutation", new NativeFun("permutation", Permutation));
             math.properties.Add("combination", new NativeFun("combination", Combination));
             math.properties.Add("factorial", new NativeFun("factorial", Factorial));

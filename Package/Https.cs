@@ -1,4 +1,6 @@
-﻿using Un.Object.Function;
+﻿using Un.Object;
+using Un.Object.Function;
+using Un.Object.Net;
 using Un.Object.Reference;
 using Un.Object.Value;
 
@@ -8,12 +10,12 @@ namespace Un.Package
     {
         private static readonly HttpClient client = new();
 
-        Str Get(Iter para)
+        HttpsResponse Get(Iter para)
         {
             if (para[1] is not Str url)
                 throw new ArgumentException("invaild argument", nameof(url));
 
-            return new(client.GetAsync(url.value).Result.Content.ReadAsStringAsync().Result);
+            return new(client.GetAsync(url.value).Result);
         }
 
         public Pack Static()
@@ -24,5 +26,12 @@ namespace Un.Package
 
             return https;
         }
+
+        public override IEnumerable<Obj> Include() =>
+        [
+            new HttpsContent(),
+            new HttpsResponse(),
+            new HttpsHeaders(),
+        ];
     }
 }

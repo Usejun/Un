@@ -1,4 +1,4 @@
-﻿import ["timer"]
+﻿import timer
 
 fn fib(k)	
 	if k < 2
@@ -12,7 +12,7 @@ n = 32
 dp = [0] * (n + 1)
 t.run()
 fib(n)
-t.stop()
 
 writeln(dp)
+t.stop()
 writeln(t.time())

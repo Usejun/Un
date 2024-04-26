@@ -20,7 +20,7 @@ namespace Un.Supporter
         public readonly static Dictionary<string, Pack> Package = new()
         {
             {"std", new Std("std")}, {"math", new Package.Math("math")}, {"time", new Time("time")},
-            {"https", new Https("https")}
+            {"https", new Https("https")}, {"rand", new Rand("rand")}
         };
 
         public readonly static Dictionary<string, Obj> Class = new()
@@ -34,7 +34,7 @@ namespace Un.Supporter
             {"times", new Times() },
             {"dict", new Dict() },
             {"json", new JObj() },
-            {"file", new Object.Reference.File() },
+            {"stream", new Object.Reference.Stream() },
             {"map", new Map() }
         };
 
@@ -85,6 +85,10 @@ namespace Un.Supporter
             {
                 foreach (var fun in Package[name].Import())
                     Properties.Add(fun.name, fun);
+
+                foreach (var include in Package[name].Include())
+                    if (Class.TryAdd(include.ClassName, include))
+                        Class[include.ClassName].Init();
 
                 if (Package[name] is IStatic sta)
                     StaticClass.Add(name, sta.Static());

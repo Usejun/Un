@@ -1,4 +1,4 @@
-﻿import ["dict"]
+﻿import dict
 
 d = dict()
 

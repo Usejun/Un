@@ -144,6 +144,18 @@ namespace Un.Object.Value
             return base.Sub(obj);
         }
 
+        public override Bool Equals(Obj obj)
+        {
+            if (obj is Date date) return new(value == date.value);
+            return base.Equals(obj);
+        }
+
+        public override Bool LessThen(Obj obj)
+        {
+            if (obj is Date date) return new(value < date.value);
+            return base.LessThen(obj);
+        }
+
         public override Str CStr() => new($"{value}");
 
         public override Obj Clone() => new Date(value);

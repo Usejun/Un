@@ -58,8 +58,8 @@ namespace Un.Object.Value
 
         public override Float CFloat()
         {
-            if (double.TryParse(value, out var d))
-                return new(d);
+            if (decimal.TryParse(value, out var d))
+                return new((double)d);
             return base.CFloat();
         }
 
