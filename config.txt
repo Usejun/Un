@@ -11,6 +11,9 @@ Bang !
 Asterisk *
 Slash /
 Percent %
+BAnd &
+BOr |
+BXor ^
 And and
 Or or
 Caret xor
@@ -35,6 +38,8 @@ ElIf elif
 Else else
 For for
 While while
+Break break
+Continue continue
 Import import
 In in
 Return return

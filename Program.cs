@@ -1,18 +1,17 @@
-﻿using Un.Supporter;
+﻿using Un;
 
 Console.InputEncoding = System.Text.Encoding.Unicode;
 Console.OutputEncoding = System.Text.Encoding.Unicode;
-Process.Initialize("D:\\User\\Un\\Package\\Code", "D:\\User\\Un\\Code");
-
-string test = "test.un";
+Process.Initialize("D:\\User\\Un\\Code");
 
 string[] testcase = [
+    "test.un",
     "Test\\type.test.un",
     "Test\\class.test.un",
     "Test\\iter.test.un",
     "Test\\dict.test.un",
     "Test\\math.test.un",
-    //"Test\\func.test.un",
+    "Test\\func.test.un",
     "Test\\fib.test.un"
 ];
 
@@ -24,4 +23,4 @@ string[] euler = [
 
 //Process.Test(euler);
 //Process.Test(testcase);
-Process.Run(test);
+Process.Run(testcase[6]);

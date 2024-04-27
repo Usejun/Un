@@ -1,8 +1,6 @@
-﻿import queue, stack
-
-fn bfs(start, visit)	
-	q = queue(10)
-	q += start	
+﻿fn bfs(start, visit)	
+	q = queue()
+	q.enqueue(start)	
 
 	while q
 		w = q.dequeue()
@@ -11,7 +9,7 @@ fn bfs(start, visit)
 			visit += w
 			for i in l[w]
 				if (!(i in visit))
-					q += i
+					q.enqueue(i)
 
 fn dfs(start, visit)
 	visit += start
