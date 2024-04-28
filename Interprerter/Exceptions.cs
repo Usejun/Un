@@ -7,6 +7,13 @@
         public PropertyException(string message, Exception inner) : base(message, inner) { }
     }
 
+    public class UsingException : Exception
+    {
+        public UsingException() { }
+        public UsingException(string message) : base(message) { }
+        public UsingException(string message, Exception inner) : base(message, inner) { }      
+    }
+
     public class InvalidConvertException : Exception
     {
         public InvalidConvertException() { }

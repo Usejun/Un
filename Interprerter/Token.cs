@@ -1,4 +1,5 @@
-﻿using Un.Collections;
+﻿using Newtonsoft.Json.Linq;
+using Un.Collections;
 using Un.Data;
 
 namespace Un
@@ -7,82 +8,70 @@ namespace Un
     {
         public static Token None => new("None", Type.None);
 
-        public readonly static Dictionary<Type, int> Operator = new()
-        {
-            { Type.Assign, 0 }, { Type.RParen, 0 }, { Type.In, 0 },
-            { Type.And, 0 }, { Type.Or, 0 }, { Type.Caret , 0 },
-
-            { Type.Equal,  1 }, { Type.Unequal, 1 },
-            { Type.LessOrEqual, 1 }, { Type.LessThen, 1 }, { Type.GreaterOrEqual, 1 }, { Type.GreaterThen, 1 },
-
-            { Type.Plus, 3 }, { Type.Minus, 3 }, { Type.Percent, 3 }, { Type.Bang, 3 },
-            { Type.BAnd, 3 }, { Type.BOr, 3 }, { Type.BXor, 3 },
-
-            { Type.Asterisk, 4 }, { Type.Slash, 4 }, { Type.DoubleSlash, 4 },
-
-            { Type.Indexer, 5 }, { Type.Property, 5 },
-
-            { Type.Function, 6 }, { Type.Method, 6 },
-
-            { Type.LParen, 7 },
-        };
-
-        public readonly static Dictionary<string, Type> Control = new()
-        {
-            {"if", Type.If}, {"elif", Type.ElIf}, {"else", Type.Else}
-        };
-
-        public readonly static Dictionary<string, Type> Loop = new()
-        {
-            {"for", Type.For}, {"while", Type.While}
-        };
-
         public static Dictionary<string, Type> Types = [];
 
         public enum Type
         {
             None,
 
+            RParen,
             Assign,
             PlusAssign,
             MinusAssign,
             AsteriskAssign,
+            DoubleAsteriskAssign,
             SlashAssign,
             DoubleSlashAssign,
             PercentAssign,
+            BAndAssign,
+            BOrAssign,
+            BXorAssign, 
+            LeftShiftAssign,
+            RightShiftAssign,
 
-            Plus,
-            Minus,
-            Bang,
-            Asterisk,
-            Slash,
-            Percent,
-            BAnd,
-            BOr,
-            BXor,
-            And,
             Or,
-            Caret,
-            DoubleSlash,
+            And,
+            Xor,
+            Not,
 
+            In,
+
+            Equal,
+            Unequal,
             LessOrEqual,
             GreaterOrEqual,
             LessThen,
             GreaterThen,
 
-            Equal,
-            Unequal,
+            BOr,
+            BXor,
+            BAnd,
 
-            In,
+            LeftShift,
+            RightShift,
+
+            Plus,
+            Minus,
+
+            Asterisk,
+            Slash,
+            DoubleSlash,
+            Percent,
+
+            BNot,
+            Bang,
+
+            DoubleAsterisk,
+
             Indexer,
             Property,
             Method,
+            Function,
+
+            LParen,
 
             LBrack,
             RBrack,
-
-            LParen,
-            RParen,
 
             Dot,
             Comma,
@@ -102,7 +91,6 @@ namespace Un
             Comment,
 
             Variable,
-            Function,
             Integer,
             Float,
             String,
@@ -141,7 +129,6 @@ namespace Un
 
         public override string ToString() => $"{type} : {value}";
 
-
         public static Type GetType(char chr) => GetType($"{chr}");
 
         public static Type GetType(string str)
@@ -161,12 +148,11 @@ namespace Un
         }
 
 
-
         public static bool IsOperator(Token token) => IsOperator(token.type);
 
         public static bool IsOperator(Type type) => type switch
         {
-            >= Type.Assign and <= Type.RParen => true,
+            > Type.None and < Type.Dot => true,
             _ => false
         };
 
@@ -175,34 +161,7 @@ namespace Un
         public static bool IsOperator(char chr) => IsOperator(GetType(chr));
 
 
-
-        public static bool IsSoloOperator(Token token) => IsSoloOperator(token.type);
-
-        public static bool IsSoloOperator(Type type) => type switch
-        {
-            Type.Bang or Type.Indexer or Type.Property or Type.Function or Type.In => true,
-            _ => false,
-        };
-
-        public static bool IsSoloOperator(string str) => IsSoloOperator(GetType(str));
-
-        public static bool IsSoloOperator(char chr) => IsSoloOperator(GetType(chr));
-
-
-        public static bool IsBasicOperator(Token token) => IsBasicOperator(token.type);
-
-        public static bool IsBasicOperator(Type type) => type switch
-        {
-            >= Type.Assign and <= Type.Unequal => true,
-            _ => false,
-        };
-
-        public static bool IsBasicOperator(string str) => IsBasicOperator(GetType(str));
-
-        public static bool IsBasicOperator(char chr) => IsBasicOperator(GetType(chr));
-
-
-        public static bool IsLoop(Token token) => Loop.ContainsKey(token.value);
+        public static bool IsLoop(Token token) => IsLoop(token.type);
 
         public static bool IsLoop(Type type) => type switch
         {
@@ -210,10 +169,10 @@ namespace Un
             _ => false,
         };
 
-        public static bool IsLoop(string str) => Loop.ContainsKey(str);
+        public static bool IsLoop(string str) => IsLoop(GetType(str));
 
 
-        public static bool IsControl(Token token) => Control.ContainsKey(token.value);
+        public static bool IsControl(Token token) => IsControl(token.type);
 
         public static bool IsControl(Type type) => type switch
         {
@@ -221,7 +180,7 @@ namespace Un
             _ => false,
         };
 
-        public static bool IsControl(string str) => Control.ContainsKey(str);
+        public static bool IsControl(string str) => IsControl(GetType(str));
 
 
         public static bool IsComment(Token token) => token.type switch
@@ -245,7 +204,7 @@ namespace Un
 
         public static bool IsAssigns(Type type) => type switch
         {
-            >= Type.Assign and <= Type.PercentAssign => true,
+            >= Type.Assign and <= Type.RightShiftAssign => true,
             _ => false
         };
 

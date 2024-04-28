@@ -88,7 +88,6 @@ namespace Un.Data
         }
 
 
-
         public virtual Obj Get(string str)
         {
             if (properties.TryGetValue(str, out var property))
@@ -100,7 +99,6 @@ namespace Un.Data
         {
             properties[str] = value;
         }
-
 
 
         public virtual Obj Add(Obj obj)
@@ -145,6 +143,27 @@ namespace Un.Data
             throw new InvalidOperationException("Types that cannot be divided to each other.");
         }
 
+        public virtual Obj Pow(Obj obj)
+        {
+            if (properties.TryGetValue("__pow__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this, obj]));
+            throw new InvalidOperationException("Types that cannot be raised to a power");
+        }
+
+        public virtual Obj LSh(Obj obj)
+        {
+            if (properties.TryGetValue("__lsh__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this, obj]));
+            throw new InvalidOperationException("Types that can't be left-shifted");
+        }
+
+        public virtual Obj RSh(Obj obj)
+        {
+            if (properties.TryGetValue("__rsh__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this, obj]));
+            throw new InvalidOperationException("Types that can't be right-shifted");
+        }
+
         public virtual Obj BAnd(Obj obj)
         {
             if (properties.TryGetValue("__band__", out var value) && value is Fun fun)
@@ -164,6 +183,13 @@ namespace Un.Data
             if (properties.TryGetValue("__bxor__", out var value) && value is Fun fun)
                 return fun.Call(new Iter([this, obj]));
             throw new InvalidOperationException("Types that cannot perform bitwise XOR operations");
+        }
+
+        public virtual Obj BNot()
+        {
+            if (properties.TryGetValue("__bnot__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this]));
+            throw new InvalidOperationException("Types that cannot perform bitwise Not operations");
         }
 
         public virtual Obj And(Obj obj)
@@ -186,7 +212,6 @@ namespace Un.Data
                 return fun.Call(new Iter([this, obj]));
             throw new InvalidOperationException("Types that cannot perform the boolean XOR operation.");
         }
-
 
 
         public virtual Bool Equals(Obj obj)
@@ -214,7 +239,6 @@ namespace Un.Data
         public virtual Bool GreaterOrEquals(Obj obj) => new(!LessThen(obj).value || !Equals(obj).value);
 
 
-
         public virtual Int Len()
         {
             if (properties.TryGetValue("__len__", out var value) && value is Fun fun && fun.Call(new Iter([this])) is Int i)
@@ -230,7 +254,6 @@ namespace Un.Data
                 return s;
             return new(ClassName);
         }
-
 
 
         public virtual Str CStr()
@@ -287,7 +310,6 @@ namespace Un.Data
         }
 
 
-
         public virtual Obj GetItem(Iter para)
         {
             if (properties.TryGetValue("__getitem__", out var value) && value is Fun fun)
@@ -300,6 +322,21 @@ namespace Un.Data
             if (properties.TryGetValue("__setitem__", out var value) && value is Fun fun)
                 return fun.Call(para.ExtendInsert(this, 0));
             throw new IndexerException("It is not Indexable type");
+        }
+
+
+        public virtual Obj Entry()
+        {
+            if (properties.TryGetValue("__entry__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this]));
+            throw new UsingException("Types with undefined entry functions");
+        }
+
+        public virtual Obj Exit()
+        {
+            if (properties.TryGetValue("__exit__", out var value) && value is Fun fun)
+                return fun.Call(new Iter([this]));
+            throw new IndexerException("Types with undefined exit functions");
         }
 
 

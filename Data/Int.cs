@@ -84,6 +84,22 @@ namespace Un.Data
             throw new InvalidOperationException();
         }
 
+        public override Obj BNot() => new Int(~value);
+
+        public override Obj LSh(Obj obj)
+        {
+            if (obj is Int i && i.value.TryInt(out var iv))
+                return new Int(value << iv);
+            throw new InvalidOperationException();
+        }
+
+        public override Obj RSh(Obj obj)
+        {
+            if (obj is Int i && i.value.TryInt(out var iv))
+                return new Int(value >> iv);
+            throw new InvalidOperationException();
+        }
+
         public override Obj And(Obj obj) => new Bool(CBool().value || obj.CBool().value);
 
         public override Obj Or(Obj obj) => new Bool(CBool().value || obj.CBool().value);

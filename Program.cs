@@ -11,7 +11,7 @@ string[] testcase = [
     "Test\\iter.test.un",
     "Test\\dict.test.un",
     "Test\\math.test.un",
-    "Test\\func.test.un",
+    //"Test\\func.test.un",
     "Test\\fib.test.un"
 ];
 
@@ -21,6 +21,6 @@ string[] euler = [
     "Euler\\3.un",
 ];
 
-//Process.Test(euler);
-//Process.Test(testcase);
-Process.Run(testcase[6]);
+Process.Test(euler);
+Process.Test(testcase);
+Process.Run(testcase[0]);

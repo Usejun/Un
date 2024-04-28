@@ -1,4 +1,1 @@
-﻿import https
-
-resp = https.get("https://kanjiapi.dev/v1/kanji/日")
-write(resp.content().string())
+﻿write(-1 > 0)

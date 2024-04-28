@@ -69,7 +69,6 @@ namespace Un.Data
 
         public override Obj Xor(Obj obj) => new Bool(CBool().value ^ obj.CBool().value);
 
-
         public override Bool Equals(Obj obj)
         {
             if (obj is Int i) return new(value == i.value);

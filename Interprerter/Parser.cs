@@ -24,8 +24,7 @@ namespace Un
             if (ReturnValue is not null || line >= code.Length)
             {
                 foreach (var name in usings)
-                    if (properties[name] is IDisposable d)
-                        d.Dispose();
+                    properties[name].Exit();
                 return false;
             }
             if (string.IsNullOrWhiteSpace(code[line]))
@@ -48,6 +47,8 @@ namespace Un
             {
                 usings.Add(analyzedTokens[1].value);
                 Parse(analyzedTokens[1..]);
+
+                properties[analyzedTokens[1].value].Entry();
             }
             else if (analyzedTokens[0].type == Token.Type.Import)
             {
@@ -324,6 +325,12 @@ namespace Un
             Token.Type.SlashAssign => a.Div(b),
             Token.Type.DoubleSlashAssign => a.IDiv(b),
             Token.Type.PercentAssign => a.Mod(b),
+            Token.Type.DoubleAsteriskAssign => a.Pow(b),
+            Token.Type.BOrAssign => a.BOr(b),
+            Token.Type.BAndAssign => a.BAnd(b),
+            Token.Type.BXorAssign => a.BXor(b),
+            Token.Type.LeftShiftAssign => a.LSh(b),
+            Token.Type.RightShiftAssign => a.RSh(b),
             _ => b
         };
 

@@ -69,14 +69,6 @@ namespace Un
                     if (tokens.Count > i + 1 && tokens[i + 1].type == Token.Type.LParen)
                         analyzedTokens[^1].type = Token.Type.Method;
                 }
-                else if (tokens[i].type == Token.Type.Minus)
-                {
-                    if (analyzedTokens.Count == 0 ||
-                        Token.IsBasicOperator(analyzedTokens[^1].type) ||
-                        analyzedTokens[^1].type == Token.Type.Return)
-                        analyzedTokens.Add(new Token($"-{tokens[i + 1].value}", tokens[++i].type));
-                    else analyzedTokens.Add(tokens[i]);
-                }
                 else if (tokens[i].type == Token.Type.LParen &&
                          analyzedTokens.Count > 0 &&
                         (analyzedTokens[^1].type == Token.Type.Function ||
