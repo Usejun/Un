@@ -31,6 +31,12 @@ namespace Un.Collections
             }));
         }
 
+        public override Obj Init(Iter args)
+        {
+            value.Clear();
+            return base.Init(args);
+        }
+
         public override Int Len() => new(value.Count);
 
         public override Bool CBool() => new(value.Count != 0);

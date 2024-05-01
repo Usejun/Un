@@ -76,7 +76,7 @@ namespace Un.Data
             properties.Add("hour", new NativeFun("hour", Hour));
             properties.Add("minute", new NativeFun("minute", Minute));
             properties.Add("second", new NativeFun("second", Second));
-            properties.Add("milliseconds", new NativeFun("milliseconds", Millisecond));
+            properties.Add("milliseconds", new NativeFun("millisecond", Millisecond));
             properties.Add("add_years", new NativeFun("add_years", para =>
             {
                 if (para[0] is Int i && i.value.TryInt(out int years))

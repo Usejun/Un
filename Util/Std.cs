@@ -140,6 +140,13 @@ namespace Un.Util
             else return new Float((double)math.Round(v));
         }
 
+        Obj Sqrt(Iter para) 
+        {
+            if (para[0] is Int i) return new Float(math.Sqrt(i.value));
+            if (para[0] is Float f) return new Float(math.Sqrt(f.value));
+            throw new ArgumentException("invaild argument", nameof(para));
+        }
+
         Obj Exit(Iter paras)
         {
             Environment.Exit(0);
@@ -170,9 +177,10 @@ namespace Un.Util
             new NativeFun("min", Min),
             new NativeFun("pow", Pow),
             new NativeFun("abs", Abs),
-            new NativeFun("cell", Ceil),
+            new NativeFun("ceil", Ceil),
             new NativeFun("floor", Floor),
             new NativeFun("round", Round),
+            new NativeFun("sqrt", Sqrt),
             new NativeFun("exit", Exit),
             new NativeFun("assert", Assert),
         ];

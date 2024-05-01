@@ -13,6 +13,8 @@ namespace Un
 
         public static Parser Main = new([], []);
 
+        private readonly static HashSet<string> Imported = [];
+
         public readonly static Dictionary<string, Pack> Package = new()
         {
             {"std", new Util.Std("std")}, 
@@ -37,6 +39,7 @@ namespace Un
             {"stack", new Stack() },
             {"queue", new Queue() },
             {"dict", new Dict() },
+            {"set", new Set() },
         };
 
         public readonly static Dictionary<string, Obj> StaticClass = [];
@@ -95,10 +98,11 @@ namespace Un
             }
             else
             {
-                if (IsClass(name))
+                if (Imported.Contains(name))
                     return;
 
                 using StreamReader r = new(new FileStream($"{Path}\\Package\\{name}.un", FileMode.Open));
+                Imported.Add(name);
 
                 Properties["__name__"] = new Str($"{name}.un");
 

@@ -63,6 +63,14 @@ namespace Un.Data
             return base.Mod(obj);
         }
 
+        public override Obj Pow(Obj obj)
+        {
+            if (obj is Int i) return new Float(Math.Pow(value, i.value));
+            if (obj is Float f) return new Float(Math.Pow(value, f.value));
+
+            return base.Pow(obj);
+        }
+
         public override Obj And(Obj obj) => new Bool(CBool().value && obj.CBool().value);
 
         public override Obj Or(Obj obj) => new Bool(CBool().value || obj.CBool().value);

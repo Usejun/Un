@@ -92,7 +92,10 @@ namespace Un.Collections
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                return self.Append(para[1]);
+                for (int i = 1; i < para.Count; i++)
+                    self.Append(para.value[i]);                
+
+                return None;
             }));
             properties.Add("insert", new NativeFun("insert", para =>
             {
@@ -101,14 +104,22 @@ namespace Un.Collections
                 if (para[2] is not Int i || !i.value.TryInt(out var index))
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                return self.Insert(para[1], index);
+                Addon.Assert(para.Count > 3, "parameter count is over");
+
+                self.Insert(para[1], index);
+
+                return None;
             }));
             properties.Add("extend", new NativeFun("extend", para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                return self.Extend(para[1]);
+                for (int i = 1; i < para.Count; i++)
+                    foreach (var item in para[i].CIter())
+                        self.Append(item);
+
+                return None;
             }));
             properties.Add("extend_insert", new NativeFun("extend_insert", para =>
             {
@@ -117,12 +128,18 @@ namespace Un.Collections
                 if (para[2] is not Int i || !i.value.TryInt(out var index))
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                return self.ExtendInsert(para[1], index);
+                Addon.Assert(para.Count > 3, "parameter count is over");
+
+                self.ExtendInsert(para[1], index);
+
+                return None; 
             }));
             properties.Add("remove", new NativeFun("remove", para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
+
+                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 if (para[1] is Obj obj) return self.Remove(obj);
                 throw new ArgumentException("invalid argument", nameof(para));
@@ -132,6 +149,8 @@ namespace Un.Collections
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
+                Addon.Assert(para.Count > 2, "parameter count is over");
+
                 if (para[1] is Int i) return self.RemoveAt(i);
                 throw new ArgumentException("invalid argument", nameof(para));
             }));
@@ -139,6 +158,8 @@ namespace Un.Collections
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
+
+                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 if (para[1] is Obj obj) return self.IndexOf(obj);
                 throw new ArgumentException("invalid argument", nameof(para));
@@ -148,6 +169,8 @@ namespace Un.Collections
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
+                Addon.Assert(para.Count > 2, "parameter count is over");
+
                 if (para[1] is Obj obj) return self.Contains(obj);
                 throw new ArgumentException("invalid argument", nameof(para));
             }));
@@ -156,12 +179,16 @@ namespace Un.Collections
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
+                Addon.Assert(para.Count > 1, "parameter count is over");
+
                 return self.Clone();
             }));
             properties.Add("sort", new NativeFun("sort", para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
+
+                Addon.Assert(para.Count > 1, "parameter count is over");
 
                 self.Sort();
                 return None;
@@ -171,6 +198,8 @@ namespace Un.Collections
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
+                Addon.Assert(para.Count > 2, "parameter count is over");
+
                 return self.BinarySearch(para[1]);
             }));
             properties.Add("lower_bound", new NativeFun("lower_bound", para =>
@@ -178,12 +207,16 @@ namespace Un.Collections
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
+                Addon.Assert(para.Count > 2, "parameter count is over");
+
                 return self.LowerBound(para[1]);
             }));
             properties.Add("upper_bound", new NativeFun("upper_bound", para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
+
+                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 return self.UpperBound(para[1]);
             }));

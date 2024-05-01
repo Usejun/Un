@@ -2,7 +2,7 @@
 
 namespace Un.Data
 {
-    public class Val<T>(string type, T value) : Obj(type)
+    public abstract class Val<T>(string type, T value) : Obj(type)
         where T : IComparable<T>
     {
         public T value = value;

@@ -6,6 +6,12 @@ namespace Un.Collections
     {
         public Dict() : base("dict", []) { }
 
+        public override Obj Init(Iter args)
+        {
+            value.Clear();
+            return base.Init(args);
+        }
+
         public override void Init()
         {
             properties.Add("add", new NativeFun("add", para =>

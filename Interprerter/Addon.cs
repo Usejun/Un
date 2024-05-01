@@ -10,5 +10,10 @@
             i = (int)l;
             return true;
         }
+
+        public static void Assert(bool condition, string massage)
+        {
+            if (condition) throw new AssertException(massage); 
+        }
     }
 }

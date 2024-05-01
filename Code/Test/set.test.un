@@ -1,0 +1,5 @@
+﻿s = set()
+
+s.add(1)
+
+write(s)

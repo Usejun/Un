@@ -10,18 +10,20 @@ namespace Un.Data
 
         public Times(long value) : base("times", new TimeSpan(value)) { }
 
-        public Str Format(Iter arg)
+        public Str Format(Iter para)
         {
-            if (arg[0] is Times times && arg[1] is Str format)
+            if (para[0] is Times times && para[1] is Str format)
                 return new(times.value.ToString(format.value));
             throw new ArgumentException();
         }
+
+        public Int Ticks(Iter para) => new Int(value.Ticks);
 
         public override void Init()
         {
             properties.Add("format", new NativeFun("format", Format));
 
-            properties.Add("ticks", new NativeFun("ticks", para => new Int(value.Ticks)));
+            properties.Add("ticks", new NativeFun("ticks", Ticks));
         }
 
         public override Obj Init(Iter args)

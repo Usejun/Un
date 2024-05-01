@@ -291,16 +291,16 @@ namespace Un.Data
             throw new InvalidCastException("This type cannot cast iter.");
         }
 
-        public virtual Obj Clone()
-        {
-            Obj clone = new(ClassName);
+        public virtual Obj Clone() => new(ClassName);
+        //{
+        //    Obj clone = new(ClassName);
 
-            foreach ((string key, Obj property) in properties)
-                if (!clone.properties.TryAdd(key, property.Clone()))
-                    clone.properties[key] = property.Clone();
+        //    foreach ((string key, Obj property) in properties)
+        //        if (!clone.properties.TryAdd(key, property.Clone()))
+        //            clone.properties[key] = property.Clone();
 
-            return clone;
-        }
+        //    return clone;
+        //}
 
         public virtual Obj Copy()
         {

@@ -16,6 +16,11 @@ namespace Un.Data
                 value = JObject.Parse(s.value);
                 return this;
             }
+            else
+            {
+                value = new JObject();
+            }
+
             return base.Init(args);
         }
 

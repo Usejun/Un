@@ -100,6 +100,9 @@ namespace Un
             Using,
         }
 
+        public Type type;
+        public string value;
+
         public Token(char c)
         {
             value = $"{c}";
@@ -123,9 +126,6 @@ namespace Un
             value = s;
             this.type = type;
         }
-
-        public Type type;
-        public string value;
 
         public override string ToString() => $"{type} : {value}";
 

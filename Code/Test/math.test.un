@@ -1,7 +1,7 @@
 ﻿a = [25.234, 68.88, -2.44, -6, 15, -79]
 
 for v in a
-	writeln(v + " 올림 " + cell(v))
+	writeln(v + " 올림 " + ceil(v))
 writeln()
 for v in a
 	writeln(v + " 내림 " + floor(v))

@@ -2,7 +2,7 @@
 
 namespace Un.Data
 {
-    public class Ref<T>(string type, T value) : Obj(type)
+    public abstract class Ref<T>(string type, T value) : Obj(type)
     {
         public T value = value;
 

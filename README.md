@@ -16,9 +16,6 @@ C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한
 	<li>Bool : Boolean 
 	<li>Iter : 다양한 자료형이 반복적으로 있는 구조
 	<li>Dict : 사전, (키:값) 구조
-	<li>Date : 날짜
-	<li>Times : 시간
-	<li>JObj : JSON
 </ul>
 
 ## 함수
@@ -95,6 +92,15 @@ writeln(fib)
 class 키워드 후에 클래스의 이름을 지어준다.
 클래스는 필드와 메서드를 가지고 있다.
 
+```
+class point
+    x = 0
+    y = 0
+
+    fn print(self)
+	writeln(x + " : " + y)
+```
+
 클래스의 예약 함수를 통해 여러 연산 기능을 추가할 수 있다.
 
 ### 예약 함수
@@ -106,6 +112,7 @@ class 키워드 후에 클래스의 이름을 지어준다.
 	<li> __div__ : 나눗셈
 	<li> __idiv__ : 정수 나눗셈
 	<li> __mod__ : 나머지
+	<li> __pow__ : 거듭 제곱
 	<li> __eq__ : 같음 비교
 	<li> __lt__ : 미만
 	<li> __len__ : len()
@@ -116,9 +123,28 @@ class 키워드 후에 클래스의 이름을 지어준다.
 	<li> __float__ : float로의 형변환
 	<li> __bool__ : bool로의 형변환
 	<li> __iter__ : iter로의 형변환
-	<li> __getitem__ : getter
-	<li> __setitem__ : setter
-	<li> __and__ : and 연산
-	<li> __or__ : or 연산
-	<li> __xor__ : xor 연산
+	<li> __getitem__ : get by index
+	<li> __setitem__ : set by index
+	<li> __and__ : AND 연산
+	<li> __or__ : OR 연산
+	<li> __xor__ : XOR 연산
+	<li> __band__ : bitwise AND 연산
+	<li> __bor__ : bitwise OR 연산
+	<li> __bxor__ : bitwise XOR 연산
+	<li> __bnot__ : bitwise NOT 연산
+	<li> __lsh__ : bit left-shift 연산
+	<li> __lsh__ : bit right-shift 연산
+	<li> __entry__ : using 입장
+	<li> __exit__ : using 탈출
 </ul>
+
+## 이외
+
+### import 
+
+**import [Package name...]** 의 꼴로 사용되며, 다른 코드나, 패키지를 불러오기 위한 구문이다.
+
+
+### using
+
+**using [name] = [value]** 의 꼴로 사용되며, value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.

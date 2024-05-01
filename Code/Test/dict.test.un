@@ -1,6 +1,4 @@
-﻿import dict
-
-d = dict()
+﻿d = dict()
 
 for i in range(0, 5)
 	d.add(i, i)

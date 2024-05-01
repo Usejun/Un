@@ -6,12 +6,20 @@ namespace Un.Collections
     {
         public Queue() : base("queue", []) { }
 
+        public override Obj Init(Iter args)
+        {
+            value.Clear();
+            return base.Init(args);
+        }
+
         public override void Init()
         {
             properties.Add("enqueue", new NativeFun("enqueue", para =>
             {
                 if (para[0] is not Queue self)
                     throw new ArgumentException("invalid argument", nameof(para));
+
+
 
                 if (para[1] is Iter iter)
                 {
