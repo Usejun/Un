@@ -75,10 +75,10 @@ namespace Un.Util
             Math math = new(packageName);
             math.properties.Add("pi", new Float(3.14159265));
             math.properties.Add("e", new Float(2.718281828));
-            math.properties.Add("gcd", new NativeFun("gcd", Gcd));
-            math.properties.Add("permutation", new NativeFun("permutation", Permutation));
-            math.properties.Add("combination", new NativeFun("combination", Combination));
-            math.properties.Add("factorial", new NativeFun("factorial", Factorial));
+            math.properties.Add("gcd", new NativeFun("gcd", 3, Gcd));
+            math.properties.Add("permutation", new NativeFun("permutation", 3, Permutation));
+            math.properties.Add("combination", new NativeFun("combination", 3, Combination));
+            math.properties.Add("factorial", new NativeFun("factorial", 2, Factorial));
             return math;
         }
     }

@@ -15,4 +15,4 @@ fib(n)
 
 writeln(dp)
 t.stop()
-writeln(t.time())
+writeln(t.time().milliseconds() + "ms")

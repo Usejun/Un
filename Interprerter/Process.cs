@@ -32,7 +32,6 @@ namespace Un
             {"bool", new Bool() },
             {"str", new Str() },
             {"date", new Date() },
-            {"times", new Times() },
             {"json", new JObj() },
             {"stream", new IO.Stream() },
             {"map", new Map() },

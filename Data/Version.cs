@@ -15,26 +15,50 @@ namespace Un
             return base.Init(args);
         }
 
-        public Obj Major(Iter para) => value is null ? None : new Int(value.Major);
-
-        public Obj Minor(Iter para) => value is null ? None : new Int(value.Minor);
-
-        public Obj Build(Iter para) => value is null ? None : new Int(value.Build);
-
-        public Obj Revision(Iter para) => value is null ? None : new Int(value.Revision);
-
-        public Obj MajorRevision(Iter para) => value is null ? None : new Int(value.MajorRevision);
-
-        public Obj MinorRevision(Iter para) => value is null ? None : new Int(value.MinorRevision);
-
         public override void Init()
         {
-            properties.Add("major", new NativeFun("major", Major));
-            properties.Add("minor", new NativeFun("minor", Minor));
-            properties.Add("build", new NativeFun("build", Build));
-            properties.Add("revision", new NativeFun("revision", Revision));
-            properties.Add("major_revision", new NativeFun("major_revision", MajorRevision));
-            properties.Add("minor_revision", new NativeFun("minor_revision", MinorRevision));
+            properties.Add("major", new NativeFun("major", 1, para =>
+            {
+                if (para[0] is not Version self)
+                    throw new ArgumentException(nameof(para));
+
+                return value is null ? None : new Int(value.Major);
+            }));
+            properties.Add("minor", new NativeFun("minor", 1, para =>
+            {
+                if (para[0] is not Version self)
+                    throw new ArgumentException(nameof(para));
+
+                return value is null ? None : new Int(value.Minor);
+            }));
+            properties.Add("build", new NativeFun("build", 1, para =>
+            {
+                if (para[0] is not Version self)
+                    throw new ArgumentException(nameof(para));
+
+                return value is null ? None : new Int(value.Build);
+            }));
+            properties.Add("revision", new NativeFun("revision", 1, para =>
+            {
+                if (para[0] is not Version self)
+                    throw new ArgumentException(nameof(para));
+
+                return value is null ? None : new Int(value.Revision);
+            }));
+            properties.Add("major_revision", new NativeFun("major_revision", 1, para =>
+            {
+                if (para[0] is not Version self)
+                    throw new ArgumentException(nameof(para));
+
+                return value is null ? None : new Int(value.MajorRevision);
+            }));
+            properties.Add("minor_revision", new NativeFun("minor_revision", 1, para =>
+            {
+                if (para[0] is not Version self)
+                    throw new ArgumentException(nameof(para));
+
+                return value is null ? None : new Int(value.MajorRevision);
+            }));
         }
 
 

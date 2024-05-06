@@ -54,12 +54,12 @@ namespace Un.Util
         {
             Rand rand = new("rand");
 
-            rand.properties.Add("seed", new NativeFun("seed", Seed));
-            rand.properties.Add("choice", new NativeFun("choice", Choice));
-            rand.properties.Add("shuffle", new NativeFun("shuffle", Shuffle));
-            rand.properties.Add("range", new NativeFun("range", Range));
-            rand.properties.Add("int", new NativeFun("int", Int));
-            rand.properties.Add("random", new NativeFun("random", Random));
+            rand.properties.Add("seed", new NativeFun("seed", 2, Seed));
+            rand.properties.Add("choice", new NativeFun("choice", -1, Choice));
+            rand.properties.Add("shuffle", new NativeFun("shuffle", 2, Shuffle));
+            rand.properties.Add("range", new NativeFun("range", 3, Range));
+            rand.properties.Add("int", new NativeFun("int", 1, Int));
+            rand.properties.Add("random", new NativeFun("random", 1, Random));
 
             return rand;
         }

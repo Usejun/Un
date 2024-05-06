@@ -1,13 +1,12 @@
 ﻿using Un.Data;
 
-
 namespace Un
 {
     public static class Lexer
     {
         public static List<Token> Lex(List<Token> tokens, Dictionary<string, Obj> properties)
         {
-            List<Token> analyzedTokens = [];
+             List<Token> analyzedTokens = [];
 
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -69,10 +68,8 @@ namespace Un
                     if (tokens.Count > i + 1 && tokens[i + 1].type == Token.Type.LParen)
                         analyzedTokens[^1].type = Token.Type.Method;
                 }
-                else if (tokens[i].type == Token.Type.LParen &&
-                         analyzedTokens.Count > 0 &&
-                        (analyzedTokens[^1].type == Token.Type.Function ||
-                         analyzedTokens[^1].type == Token.Type.Method))
+                else if (tokens[i].type == Token.Type.LParen && analyzedTokens.Count > 0 &&
+                        (analyzedTokens[^1].type == Token.Type.Function || analyzedTokens[^1].type == Token.Type.Method))
                 {
                     string value = "[";
                     int j = i + 1, depth = 1;
@@ -90,6 +87,43 @@ namespace Un
                     value += "]";
 
                     analyzedTokens.Add(new(value, Token.Type.Iterator));
+
+                    i = j;
+                }
+                else if (tokens[i].type == Token.Type.Lambda)
+                {
+                    string keyword = "lambda ";
+                    string arg = "";
+                    string code = "";
+
+                    while (analyzedTokens[^1].type == Token.Type.Variable)
+                    {                       
+                        arg += analyzedTokens[^1].value;
+                        analyzedTokens.RemoveAt(analyzedTokens.Count - 1);
+
+                        if (analyzedTokens.Count > 0 && analyzedTokens[^1].type == Token.Type.Comma)
+                        {
+                            arg += ",";
+                            analyzedTokens.RemoveAt(analyzedTokens.Count - 1);
+                        }
+                        else break;
+                    }
+
+                    int j = i, depth = 0;
+
+                    while (j < tokens.Count)
+                    {
+                        if (tokens[j].type == Token.Type.LParen)
+                            depth++;
+                        if (tokens[j].type == Token.Type.RParen)
+                            depth--;
+                        code += tokens[j].value;
+
+                        if (depth <= 0 && tokens[j].type == Token.Type.RParen) break;
+                        j++;
+                    }
+
+                    analyzedTokens.Add(new Token(keyword + arg + code, Token.Type.Lambda));
 
                     i = j;
                 }

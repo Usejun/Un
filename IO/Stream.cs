@@ -18,44 +18,48 @@ namespace Un.IO
 
         public override void Init()
         {
-            properties.Add("read_all", new NativeFun("read_all", para =>
+            properties.Add("read_all", new NativeFun("read_all", 1, para =>
             {
                 if (para[0] is not Stream self)
                     throw new ArgumentException("invaild argument");
 
                 return new Str(self.r.ReadToEnd());
             }));
-            properties.Add("read", new NativeFun("read", para =>
+            properties.Add("read", new NativeFun("read", 1, para =>
             {
                 if (para[0] is not Stream self)
                     throw new ArgumentException("invaild argument");
 
                 return new Str((char)self.r.Read());
             }));
-            properties.Add("readln", new NativeFun("readln", para =>
+            properties.Add("readln", new NativeFun("readln", 1, para =>
             {
                 if (para[0] is not Stream self)
                     throw new ArgumentException("invaild argument");
 
                 return new Str(self.r.ReadLine());
             }));
-            properties.Add("write", new NativeFun("write", para =>
+            properties.Add("write", new NativeFun("write", -1, para =>
             {
                 if (para[0] is not Stream self)
                     throw new ArgumentException("invaild argument");
 
-                self.w.Write(para[1].CStr().value);
+                for (int i = 1; i < para.Count; i++)
+                    self.w.Write(para[i].CStr().value);
+                
                 return None;
             }));
-            properties.Add("writeln", new NativeFun("writeln", para =>
+            properties.Add("writeln", new NativeFun("writeln", -1, para =>
             {
                 if (para[0] is not Stream self)
                     throw new ArgumentException("invaild argument");
 
-                self.w.WriteLine(para[1].CStr().value);
+                for (int i = 1; i < para.Count; i++)
+                    self.w.WriteLine(para[i].CStr().value);
+
                 return None;
             }));
-            properties.Add("close", new NativeFun("close", para =>
+            properties.Add("close", new NativeFun("close", 1, para =>
             {
                 if (para[0] is not Stream self)
                     throw new ArgumentException("invaild argument");
@@ -63,7 +67,7 @@ namespace Un.IO
                 self.Close();
                 return None;
             }));
-            properties.Add("is_end", new NativeFun("is_end", para =>
+            properties.Add("is_end", new NativeFun("is_end", 1, para =>
             {
                 if (para[0] is not Stream self)
                     throw new ArgumentException("invaild argument");

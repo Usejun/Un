@@ -14,7 +14,7 @@ namespace Un.Collections
 
         public override void Init()
         {
-            properties.Add("add", new NativeFun("add", para =>
+            properties.Add("add", new NativeFun("add", -1, para =>
             {
                 if (para[0] is not Dict self)
                     throw new ArgumentException("invalid argument", nameof(para));
@@ -23,28 +23,28 @@ namespace Un.Collections
 
                 return self;
             }));
-            properties.Add("remove", new NativeFun("remove", para =>
+            properties.Add("remove", new NativeFun("remove", 2, para =>
             {
                 if (para[0] is not Dict self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
                 return new Bool(self.value.Remove(para[1]));
             }));
-            properties.Add("contains_key", new NativeFun("contains_key", para =>
+            properties.Add("contains_key", new NativeFun("contains_key", 2, para =>
             {
                 if (para[0] is not Dict self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
                 return new Bool(self.value.ContainsKey(para[1]));
             }));
-            properties.Add("contains_value", new NativeFun("contains_value", para =>
+            properties.Add("contains_value", new NativeFun("contains_value", 2, para =>
             {
                 if (para[0] is not Dict self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
                 return new Bool(self.value.ContainsValue(para[1]));
             }));
-            properties.Add("clear", new NativeFun("clear", para =>
+            properties.Add("clear", new NativeFun("clear", 1, para =>
             {
                 if (para[0] is not Dict self)
                     throw new ArgumentException("invalid argument", nameof(para));
@@ -53,14 +53,14 @@ namespace Un.Collections
 
                 return None;
             }));
-            properties.Add("keys", new NativeFun("keys", para =>
+            properties.Add("keys", new NativeFun("keys", 1, para =>
             {
                 if (para[0] is not Dict self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
                 return new Iter([.. self.value.Keys]);
             }));
-            properties.Add("values", new NativeFun("values", para =>
+            properties.Add("values", new NativeFun("values", 1, para =>
             {
                 if (para[0] is not Dict self)
                     throw new ArgumentException("invalid argument", nameof(para));

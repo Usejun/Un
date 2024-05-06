@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Un.Collections;
+﻿using Un.Collections;
 using Un.Data;
 
 namespace Un
@@ -97,6 +96,7 @@ namespace Un
             Boolean,
             Iterator,
             Class,
+            Lambda,
             Using,
         }
 

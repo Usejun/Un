@@ -46,14 +46,14 @@ namespace Un
             {
                 Token token = postfix[i];
 
-                if (Process.TryGetClass(token, out var cla))
+                if (Process.TryGetClass(token, out var cla) && token.type == Token.Type.Function)
                 {
                     if (calculateStack.TryPop(out var obj) && obj is Iter args)
                         calculateStack.Push(cla.Clone().Init(args));
                     else
-                        calculateStack.Push(new NativeFun(token.value, cla.Init));
+                        calculateStack.Push(new NativeFun(token.value, -1, cla.Init));
                 }
-                else if (Process.TryGetStaticClass(token, out var staticCla))
+                else if (Process.TryGetStaticClass(token, out var staticCla) && token.type == Token.Type.Variable)
                 {
                     calculateStack.Push(staticCla);
                 }

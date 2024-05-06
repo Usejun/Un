@@ -2,7 +2,6 @@
 
 using Un.Collections;
 using Un.Data;
-using Un.IO;
 
 
 namespace Un.Util
@@ -12,7 +11,7 @@ namespace Un.Util
         Obj Write(Iter para)
         {
             foreach (var p in para)
-                Console.Write(p.CStr().value);
+                Console.Write(p.CStr().value + " ");
             return None;
         }
 
@@ -163,26 +162,26 @@ namespace Un.Util
 
         public override IEnumerable<Fun> Import() =>
         [
-            new NativeFun("write", Write),
-            new NativeFun("writeln", Writeln),
-            new NativeFun("readln", Readln),
-            new NativeFun("type", Type),
-            new NativeFun("func", Func),
-            new NativeFun("range", Range),
-            new NativeFun("len", Len),
-            new NativeFun("hash", Hash),
-            new NativeFun("open", Open),
-            new NativeFun("sum", Sum),
-            new NativeFun("max", Max),
-            new NativeFun("min", Min),
-            new NativeFun("pow", Pow),
-            new NativeFun("abs", Abs),
-            new NativeFun("ceil", Ceil),
-            new NativeFun("floor", Floor),
-            new NativeFun("round", Round),
-            new NativeFun("sqrt", Sqrt),
-            new NativeFun("exit", Exit),
-            new NativeFun("assert", Assert),
+            new NativeFun("write", -1, Write),
+            new NativeFun("writeln", -1, Writeln),
+            new NativeFun("readln", 0, Readln),
+            new NativeFun("type", 1, Type),
+            new NativeFun("func", 1, Func),
+            new NativeFun("range", 2, Range),
+            new NativeFun("len", 1, Len),
+            new NativeFun("hash", 1, Hash),
+            new NativeFun("open", 1, Open),
+            new NativeFun("sum", -1, Sum),
+            new NativeFun("max", -1, Max),
+            new NativeFun("min", -1, Min),
+            new NativeFun("pow", 2, Pow),
+            new NativeFun("abs", 1, Abs),
+            new NativeFun("ceil", 1, Ceil),
+            new NativeFun("floor", 1, Floor),
+            new NativeFun("round", -1, Round),
+            new NativeFun("sqrt", 1, Sqrt),
+            new NativeFun("exit", 0, Exit),
+            new NativeFun("assert", 2, Assert),
         ];
 
     }

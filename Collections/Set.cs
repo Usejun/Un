@@ -19,7 +19,7 @@ namespace Un.Collections
 
         public override void Init()
         {
-            properties.Add("add", new NativeFun("add", para =>
+            properties.Add("add", new NativeFun("add", -1, para =>
             {
                 if (para[0] is not Set self)
                     throw new ArgumentException("invalid argument", nameof(para));
@@ -29,7 +29,7 @@ namespace Un.Collections
 
                 return None;
             }));
-            properties.Add("extend", new NativeFun("extend", para =>
+            properties.Add("extend", new NativeFun("extend", -1, para =>
             {
                 if (para[0] is not Set self)
                     throw new ArgumentException("invalid argument", nameof(para));
@@ -40,41 +40,33 @@ namespace Un.Collections
 
                 return None;
             }));
-            properties.Add("remove", new NativeFun("remove", para =>
+            properties.Add("remove", new NativeFun("remove", 2, para =>
             {                
                 if (para[0] is not Set self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                Addon.Assert(para.Count > 2, "parameter count is over");
-
                 return new Bool(self.value.Remove(para[1]));
             }));
-            properties.Add("contains", new NativeFun("contains", para =>
+            properties.Add("contains", new NativeFun("contains", 2, para =>
             {
                 if (para[0] is not Set self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 return new Bool(self.value.Contains(para[1]));
             }));
-            properties.Add("clear", new NativeFun("clear", para =>
+            properties.Add("clear", new NativeFun("clear", 1, para =>
             {
                 if (para[0] is not Set self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 1, "parameter count is over");
 
                 self.value.Clear();
 
                 return None;
             }));
-            properties.Add("values", new NativeFun("values", para =>
+            properties.Add("values", new NativeFun("values", 1, para =>
             {
                 if (para[0] is not Set self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count >= 0, "parameter count is over");
 
                 return new Iter([.. self.value]);
             }));

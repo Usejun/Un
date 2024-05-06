@@ -69,6 +69,7 @@ namespace Un.Data
                     nesting--;
                 }
                 else throw new SyntaxException();
+
             }
         }
 
@@ -292,15 +293,6 @@ namespace Un.Data
         }
 
         public virtual Obj Clone() => new(ClassName);
-        //{
-        //    Obj clone = new(ClassName);
-
-        //    foreach ((string key, Obj property) in properties)
-        //        if (!clone.properties.TryAdd(key, property.Clone()))
-        //            clone.properties[key] = property.Clone();
-
-        //    return clone;
-        //}
 
         public virtual Obj Copy()
         {
@@ -372,7 +364,7 @@ namespace Un.Data
             if (str == "None") return None;
             if (long.TryParse(str, out var l)) return new Int(l);
             if (double.TryParse(str, out var d)) return new Float(d);
-            if (DateTime.TryParse(str, out var d1)) return new Date(d1);
+            if (str.Length >= 6 && str[0..6] == "lambda") return new Lambda(str);
 
             throw new InvalidConvertException(str);
         }

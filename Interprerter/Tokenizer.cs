@@ -4,6 +4,12 @@ namespace Un
 {
     public static class Tokenizer
     {
+        public static List<string> oper = 
+        [
+            "==", "<=", ">=", "!=", "+=", "-=", "*=", "/=", "%=", "//", "//=", "=>",
+            "<<", ">>", "<<=", ">>=", "**", "**=", "&=", "|=", "^=",
+        ];
+
         public static List<Token> Tokenize(string code)
         {
             List<Token> tokens = [];
@@ -23,7 +29,7 @@ namespace Un
             }
 
             //Console.WriteLine();
-            //Console.WriteLine(string.Join("\n", tokens.Select(i => $"{i.type} {i.value}")));
+            //Console.WriteLine(string.Join("\n", tokens));
             //Console.WriteLine();
 
             return tokens;
@@ -74,7 +80,7 @@ namespace Un
             }
 
             Token Operator(string code)
-            {
+            {                
                 bool TryOperator(string type, out Token token)
                 {
                     token = Token.None;
@@ -88,17 +94,9 @@ namespace Un
                     return true;
                 }
 
-                if (TryOperator("==", out var t1)) return t1;
-                else if (TryOperator("<=", out var t2)) return t2;
-                else if (TryOperator(">=", out var t3)) return t3;
-                else if (TryOperator("!=", out var t4)) return t4;
-                else if (TryOperator("//", out var t5)) return t5;
-                else if (TryOperator("+=", out var t6)) return t6;
-                else if (TryOperator("-=", out var t7)) return t7;
-                else if (TryOperator("*=", out var t8)) return t8;
-                else if (TryOperator("/=", out var t9)) return t9;
-                else if (TryOperator("%=", out var t10)) return t10;
-                else if (TryOperator("//=", out var t11)) return t11;
+                foreach (var o in oper)
+                    if (TryOperator(o, out var t))
+                        return t;
 
                 return new(code[index++]);
             }

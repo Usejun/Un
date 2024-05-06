@@ -15,6 +15,7 @@ Plus +
 Minus -
 Bang !
 Asterisk *
+DoubleAsterisk **
 Slash /
 Percent %
 BAnd &
@@ -55,5 +56,6 @@ In in
 Return return
 Comment #
 Class class
+Lambda =>
 Func fn
 Using using

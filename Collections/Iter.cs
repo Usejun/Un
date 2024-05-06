@@ -55,7 +55,8 @@ namespace Un.Collections
 
                 if (depth == 0 && !isString && str[index] == ',')
                 {
-                    if (!string.IsNullOrWhiteSpace(buffer) && IsIter(buffer)) Append(new Iter(buffer, properties));
+                    if (!string.IsNullOrWhiteSpace(buffer) && IsIter(buffer)) 
+                        Append(new Iter(buffer, properties));
                     else Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), properties), properties));
                     buffer = "";
                 }
@@ -87,7 +88,7 @@ namespace Un.Collections
 
         public override void Init()
         {
-            properties.Add("add", new NativeFun("add", para =>
+            properties.Add("add", new NativeFun("add", -1, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
@@ -97,20 +98,18 @@ namespace Un.Collections
 
                 return None;
             }));
-            properties.Add("insert", new NativeFun("insert", para =>
+            properties.Add("insert", new NativeFun("insert", 3, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
                 if (para[2] is not Int i || !i.value.TryInt(out var index))
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                Addon.Assert(para.Count > 3, "parameter count is over");
-
                 self.Insert(para[1], index);
 
                 return None;
             }));
-            properties.Add("extend", new NativeFun("extend", para =>
+            properties.Add("extend", new NativeFun("extend", -1, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
@@ -121,102 +120,98 @@ namespace Un.Collections
 
                 return None;
             }));
-            properties.Add("extend_insert", new NativeFun("extend_insert", para =>
+            properties.Add("extend_insert", new NativeFun("extend_insert", 3, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
                 if (para[2] is not Int i || !i.value.TryInt(out var index))
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                Addon.Assert(para.Count > 3, "parameter count is over");
-
                 self.ExtendInsert(para[1], index);
 
                 return None; 
             }));
-            properties.Add("remove", new NativeFun("remove", para =>
+            properties.Add("remove", new NativeFun("remove", 2, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 if (para[1] is Obj obj) return self.Remove(obj);
                 throw new ArgumentException("invalid argument", nameof(para));
             }));
-            properties.Add("remove_at", new NativeFun("remove_at", para =>
+            properties.Add("remove_at", new NativeFun("remove_at", 2, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 if (para[1] is Int i) return self.RemoveAt(i);
                 throw new ArgumentException("invalid argument", nameof(para));
             }));
-            properties.Add("index_of", new NativeFun("index_of", para =>
+            properties.Add("index_of", new NativeFun("index_of", 2, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 if (para[1] is Obj obj) return self.IndexOf(obj);
                 throw new ArgumentException("invalid argument", nameof(para));
             }));
-            properties.Add("contains", new NativeFun("contains", para =>
+            properties.Add("contains", new NativeFun("contains", 2, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 if (para[1] is Obj obj) return self.Contains(obj);
                 throw new ArgumentException("invalid argument", nameof(para));
             }));
-            properties.Add("clone", new NativeFun("clone", para =>
+            properties.Add("clone", new NativeFun("clone", 1, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 1, "parameter count is over");
 
                 return self.Clone();
             }));
-            properties.Add("sort", new NativeFun("sort", para =>
+            properties.Add("sort", new NativeFun("sort", 1, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 1, "parameter count is over");
 
                 self.Sort();
                 return None;
             }));
-            properties.Add("binary_search", new NativeFun("binary_search", para =>
+            properties.Add("reverse", new NativeFun("reverse", 1, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                Addon.Assert(para.Count > 2, "parameter count is over");
+                self.Reverse();
+                return None;
+            }));
+            properties.Add("order", new NativeFun("order", 1, para =>
+            {
+                if (para[0] is not Iter self || para[1] is not Fun f)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                self.Order(f);
+                return None;
+            }));
+            properties.Add("binary_search", new NativeFun("binary_search", 2, para =>
+            {
+                if (para[0] is not Iter self)
+                    throw new ArgumentException("invalid argument", nameof(para));
 
                 return self.BinarySearch(para[1]);
             }));
-            properties.Add("lower_bound", new NativeFun("lower_bound", para =>
+            properties.Add("lower_bound", new NativeFun("lower_bound", 2, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 return self.LowerBound(para[1]);
             }));
-            properties.Add("upper_bound", new NativeFun("upper_bound", para =>
+            properties.Add("upper_bound", new NativeFun("upper_bound", 2, para =>
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-
-                Addon.Assert(para.Count > 2, "parameter count is over");
 
                 return self.UpperBound(para[1]);
             }));
@@ -434,6 +429,16 @@ namespace Un.Collections
         public void Sort()
         {
             Array.Sort(value, 0, Count);
+        }
+
+        public void Order(Fun fun)
+        {
+            Array.Sort(value, 0, Count, Comparer<Obj>.Create((i, j) => fun.Call([i]).CompareTo(fun.Call([j]))));
+        }
+
+        public void Reverse()
+        {
+            Array.Reverse(value, 0, Count);
         }
 
         public Int BinarySearch(Obj obj) => new(Array.BinarySearch(value, 0, Count, obj));

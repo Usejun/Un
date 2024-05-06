@@ -8,26 +8,42 @@ namespace Un.Collections
 
         public override void Init()
         {
-            properties.Add("push", new NativeFun("push", para =>
+            properties.Add("push", new NativeFun("push", -1, para =>
             {
                 if (para[0] is not Stack self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                if (para[1] is Iter iter)
-                {
-                    for (int i = 0; i < iter.Count; i++)
-                        self.value.Push(iter[i]);
-                }
-                else self.value.Push(para[1]);
+                for (int i = 1; i < para.Count; i++)
+                    value.Push(para[i]);
 
                 return None;
             }));
-            properties.Add("pop", new NativeFun("pop", para =>
+            properties.Add("push_extend", new NativeFun("push_extend", -1, para =>
             {
                 if (para[0] is not Stack self)
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                return self.value.Pop();
+
+                for (int i = 1; i < para.Count; i++)
+                    foreach (var item in para[i].CIter())
+                        self.value.Push(item);
+
+                return None;
+            }));
+            properties.Add("pop", new NativeFun("pop", -1, para =>
+            {
+                if (para[0] is not Stack self)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                if (para.Count == 1) return self.value.Pop();
+                else if (para.Count == 2 && para[1] is Int count)
+                {
+                    Iter objs = [];
+                    for (int i = 0; i < count.value; i++)
+                        objs.Append(self.value.Pop());
+                    return objs;
+                }
+                throw new ArgumentException("invalid argument", nameof(para));
             }));
         }
 

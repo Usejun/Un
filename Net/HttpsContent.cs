@@ -10,19 +10,19 @@ namespace Un.Net
 
         public override void Init()
         {
-            properties.Add("headers", new NativeFun("headers", para =>
+            properties.Add("headers", new NativeFun("headers", 1, para =>
             {
                 if (para[0] is not HttpsContent self)
                     throw new ArgumentException(nameof(para));
                 return new HttpsHeaders(self.value.Headers);
             }));
-            properties.Add("stream", new NativeFun("stream", para =>
+            properties.Add("stream", new NativeFun("stream", 1, para =>
             {
                 if (para[0] is not HttpsContent self)
                     throw new ArgumentException(nameof(para));
                 return new IO.Stream(self.value.ReadAsStreamAsync().Result);
             }));
-            properties.Add("string", new NativeFun("string", para =>
+            properties.Add("string", new NativeFun("string", 1, para =>
             {
                 if (para[0] is not HttpsContent self)
                     throw new ArgumentException(nameof(para));

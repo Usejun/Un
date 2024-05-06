@@ -30,12 +30,11 @@ namespace Un.Data
 
         public override void Init()
         {
-            properties.Add("split", new NativeFun("split", para =>
+            properties.Add("split", new NativeFun("split", 2, para =>
             {
-                if (para[0] is not Str self)
+                if (para[0] is not Str self || para[1] is not Str sep)
                     throw new ArgumentException("invalid argument", nameof(para));
-                if (para[1] is not Str sep)
-                    throw new ArgumentException("invalid argument", nameof(para));
+
                 return new Iter(self.value.Split(sep.value));
             }));
         }

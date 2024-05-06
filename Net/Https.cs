@@ -7,19 +7,19 @@ namespace Un.Net
     {
         private static readonly HttpClient client = new();
 
-        HttpsResponse Get(Iter para)
-        {
-            if (para[1] is not Str url)
-                throw new ArgumentException("invaild argument", nameof(url));
-
-            return new(client.GetAsync(url.value).Result);
-        }
-
         public Pack Static()
         {
             Https https = new("https");
 
-            https.properties.Add("get", new NativeFun("get", Get));
+            https.properties.Add("get", new NativeFun("get", 2, para =>
+            {
+                if (para[0] is not Https self)
+                    throw new ArgumentException("invaild argument", nameof(para));
+                if (para[1] is not Str url)
+                    throw new ArgumentException("invaild argument", nameof(url));
+
+                return new HttpsResponse(client.GetAsync(url.value).Result);
+            }));
 
             return https;
         }
