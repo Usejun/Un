@@ -4,12 +4,6 @@ namespace Un
 {
     public static class Tokenizer
     {
-        public static List<string> oper = 
-        [
-            "==", "<=", ">=", "!=", "+=", "-=", "*=", "/=", "%=", "//", "//=", "=>",
-            "<<", ">>", "<<=", ">>=", "**", "**=", "&=", "|=", "^=",
-        ];
-
         public static List<Token> Tokenize(string code)
         {
             List<Token> tokens = [];
@@ -24,7 +18,7 @@ namespace Un
                 else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
                 else if (char.IsDigit(code[index])) tokens.Add(Number(code));
                 else if (Token.IsOperator(code[index])) tokens.Add(Operator(code));
-                else if (code[index] == ',' || code[index] == '.') tokens.Add(new(code[index++]));
+                else if (Token.IsSymbol(code[index])) tokens.Add(new(code[index++]));
                 else throw new SyntaxException("Invalid Syntax");
             }
 
@@ -75,6 +69,22 @@ namespace Un
 
                     return new(str, Token.Type.Float);
                 }
+                if (index < code.Length && code[index] == 'b')
+                {
+                    str += code[index++];
+                    while (index < code.Length && char.IsDigit(code[index]))
+                        str += code[index++];
+
+                    return new(str, Token.Type.Integer);
+                }
+                if (index < code.Length && code[index] == 'x')
+                {
+                    str += code[index++];
+                    while (index < code.Length && char.IsDigit(code[index]))
+                        str += code[index++];
+
+                    return new(str, Token.Type.Integer);
+                }
 
                 return new(str, Token.Type.Integer);
             }
@@ -94,7 +104,7 @@ namespace Un
                     return true;
                 }
 
-                foreach (var o in oper)
+                foreach (var o in Token.UnionOper)
                     if (TryOperator(o, out var t))
                         return t;
 

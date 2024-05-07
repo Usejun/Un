@@ -223,11 +223,18 @@ namespace Un.Collections
             {
                 value = [];
             }
+            if (arg[0] is Fun fun && arg[1] is Iter iter)
+            {
+                value = [];
+
+                for (int i = 0; i < iter.Count; i++)
+                    Append(fun.Call([iter[i]]));                                
+            }
             else
             {
-                var iter = arg[0].CIter();
-                value = iter.value;
-                Count = iter.Count;
+                var cIter = arg[0].CIter();
+                value = cIter.value;
+                Count = cIter.Count;
             }
 
             return this;

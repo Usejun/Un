@@ -1,1 +1,10 @@
-﻿
+﻿import rand
+
+list = range(0, 10)
+rand.shuffle(list)
+a, b = map(i => i, rand.choice(list, 2))
+list2 = iter(i => i ** 2, list)
+
+writeln(rand.choice(list, 2), a, b, list[-1])
+writeln(list)
+writeln(list2[2:5])

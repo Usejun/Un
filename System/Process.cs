@@ -56,6 +56,8 @@ namespace Un
                 string str = data[1];
 
                 Token.Types.Add(str, Enum.Parse<Token.Type>(keyword));
+                if (str.Length > 1)
+                    Token.UnionOper.Add(str);
             }
 
             foreach ((_, Obj obj) in Class)

@@ -26,7 +26,7 @@ namespace Un.Util
             if (para[1] is Int iS && para[2] is Int iE)
                 return new Int(rand.NextInt64(iS.value, iE.value));
             if (para[1] is Float fS && para[2] is Float fE)
-                return new Float(System.Math.Min(rand.NextDouble() + fS.value, fE.value));
+                return new Float(double.Min(fE.value * rand.NextDouble() + fS.value, fE.value));
             throw new ArgumentException("invaild argument", nameof(para));
         }
 
@@ -34,8 +34,9 @@ namespace Un.Util
         {
             if (para[1] is Iter iter)
             {
-                if (para.Count > 2 && para[2] is Int count && count.value.TryInt(out var c)) return new(rand.GetItems(iter.value, c));
-                else return new(rand.GetItems(iter.value, 1));
+                if (para.Count > 2 && para[2] is Int count && count.value.TryInt(out var c))
+                    return new(rand.GetItems(iter.value[..iter.Count], c));
+                else return new(rand.GetItems(iter.value[..iter.Count], 1));
             }
             throw new ArgumentException("invaild argument", nameof(para));
         }
@@ -44,7 +45,11 @@ namespace Un.Util
         {
             if (para[1] is Iter iter)
             {
-                rand.Shuffle(iter.value);
+                for (int i = 0; i < iter.Count; i++)
+                {
+                    int index = rand.Next(0, iter.Count - 1);
+                    (iter[index], iter[i]) = (iter[i], iter[index]);
+                }
                 return None;
             }
             throw new ArgumentException("invaild argument", nameof(para));

@@ -316,6 +316,22 @@ namespace Un.Data
             throw new IndexerException("It is not Indexable type");
         }
 
+        public virtual Obj Slice(Iter para)
+        {
+            if (para[0] is not Int start || para[1] is not Int end)
+                throw new SyntaxException();
+
+            Iter sliced = [];
+
+            while (start.value < end.value)
+            {
+                sliced.Append(GetItem([start]));
+                start.value++;
+            }
+
+            return sliced;
+        }
+
 
         public virtual Obj Entry()
         {
@@ -351,7 +367,7 @@ namespace Un.Data
 
 
         public static Obj Convert(string str, Dictionary<string, Obj> properties)
-        {
+        {           
             if (string.IsNullOrEmpty(str)) return None;
             if (properties.TryGetValue(str, out var value)) return value;
             if (Process.TryGetStaticClass(str, out var staticCla)) return staticCla;
@@ -363,6 +379,7 @@ namespace Un.Data
             if (str == "false") return new Bool(false);
             if (str == "None") return None;
             if (long.TryParse(str, out var l)) return new Int(l);
+            if (int.TryParse(str, out var i)) return new Int(i);
             if (double.TryParse(str, out var d)) return new Float(d);
             if (str.Length >= 6 && str[0..6] == "lambda") return new Lambda(str);
 

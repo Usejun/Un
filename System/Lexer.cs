@@ -30,12 +30,30 @@ namespace Un
                         analyzedTokens[^1].type == Token.Type.Indexer ||
                         analyzedTokens[^1].type == Token.Type.Property))
                     {
-                        Obj index = Calculator.Calculate(Lex(tokens[(i + 1)..j], properties), properties);
+                        int colon = -1;
 
-                        if (index is Str)
-                            analyzedTokens.Add(new Token($"\"{index.CStr().value}\"", Token.Type.Indexer));
+                        for (int k = i; k < j; k++)
+                            if (tokens[k].type == Token.Type.Colon)
+                                colon = k;
+
+                        if (colon > 0)
+                        {
+                            Obj start = Calculator.Calculate(Lex(tokens[(i + 1)..colon], properties), properties);
+                            Obj end = Calculator.Calculate(Lex(tokens[(colon + 1)..j], properties), properties);
+
+                            if (start is not Int || end is not Int) throw new SyntaxException();
+
+                            analyzedTokens.Add(new Token($"{start.CStr().value}:{end.CStr().value}", Token.Type.Slicer));
+                        } 
                         else
-                            analyzedTokens.Add(new Token(index.CStr().value, Token.Type.Indexer));
+                        {
+                            Obj index = Calculator.Calculate(Lex(tokens[(i + 1)..j], properties), properties);
+
+                            if (index is Str)
+                                analyzedTokens.Add(new Token($"\"{index.CStr().value}\"", Token.Type.Indexer));
+                            else
+                                analyzedTokens.Add(new Token(index.CStr().value, Token.Type.Indexer));
+                        }
                     }
                     else
                     {

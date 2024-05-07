@@ -9,6 +9,8 @@ namespace Un
 
         public static Dictionary<string, Type> Types = [];
 
+        public static List<string> UnionOper = [];
+
         public enum Type
         {
             None,
@@ -63,6 +65,7 @@ namespace Un
             DoubleAsterisk,
 
             Indexer,
+            Slicer,
             Property,
             Method,
             Function,
@@ -74,6 +77,7 @@ namespace Un
 
             Dot,
             Comma,
+            Colon,
 
             Func,
             True,
@@ -207,6 +211,17 @@ namespace Un
             >= Type.Assign and <= Type.RightShiftAssign => true,
             _ => false
         };
+
+
+        public static bool IsSymbol(Token token) => IsSymbol(token.type);
+
+        public static bool IsSymbol(Type type) => type switch
+        {
+            Type.Comma or Type.Dot or Type.Colon => true,
+            _ => false,
+        };
+
+        public static bool IsSymbol(char chr) => IsSymbol(GetType(chr));
 
     }
 }

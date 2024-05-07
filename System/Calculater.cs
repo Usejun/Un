@@ -1,7 +1,6 @@
 ﻿using Un.Collections;
 using Un.Data;
 
-
 namespace Un
 {
     public class Calculator
@@ -80,6 +79,12 @@ namespace Un
 
                         calculateStack.Push(a.GetItem(new Iter([b])));
                     }
+                    else if (token.type == Token.Type.Slicer)
+                    {
+                        var index = token.value.Split(':');
+
+                        calculateStack.Push(a.Slice([Obj.Convert(index[0], properties), Obj.Convert(index[1], properties)]));
+                    }
                     else if (token.type == Token.Type.Property)
                     {
                         b = a.Get(token.value);
@@ -114,31 +119,31 @@ namespace Un
                         b = calculateStack.Pop();
 
                         Obj c = token.type switch
-                            {
-                                Token.Type.Plus => b.Add(a),
-                                Token.Type.Minus => b.Sub(a),
-                                Token.Type.Asterisk => b.Mul(a),
-                                Token.Type.DoubleAsterisk => b.Pow(a),
-                                Token.Type.Slash => b.Div(a),
-                                Token.Type.DoubleSlash => b.IDiv(a),
-                                Token.Type.Percent => b.Mod(a),
-                                Token.Type.And => b.And(a),
-                                Token.Type.Or => b.Or(a),
-                                Token.Type.Xor => b.Xor(a),
-                                Token.Type.BAnd => b.BAnd(a),
-                                Token.Type.BOr => b.BOr(a),
-                                Token.Type.BXor => b.BXor(a),
-                                Token.Type.Equal => b.Equals(a),
-                                Token.Type.Unequal => b.Unequals(a),
-                                Token.Type.GreaterOrEqual => b.GreaterOrEquals(a),
-                                Token.Type.LessOrEqual => b.LessOrEquals(a),
-                                Token.Type.GreaterThen => b.GreaterThen(a),
-                                Token.Type.LessThen => b.LessThen(a),
-                                Token.Type.Method => ((Fun)b.Get(token.value)).Call(a.CIter().Insert(b, 0)),
-                                _ => throw new InvalidOperationException()
-                            };
+                        {
+                            Token.Type.Plus => b.Add(a),
+                            Token.Type.Minus => b.Sub(a),
+                            Token.Type.Asterisk => b.Mul(a),
+                            Token.Type.DoubleAsterisk => b.Pow(a),
+                            Token.Type.Slash => b.Div(a),
+                            Token.Type.DoubleSlash => b.IDiv(a),
+                            Token.Type.Percent => b.Mod(a),
+                            Token.Type.And => b.And(a),
+                            Token.Type.Or => b.Or(a),
+                            Token.Type.Xor => b.Xor(a),
+                            Token.Type.BAnd => b.BAnd(a),
+                            Token.Type.BOr => b.BOr(a),
+                            Token.Type.BXor => b.BXor(a),
+                            Token.Type.Equal => b.Equals(a),
+                            Token.Type.Unequal => b.Unequals(a),
+                            Token.Type.GreaterOrEqual => b.GreaterOrEquals(a),
+                            Token.Type.LessOrEqual => b.LessOrEquals(a),
+                            Token.Type.GreaterThen => b.GreaterThen(a),
+                            Token.Type.LessThen => b.LessThen(a),
+                            Token.Type.Method => ((Fun)b.Get(token.value)).Call(a.CIter().Insert(b, 0)),
+                            _ => throw new InvalidOperationException()
+                        };
 
-                            calculateStack.Push(c);
+                        calculateStack.Push(c);
                     }
                 }
                 else

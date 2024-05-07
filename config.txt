@@ -41,6 +41,7 @@ LParen (
 RParen )
 Dot .
 Comma ,
+Colon :
 Func func
 True true
 False false
