@@ -7,7 +7,9 @@ namespace Un.Util
     {
         Obj Pow(Iter para)
         {
-            if (para[1] is not Int i || !i.value.TryInt(out var count)) throw new ArgumentException("invaild argument", nameof(para));
+            if (para[1] is not Int i) throw new ArgumentException("invaild argument", nameof(para));
+
+            int count = (int)i.value;
 
             if (count == 0) return new Int(0);
             if (count == 1) return para[1];
@@ -70,7 +72,7 @@ namespace Un.Util
             return new(sum);
         }
 
-        public Pack Static()
+        public Obj Static()
         {
             Math math = new(packageName);
             math.properties.Add("pi", new Float(3.14159265));

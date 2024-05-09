@@ -22,7 +22,7 @@ namespace Un.Net
                     throw new ArgumentException(nameof(para));
                 return new IO.Stream(self.value.ReadAsStreamAsync().Result);
             }));
-            properties.Add("string", new NativeFun("string", 1, para =>
+            properties.Add("str", new NativeFun("str", 1, para =>
             {
                 if (para[0] is not HttpsContent self)
                     throw new ArgumentException(nameof(para));

@@ -57,6 +57,7 @@ In in
 Return return
 Comment #
 Class class
+Enum enum
 Lambda =>
 Func fn
 Using using

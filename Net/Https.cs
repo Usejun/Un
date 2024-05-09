@@ -7,7 +7,7 @@ namespace Un.Net
     {
         private static readonly HttpClient client = new();
 
-        public Pack Static()
+        public Obj Static()
         {
             Https https = new("https");
 

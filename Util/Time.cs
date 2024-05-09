@@ -8,9 +8,8 @@ namespace Un.Util
     {
         Obj Sleep(Iter paras)
         {
-            if (paras[0] is Int i &&
-                i.value.TryInt(out var milliseconds))
-                Thread.Sleep(milliseconds);
+            if (paras[0] is Int i)
+                Thread.Sleep((int)i.value);
             return None;
         }
 
@@ -23,7 +22,7 @@ namespace Un.Util
             new NativeFun("sleep", 2, Sleep),
         ];
 
-        public Pack Static()
+        public Obj Static()
         {
             Time time = new(packageName);
             time.properties.Add("now", new NativeFun("now", 1, Now));

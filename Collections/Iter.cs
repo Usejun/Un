@@ -28,13 +28,13 @@ namespace Un.Collections
         {
             get
             {
-                if (!i.value.TryInt(out var index) || OutOfRange(index)) throw new IndexOutOfRangeException();
-                return value[index];
+                if (OutOfRange((int)i.value)) throw new IndexOutOfRangeException();
+                return value[(int)i.value];
             }
             set
             {
-                if (!i.value.TryInt(out var index) || OutOfRange(index)) throw new IndexOutOfRangeException();
-                this.value[index] = value;
+                if (OutOfRange((int)i.value)) throw new IndexOutOfRangeException();
+                this.value[(int)i.value] = value;
             }
         }
 
@@ -102,10 +102,10 @@ namespace Un.Collections
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-                if (para[2] is not Int i || !i.value.TryInt(out var index))
+                if (para[2] is not Int i)
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                self.Insert(para[1], index);
+                self.Insert(para[1], (int)i.value);
 
                 return None;
             }));
@@ -124,10 +124,10 @@ namespace Un.Collections
             {
                 if (para[0] is not Iter self)
                     throw new ArgumentException("invalid argument", nameof(para));
-                if (para[2] is not Int i || !i.value.TryInt(out var index))
+                if (para[2] is not Int i)
                     throw new ArgumentException("invalid argument", nameof(para));
 
-                self.ExtendInsert(para[1], index);
+                self.ExtendInsert(para[1], (int)i.value);
 
                 return None; 
             }));
@@ -300,17 +300,17 @@ namespace Un.Collections
 
         public override Obj GetItem(Iter parameter)
         {
-            if (parameter[0] is not Int i || !i.value.TryInt(out var iIndex)) throw new IndexOutOfRangeException();
-            int index = iIndex < 0 ? Count + iIndex : iIndex;
+            if (parameter[0] is not Int i) throw new IndexOutOfRangeException();
+            int index = (int)i.value < 0 ? Count + (int)i.value : (int)i.value;
             if (OutOfRange(index)) throw new IndexOutOfRangeException();
             return value[index];
         }
 
         public override Obj SetItem(Iter parameter)
         {
-            if (parameter[0] is not Int i || !i.value.TryInt(out var iIndex) || OutOfRange(iIndex)) throw new IndexOutOfRangeException();
-            value[iIndex] = parameter[1];
-            return value[iIndex];
+            if (parameter[0] is not Int i || OutOfRange((int)i.value)) throw new IndexOutOfRangeException();
+            value[(int)i.value] = parameter[1];
+            return value[(int)i.value];
         }
 
         public override Obj Clone() => new Iter()
@@ -412,12 +412,9 @@ namespace Un.Collections
             return new(false);
         }
 
-        public Bool RemoveAt(Int idx)
+        public Bool RemoveAt(Int index)
         {
-            if (!idx.value.TryInt(out var index))
-                return new(false);
-
-            for (int i = index; i < Count - 1; i++)
+            for (int i = (int)index.value; i < Count - 1; i++)
                 value[i] = value[i + 1];
             Count--;
             return new(true);

@@ -34,8 +34,8 @@ namespace Un.Util
         {
             if (para[1] is Iter iter)
             {
-                if (para.Count > 2 && para[2] is Int count && count.value.TryInt(out var c))
-                    return new(rand.GetItems(iter.value[..iter.Count], c));
+                if (para.Count > 2 && para[2] is Int count)
+                    return new(rand.GetItems(iter.value[..iter.Count], (int)count.value));
                 else return new(rand.GetItems(iter.value[..iter.Count], 1));
             }
             throw new ArgumentException("invaild argument", nameof(para));
@@ -55,7 +55,7 @@ namespace Un.Util
             throw new ArgumentException("invaild argument", nameof(para));
         }
 
-        public Pack Static()
+        public Obj Static()
         {
             Rand rand = new("rand");
 

@@ -9,99 +9,104 @@ namespace Un
 
         public static Dictionary<string, Type> Types = [];
 
-        public static List<string> UnionOper = [];
+        public static List<string> Union = [];
+
+        public static Dictionary<Type, int> Priority = new()
+        {
+            {Type.LParen, -1},
+
+            {Type.Indexer, 1}, {Type.Slicer, 1}, {Type.Function, 1}, {Type.Property, 1}, {Type.Method, 1},
+
+            {Type.DoubleAsterisk, 2},
+
+            {Type.BNot, 3},
+
+            {Type.Asterisk, 4}, {Type.Slash, 4}, {Type.DoubleSlash, 4}, {Type.Percent, 4},
+
+            {Type.Plus, 5}, {Type.Minus, 5},
+
+            {Type.LeftShift, 6}, {Type.RightShift, 6},
+
+            {Type.BAnd, 7},
+
+            {Type.BXor, 8},
+
+            {Type.BOr, 9},
+
+            {Type.In, 10}, {Type.Equal, 10}, {Type.Unequal, 10}, {Type.LessThen, 10}, {Type.LessOrEqual, 10},
+            {Type.GreaterThen, 10}, {Type.GreaterOrEqual, 10},
+
+            {Type.Assign, 11}, {Type.PlusAssign, 11}, {Type.MinusAssign, 11}, {Type.AsteriskAssign, 11}, {Type.SlashAssign, 11},
+            {Type.DoubleSlashAssign, 11}, {Type.DoubleAsteriskAssign, 11}, {Type.PercentAssign, 11}, {Type.BAndAssign, 11},
+            {Type.BOrAssign, 11}, {Type.BXorAssign, 11}, {Type.LeftShiftAssign, 11}, {Type.RightShiftAssign, 11},
+
+            {Type.Not, 12},
+
+            {Type.And, 13},
+
+            {Type.Xor, 14},
+
+            {Type.Or, 15},
+
+            {Type.RParen, 16},
+        };
 
         public enum Type
         {
             None,
 
-            RParen,
-            Assign,
-            PlusAssign,
-            MinusAssign,
-            AsteriskAssign,
-            DoubleAsteriskAssign,
-            SlashAssign,
-            DoubleSlashAssign,
-            PercentAssign,
-            BAndAssign,
-            BOrAssign,
-            BXorAssign, 
-            LeftShiftAssign,
-            RightShiftAssign,
+            RParen, 
 
-            Or,
-            And,
-            Xor,
-            Not,
+            Assign, PlusAssign, MinusAssign,
+            AsteriskAssign, DoubleAsteriskAssign,
+            SlashAssign, DoubleSlashAssign,
+            PercentAssign,
+            BAndAssign, BOrAssign, BXorAssign, 
+            LeftShiftAssign, RightShiftAssign,
+
+            Or, And, Xor, Not,
 
             In,
 
-            Equal,
-            Unequal,
-            LessOrEqual,
-            GreaterOrEqual,
-            LessThen,
-            GreaterThen,
+            Equal, Unequal,
+            LessOrEqual, GreaterOrEqual,
+            LessThen, GreaterThen,
 
-            BOr,
-            BXor,
-            BAnd,
+            BOr, BXor, BAnd,
 
-            LeftShift,
-            RightShift,
+            LeftShift, RightShift,
 
-            Plus,
-            Minus,
+            Plus, Minus,
 
-            Asterisk,
-            Slash,
-            DoubleSlash,
+            Asterisk, 
+            Slash, DoubleSlash,
             Percent,
 
-            BNot,
-            Bang,
+            BNot, Bang,
 
             DoubleAsterisk,
 
-            Indexer,
-            Slicer,
-            Property,
-            Method,
+            Indexer, Slicer,
+            Property, Method,
             Function,
 
             LParen,
 
-            LBrack,
-            RBrack,
+            LBrack, RBrack,
 
-            Dot,
-            Comma,
-            Colon,
+            Dot, Comma,Colon,
 
-            Func,
-            True,
-            False,
-            If,
-            ElIf,
-            Else,
-            For,
-            While,
-            Break,
-            Continue,
-            Import,
-            Return,
+            Func, Class, Enum,
+            True, False,
+            If, ElIf, Else,
+            For, While,
+            Break, Continue, Return,
+            Import, Using,
             Comment,
 
             Variable,
-            Integer,
-            Float,
-            String,
-            Boolean,
-            Iterator,
-            Class,
-            Lambda,
-            Using,
+
+            Integer, Float, String, Boolean, Iterator, Lambda,
         }
 
         public Type type;
@@ -222,6 +227,15 @@ namespace Un
         };
 
         public static bool IsSymbol(char chr) => IsSymbol(GetType(chr));
+
+
+        public static bool IsLiteral(Token token) => IsLiteral(token.type);
+
+        public static bool IsLiteral(Type type) => type switch
+        {
+            >= Type.Integer and <= Type.Lambda => true,
+            _ => false
+        };
 
     }
 }

@@ -5,11 +5,11 @@ Console.OutputEncoding = System.Text.Encoding.Unicode;
 Process.Initialize("D:\\User\\Un\\Code");
 
 string[] testcase = [
-    "test.un",
-    "Test\\type.test.un",
+    "Test\\set.test.un",
     "Test\\fib.test.un",
     "Test\\class.test.un",
-    "Test\\set.test.un",
+    "test.un",
+    "Test\\type.test.un",
     "Test\\iter.test.un",
     "Test\\dict.test.un",
     "Test\\math.test.un",

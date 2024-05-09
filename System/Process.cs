@@ -15,13 +15,18 @@ namespace Un
 
         private readonly static HashSet<string> Imported = [];
 
-        public readonly static Dictionary<string, Pack> Package = new()
+        public readonly static Dictionary<string, Obj> Package = new()
         {
             {"std", new Util.Std("std")}, 
             {"math", new Util.Math("math")}, 
             {"time", new Util.Time("time")},
             {"https", new Net.Https("https")}, 
-            {"rand", new Util.Rand("rand")}
+            {"rand", new Util.Rand("rand")},
+            {"set", new Set() },
+            {"stack", new Stack() },
+            {"queue", new Queue() },
+            {"json", new JObj() },
+            {"long", new Long() },
         };
 
         public readonly static Dictionary<string, Obj> Class = new()
@@ -31,14 +36,10 @@ namespace Un
             {"iter", new Iter() },
             {"bool", new Bool() },
             {"str", new Str() },
-            {"date", new Date() },
-            {"json", new JObj() },
+            {"date", new Date() },            
             {"stream", new IO.Stream() },
             {"map", new Map() },
-            {"stack", new Stack() },
-            {"queue", new Queue() },
             {"dict", new Dict() },
-            {"set", new Set() },
         };
 
         public readonly static Dictionary<string, Obj> StaticClass = [];
@@ -57,7 +58,7 @@ namespace Un
 
                 Token.Types.Add(str, Enum.Parse<Token.Type>(keyword));
                 if (str.Length > 1)
-                    Token.UnionOper.Add(str);
+                    Token.Union.Add(str);
             }
 
             foreach ((_, Obj obj) in Class)
@@ -87,12 +88,20 @@ namespace Un
         {
             if (IsPackage(name))
             {
-                foreach (var fun in Package[name].Import())
-                    Properties.Add(fun.name, fun);
+                if (Package[name] is Pack pack)
+                {
+                    foreach (var fun in pack.Import())
+                        Properties.Add(fun.name, fun);
 
-                foreach (var include in Package[name].Include())
-                    if (Class.TryAdd(include.ClassName, include))
-                        Class[include.ClassName].Init();
+                    foreach (var include in pack.Include())
+                        if (Class.TryAdd(include.ClassName, include))
+                            Class[include.ClassName].Init();
+                }
+                else
+                {
+                    if (Class.TryAdd(name, Package[name]))
+                        Class[name].Init();
+                }
 
                 if (Package[name] is IStatic sta)
                     StaticClass.Add(name, sta.Static());

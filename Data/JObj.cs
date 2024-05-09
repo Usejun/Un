@@ -54,8 +54,8 @@ namespace Un.Data
 
         public override Obj GetItem(Iter para)
         {
-            if (para[0] is Int i && i.value.TryInt(out var index))
-                return new JObj(value[index]);
+            if (para[0] is Int i)
+                return new JObj(value[(int)i.value]);
             if (para[0] is Str s)
                 return new JObj(value[s.value]);
             throw new IndexerException();
@@ -63,9 +63,9 @@ namespace Un.Data
 
         public override Obj SetItem(Iter para)
         {
-            if (para[0] is Int i && i.value.TryInt(out var index))
+            if (para[0] is Int i)
             {
-                value[index] = para[1] switch
+                value[(int)i.value] = para[1] switch
                 {
                     Int i1 => i1.value,
                     Float f1 => f1.value,
@@ -94,7 +94,7 @@ namespace Un.Data
                         });
                     }
 
-                    value[index] = ja;
+                    value[(int)i.value] = ja;
                 }
 
                 return this;

@@ -38,8 +38,8 @@ namespace Un
 
                         if (colon > 0)
                         {
-                            Obj start = Calculator.Calculate(Lex(tokens[(i + 1)..colon], properties), properties);
-                            Obj end = Calculator.Calculate(Lex(tokens[(colon + 1)..j], properties), properties);
+                            Obj start = i + 1 == colon ? new Int(0) : Calculator.Calculate(Lex(tokens[(i + 1)..colon], properties), properties);
+                            Obj end = colon + 1 == j ? new Int(-1) : Calculator.Calculate(Lex(tokens[(colon + 1)..j], properties), properties);
 
                             if (start is not Int || end is not Int) throw new SyntaxException();
 

@@ -96,15 +96,15 @@ namespace Un.Data
 
         public override Obj LSh(Obj obj)
         {
-            if (obj is Int i && i.value.TryInt(out var iv))
-                return new Int(value << iv);
+            if (obj is Int i)
+                return new Int(value << (int)i.value);
             throw new InvalidOperationException();
         }
 
         public override Obj RSh(Obj obj)
         {
-            if (obj is Int i && i.value.TryInt(out var iv))
-                return new Int(value >> iv);
+            if (obj is Int i)
+                return new Int(value >> (int)i.value);
             throw new InvalidOperationException();
         }
 

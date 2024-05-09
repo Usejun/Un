@@ -104,7 +104,7 @@ namespace Un
                     return true;
                 }
 
-                foreach (var o in Token.UnionOper)
+                foreach (var o in Token.Union)
                     if (TryOperator(o, out var t))
                         return t;
 
@@ -115,7 +115,7 @@ namespace Un
             {
                 string str = "";
 
-                while (index < code.Length && (char.IsLetter(code[index]) || code[index] == '_' || char.IsDigit(code[index])))
+                while (index < code.Length && (char.IsLetterOrDigit(code[index]) || code[index] == '_' ))
                     str += code[index++];
 
                 if (Process.TryGetProperty(str, out var property) && property is Fun)

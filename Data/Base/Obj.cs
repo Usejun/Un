@@ -321,6 +321,12 @@ namespace Un.Data
             if (para[0] is not Int start || para[1] is not Int end)
                 throw new SyntaxException();
 
+            start.value = start.value < 0 ? Len().value + start.value + 1 : start.value;
+            end.value = end.value < 0 ? Len().value + end.value + 1 : end.value;
+
+            if (start.value > end.value)
+                throw new SyntaxException();
+
             Iter sliced = [];
 
             while (start.value < end.value)
@@ -346,7 +352,6 @@ namespace Un.Data
                 return fun.Call(new Iter([this]));
             throw new IndexerException("Types with undefined exit functions");
         }
-
 
 
         public bool HasProperty(string key) => properties.ContainsKey(key);

@@ -21,7 +21,7 @@ namespace Un
                     }
                     else
                     {
-                        while (postfixStack.TryPeek(out var v) && v.type >= token.type && v.type != Token.Type.LParen)
+                        while (postfixStack.TryPeek(out var v) && Token.Priority[v.type] <= Token.Priority[token.type] && v.type != Token.Type.LParen)
                             postfix.Add(postfixStack.Pop());
                         postfixStack.Push(token);
                     }
@@ -45,16 +45,16 @@ namespace Un
             {
                 Token token = postfix[i];
 
-                if (Process.TryGetClass(token, out var cla) && token.type == Token.Type.Function)
+                if (Process.TryGetStaticClass(token, out var staticCla) && token.type == Token.Type.Variable)
+                {
+                    calculateStack.Push(staticCla);
+                }
+                else if (Process.TryGetClass(token, out var cla) && token.type == Token.Type.Function)
                 {
                     if (calculateStack.TryPop(out var obj) && obj is Iter args)
                         calculateStack.Push(cla.Clone().Init(args));
                     else
                         calculateStack.Push(new NativeFun(token.value, -1, cla.Init));
-                }
-                else if (Process.TryGetStaticClass(token, out var staticCla) && token.type == Token.Type.Variable)
-                {
-                    calculateStack.Push(staticCla);
                 }
                 else if (properties.TryGetValue(token.value, out var local))
                 {

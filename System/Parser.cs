@@ -60,6 +60,11 @@ namespace Un
                 Process.Class.Add(analyzedTokens[1].value, new([.. GetBody(includeHeader: true)], properties));
                 line--;
             }
+            else if (analyzedTokens[0].type == Token.Type.Enum)
+            {
+                Process.StaticClass.Add(analyzedTokens[1].value, new Enu([.. GetBody(includeHeader: true)]));
+                line--;
+            }
             else if (analyzedTokens[0].type == Token.Type.Func)
             {
                 Process.Properties.Add(analyzedTokens[1].value, new Fun(GetBody(includeHeader: true)));
@@ -219,9 +224,11 @@ namespace Un
                     {
                         var token = analyzedTokens[i];
 
-                        if (analyzedTokens[i + 1].type == Token.Type.Comma ||
-                            Token.IsAssigns(analyzedTokens[i + 1]))
+                        if (analyzedTokens[i + 1].type == Token.Type.Comma || Token.IsAssigns(analyzedTokens[i + 1]))
                         {
+                            if (Token.IsLiteral(analyzedTokens[i]))
+                                throw new SyntaxException();
+
                             if (Obj.IsNone(var))
                             {
                                 if (properties.TryGetValue(token.value, out var local)) var = local;

@@ -39,15 +39,16 @@ namespace Un.Util
 
         Iter Range(Iter para)
         {
-            if (para[0] is not Int i1 || !i1.value.TryInt(out int start))
+            if (para[0] is not Int start)
                 throw new ArgumentException("invaild argument", nameof(para));
-            if (para[1] is not Int i2 || !i2.value.TryInt(out int end))
+            if (para[1] is not Int end)
                 throw new ArgumentException("invaild argument", nameof(para));
 
-            Obj[] objs = new Obj[end - start];
+            int diff = (int)(end.value - start.value);
+            Obj[] objs = new Obj[diff];
 
-            for (int i = 0; i < end - start; i++)
-                objs[i] = new Int(i + start);
+            for (int i = 0; i < diff; i++)
+                objs[i] = new Int(i + start.value);
 
             return new Iter(objs);
         }
@@ -99,7 +100,9 @@ namespace Un.Util
 
         Obj Pow(Iter para)
         {
-            if (para[1] is not Int i || !i.value.TryInt(out var count)) throw new ArgumentException("invaild argument", nameof(para));
+            if (para[1] is not Int i) throw new ArgumentException("invaild argument", nameof(para));
+
+            int count = (int)i.value;
 
             if (count == 0) return new Int(0);
             if (count == 1) return para[0];

@@ -1,8 +1,10 @@
-﻿using Un.Collections;
+﻿using System.Collections;
+using Un.Collections;
+using Un.Util;
 
 namespace Un.Data
 {
-    public class Str : Val<string>
+    public class Str : Val<string>, IEnumerable<string>
     {
         public Str() : base("str", "") { }
 
@@ -23,8 +25,8 @@ namespace Un.Data
         {
             get
             {
-                if (!i.value.TryInt(out int index) || OutOfRange(index)) throw new IndexOutOfRangeException();
-                return new Str($"{value[index]}");
+                if (OutOfRange((int)i.value)) throw new IndexOutOfRangeException();
+                return new Str($"{value[(int)i.value]}");
             }
         }
 
@@ -36,6 +38,52 @@ namespace Un.Data
                     throw new ArgumentException("invalid argument", nameof(para));
 
                 return new Iter(self.value.Split(sep.value));
+            }));
+            properties.Add("join", new NativeFun("join", 3, para =>
+            {
+                if (para[0] is not Str self || para[1] is not Str sep)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                return self.Add(new Str(string.Join(sep.value, para[2].CIter().Select(i => i.CStr().value))));
+            }));
+            properties.Add("index_of", new NativeFun("index_of", -1, para =>
+            {
+                if (para[0] is not Str self || para[1] is not Str str)
+                    throw new ArgumentException("invalid argument", nameof(para));
+
+                return new Int(self.value.IndexOf(str.value, para.Count == 2 && para[2] is Int index ? (int)index.value : 0));
+            }));
+            properties.Add("contains", new NativeFun("contains", -1, para =>
+            {
+                if (para[0] is not Str self || para[1] is not Str str)
+                    throw new ArgumentException("invalid argument", nameof(para));               
+
+                return new Bool(self.value.Contains(str.value));
+            }));
+            properties.Add("is_number", new NativeFun("is_number", 1, para =>
+            {
+                if (para[0] is not Str self)
+                    throw new ArgumentException();
+
+                bool isNumber = true;
+
+                for (int i = 0; i < self.value.Length; i++)
+                    isNumber &= char.IsDigit(self.value[i]);
+
+                return new Bool(isNumber);
+
+            }));
+            properties.Add("is_alphabet", new NativeFun("is_number", 1, para =>
+            {
+                if (para[0] is not Str self)
+                    throw new ArgumentException();
+
+                bool isAlphabet = true;
+
+                for (int i = 0; i < self.value.Length; i++)
+                    isAlphabet &= char.IsLetter(self.value[i]);
+
+                return new Bool(isAlphabet);
             }));
         }
 
@@ -82,8 +130,8 @@ namespace Un.Data
 
         public override Obj GetItem(Iter para)
         {
-            if (para[0] is not Int i || !i.value.TryInt(out int index) || OutOfRange(index)) throw new IndexOutOfRangeException();
-            return new Str($"{value[index]}");
+            if (para[0] is not Int i || OutOfRange((int)i.value)) throw new IndexOutOfRangeException();
+            return new Str($"{value[(int)i.value]}");
         }
 
         public override Obj Clone() => new Str(value) { };
@@ -91,5 +139,15 @@ namespace Un.Data
         public override Obj Copy() => new Str(value);
 
         bool OutOfRange(int index) => 0 > index || index >= value.Length;
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

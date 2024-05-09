@@ -65,44 +65,44 @@ namespace Un.Data
             }));
             properties.Add("add_years", new NativeFun("add_years", 2, para =>
             {
-                if (para[0] is Int i && i.value.TryInt(out int years))
-                    return new Date(value.AddYears(years));
+                if (para[0] is Int i)
+                    return new Date(value.AddYears((int)i.value));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
             properties.Add("add_months", new NativeFun("add_months", 2, para =>
             {
-                if (para[0] is Int i && i.value.TryInt(out int months))
-                    return new Date(value.AddMonths(months));
+                if (para[0] is Int i)
+                    return new Date(value.AddMonths((int)i.value));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
             properties.Add("add_days", new NativeFun("add_days", 2, para =>
             {
-                if (para[0] is Int i && i.value.TryInt(out int days))
-                    return new Date(value.AddDays(days));
+                if (para[0] is Int i)
+                    return new Date(value.AddDays((int)i.value));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
             properties.Add("add_hours", new NativeFun("add_hours", 2, para =>
             {
-                if (para[0] is Int i && i.value.TryInt(out int hours))
-                    return new Date(value.AddHours(hours));
+                if (para[0] is Int i)
+                    return new Date(value.AddHours((int)i.value));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
             properties.Add("add_minutes", new NativeFun("add_minutes", 2, para =>
             {
-                if (para[0] is Int i && i.value.TryInt(out int minutes))
-                    return new Date(value.AddMinutes(minutes));
+                if (para[0] is Int i)
+                    return new Date(value.AddMinutes((int)i.value));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
             properties.Add("add_seconds", new NativeFun("add_seconds", 2, para =>
             {
-                if (para[0] is Int i && i.value.TryInt(out int seconds))
-                    return new Date(value.AddSeconds(seconds));
+                if (para[0] is Int i)
+                    return new Date(value.AddSeconds((int)i.value));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
             properties.Add("add_milliseconds", new NativeFun("add_milliseconds", 2, para =>
             {
-                if (para[0] is Int i && i.value.TryInt(out int milliseconds))
-                    return new Date(value.AddMilliseconds(milliseconds));
+                if (para[0] is Int i)
+                    return new Date(value.AddMilliseconds((int)i.value));
                 throw new ArgumentException("Invalid Parameter", nameof(para));
             }));
             properties.Add("format", new NativeFun("format", 2, para =>
