@@ -1,25 +1,24 @@
-﻿namespace Un.Data
+﻿namespace Un.Data;
+
+public class EnuElm(string type, int value) : Val<int>(type ?? "enu_elm", value)
 {
-    public class EnuElm(string type, int value) : Val<int>(type, value)
+    public override Str CStr() => new(type);
+
+    public override Int CInt() => new(value);
+
+    public override Bool Equals(Obj arg)
     {
-        public override Str CStr() => new(type);
+        if (arg is Int i) return new(value == i.value);
+        if (arg is EnuElm e && ClassName == e.ClassName) return new(value == e.value);
+        
+        return base.Equals(arg);
+    }
 
-        public override Int CInt() => new(value);
+    public override Bool LessThen(Obj arg)
+    {
+        if (arg is Int i) return new(value < i.value);
+        if (arg is EnuElm e && ClassName == e.ClassName) return new(value < e.value);
 
-        public override Bool Equals(Obj obj)
-        {
-            if (obj is Int i) return new(value == i.value);
-            if (obj is EnuElm e && ClassName == e.ClassName) return new(value == e.value);
-            
-            return base.Equals(obj);
-        }
-
-        public override Bool LessThen(Obj obj)
-        {
-            if (obj is Int i) return new(value < i.value);
-            if (obj is EnuElm e && ClassName == e.ClassName) return new(value < e.value);
-
-            return base.LessThen(obj);
-        }
+        return base.LessThen(arg);
     }
 }

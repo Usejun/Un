@@ -1,44 +1,14 @@
-﻿class token
-	t_type = None
-	value = ""
+﻿fn f1()
+	f2()
 
-	fn __init__(self, t_type, value)
-		self.t_type = t_type
-		self.value = value
+fn f2()
+	f3()
 
-	fn __str__(self)
-		return "(" + self.t_type + ", " + self.value + ")"
+fn f3()
+	f4()
 
-enum token_type
-	number, plus, minus
+fn f4()
+	writeln(1)
+	assert(true, "?")
 
-fn tokenize(line)
-	line = line.split(" ")
-	tokens = []
-
-	for text in line
-		if (text.is_number())
-			tokens += token(token_type.number, text)
-		elif (text == "+")
-			tokens += token(token_type.plus, text)
-		elif (text == "-")
-			tokens += token(token_type.minus, text)		
-
-	return tokens
-
-fn calculate(tokens)
-	v = int(tokens[0].value)
-
-	for i in range(1, len(tokens))
-		if (tokens[i].value.is_number())
-			continue
-
-		if (tokens[i].t_type == token_type.plus)
-			v += int(tokens[i + 1].value)
-		else
-			v -= int(tokens[i + 1].value)
-
-	return v
-
-tokens = tokenize("1 + 2 + 4 - 8 + 16 + 32")
-write(calculate(tokens))
+f4()

@@ -1,7 +1,6 @@
-﻿namespace Un.Data
+﻿namespace Un.Data;
+
+public interface IStatic
 {
-    public interface IStatic
-    {
-        Obj Static();
-    }
+    Obj Static();
 }

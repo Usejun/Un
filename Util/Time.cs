@@ -1,33 +1,31 @@
-﻿using Un.Collections;
-using Un.Data;
+﻿namespace Un.Util;
 
-
-namespace Un.Util
+public class Time : Obj, IPackage, IStatic
 {
-    public class Time(string packageName) : Pack(packageName), IStatic
+    public string Name => "time";
+
+    Obj Sleep(Iter args)
     {
-        Obj Sleep(Iter paras)
-        {
-            if (paras[0] is Int i)
-                Thread.Sleep((int)i.value);
-            return None;
-        }
+        if (args[0] is Int i)
+            Thread.Sleep((int)i.value);
+        return None;
+    }
 
-        Date Now(Iter iter) => new(DateTime.Now);
+    Date Now(Iter args) => new(DateTime.Now);
 
-        Date Today(Iter iter) => new(DateTime.Today);
+    Date Today(Iter args) => new(DateTime.Today);
 
-        public override IEnumerable<Fun> Import() =>
-        [
-            new NativeFun("sleep", 2, Sleep),
-        ];
+    public IEnumerable<Fun> Import() =>
+    [
+        new NativeFun("sleep", 2, Sleep),
+    ];
 
-        public Obj Static()
-        {
-            Time time = new(packageName);
-            time.properties.Add("now", new NativeFun("now", 1, Now));
-            time.properties.Add("today", new NativeFun("today", 1, Today));
-            return time;
-        }
+    public Obj Static()
+    {
+        Time time = new();
+        time.properties.Add("now", new NativeFun("now", 1, Now));
+        time.properties.Add("today", new NativeFun("today", 1, Today));
+        return time;
     }
 }
+

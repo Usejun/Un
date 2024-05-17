@@ -37,6 +37,8 @@ Equal ==
 Unequal !=
 LBrack [
 RBrack ]
+LBrace {
+RBrace }
 LParen (
 RParen )
 Dot .
@@ -54,6 +56,7 @@ Break break
 Continue continue
 Import import
 In in
+Is is
 Return return
 Comment #
 Class class

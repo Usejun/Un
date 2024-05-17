@@ -1,34 +1,32 @@
-﻿using Un.Collections;
-using Un.Data;
+﻿namespace Un.Net;
 
-namespace Un.Net
+public class Https : Obj, IPackage, IStatic 
 {
-    public class Https(string packageName) : Pack(packageName), IStatic
+    private static readonly HttpClient client = new();
+
+    public string Name => "https";
+
+    public Obj Static()
     {
-        private static readonly HttpClient client = new();
+        Https https = new();
 
-        public Obj Static()
+        https.properties.Add("get", new NativeFun("get", 2, args =>
         {
-            Https https = new("https");
+            if (args[0] is not Https self)
+                throw new ValueError("invalid argument");
+            if (args[1] is not Str url)
+                throw new ValueError("invalid argument");
 
-            https.properties.Add("get", new NativeFun("get", 2, para =>
-            {
-                if (para[0] is not Https self)
-                    throw new ArgumentException("invaild argument", nameof(para));
-                if (para[1] is not Str url)
-                    throw new ArgumentException("invaild argument", nameof(url));
+            return new HttpsResponse(client.GetAsync(url.value).Result);
+        }));
 
-                return new HttpsResponse(client.GetAsync(url.value).Result);
-            }));
-
-            return https;
-        }
-
-        public override IEnumerable<Obj> Include() =>
-        [
-            new HttpsContent(),
-            new HttpsResponse(),
-            new HttpsHeaders(),
-        ];
+        return https;
     }
+
+    public IEnumerable<Obj> Include() =>
+    [
+        new HttpsContent(),
+        new HttpsResponse(),
+        new HttpsHeaders(),
+    ];
 }

@@ -1,15 +1,13 @@
-﻿using Un;
-
-Console.InputEncoding = System.Text.Encoding.Unicode;
+﻿Console.InputEncoding = System.Text.Encoding.Unicode;
 Console.OutputEncoding = System.Text.Encoding.Unicode;
 Process.Initialize("D:\\User\\Un\\Code");
 
 string[] testcase = [
-    "Test\\set.test.un",
+    "test.un",
     "Test\\fib.test.un",
     "Test\\class.test.un",
-    "test.un",
     "Test\\type.test.un",
+    "Test\\set.test.un",
     "Test\\iter.test.un",
     "Test\\dict.test.un",
     "Test\\math.test.un",
@@ -26,3 +24,5 @@ string[] euler = [
 //Process.Test(testcase);
 //Process.Run(euler[0]);
 Process.Run(testcase[0]);
+
+// Parser 바꾸깅

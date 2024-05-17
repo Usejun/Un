@@ -1,6 +1,4 @@
-﻿import set
-
-s = set()
+﻿s = set()
 
 s.add(1)
 
