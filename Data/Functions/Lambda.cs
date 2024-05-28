@@ -17,18 +17,13 @@ public class Lambda : Fun
 
     public override Obj Call(Iter args)
     {
-        if (this.args.Count != args.Count) throw new ValueError("invalid argument");
-
-        Parser interpreter = new(code, properties);
+        Field field = new();
+        field.Copy(field);
 
         for (int i = 0; i < this.args.Count; i++)
-            properties.Add(this.args[i], args[i]);
+            field.Set(this.args[i], args[i]);
 
-        while (interpreter.TryInterpret()) ;
-
-        properties.Clear();
-
-        return interpreter.ReturnValue ?? None;
+        return Process.Interpret(name, code, field, []);
     }
 
     public override Str CStr() => new("lambda");

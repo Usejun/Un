@@ -9,44 +9,41 @@ public class Fun : Obj
 
     public Fun() : base("func") { }
 
-    public Fun(string[] code) : base("func")
+    public Fun(string name, string[] code) : base("func")
     {
+        int tab = 0, white = 0;
+
+        for (int i = 0; i < code[0].Length; i++)
+            if (code[0][i] == '\t') tab++;
+            else break;
+
+        for (int i = 0; i < code[0].Length; i++)
+            if (code[0][i] == ' ') white++;
+            else break;
+
+        nesting = Math.Max(tab, white / 4) + 1;
+
+        var tokens = Tokenizer.Tokenize(code[0]);
+
+        for (int i = 3; i < tokens.Count; i++)
+        {
+            if (tokens[i].type == Token.Type.RParen) break;
+            if (tokens[i].type == Token.Type.Comma) continue;
+            args.Add(tokens[i].value);
+        }
+
+        this.name = name;
         this.code = code;
-        List<Token> tokens = Tokenizer.Tokenize(code[0]);
-        int i = 3;
-        name = tokens[1].value;
-
-        try
-        {
-            while (tokens[i].type != Token.Type.RParen)
-            {
-                if (tokens[i].type != Token.Type.Comma)
-                    args.Add(tokens[i].value);
-                i++;
-            }
-
-            foreach (var chr in code[0])
-                if (chr != '\t') break;
-                else nesting++;
-        }
-        catch
-        {
-            throw new SyntaxError("invalid function syntax");
-        }
     }
 
     public virtual Obj Call(Iter args)
     {
-        Parser interpreter = new(code, properties, line: 1, nesting: nesting + 1);
+        Field field = new(this.field);
 
         for (int i = 0; i < this.args.Count; i++)
-            properties.Add(this.args[i], args[i]);
+            field.Set(this.args[i], args[i]);
 
-        while (interpreter.TryInterpret()) ;
-
-        properties.Clear();
-
-        return interpreter.ReturnValue ?? None;
+        return Process.Interpret(name, code, field, [], line:1, nesting:nesting);
     }
 
     public override Fun Clone()
@@ -57,7 +54,7 @@ public class Fun : Obj
             code = code,
             nesting = nesting,
             args = args,
-            properties = []
+            field = new(field)
         };
     }
 

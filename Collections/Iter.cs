@@ -11,7 +11,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
     public Iter() : base("iter", []) { }
 
-    public Iter(string str, Dictionary<string, Obj> properties) : base("iter", [])
+    public Iter(string str, Field field) : base("iter", [])
     {
         int index = 0, depth = 0;
         bool isStr = false;
@@ -27,8 +27,8 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             if (depth == 0 && !isStr && str[index] == ',')
             {
                 if (!string.IsNullOrWhiteSpace(buffer) && IsIter(buffer)) 
-                    Append(new Iter(buffer, properties));
-                else Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), properties), properties));
+                    Append(new Iter(buffer, field));
+                else Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), field), field));
                 buffer = "";
             }
             else
@@ -36,7 +36,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         }
 
         if (!string.IsNullOrWhiteSpace(buffer))
-            Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), properties), properties));
+            Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), field), field));
     }
 
     public Iter(IEnumerable enumerable) : base("iter", [])
@@ -88,7 +88,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
     public override void Init()
     {
-        properties.Add("add", new NativeFun("add", -1, args =>
+        field.Set("add", new NativeFun("add", -1, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -98,7 +98,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
             return None;
         }));
-        properties.Add("insert", new NativeFun("insert", 3, args =>
+        field.Set("insert", new NativeFun("insert", 3, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -109,7 +109,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
             return None;
         }));
-        properties.Add("extend", new NativeFun("extend", -1, args =>
+        field.Set("extend", new NativeFun("extend", -1, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -120,7 +120,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
             return None;
         }));
-        properties.Add("extend_insert", new NativeFun("extend_insert", 3, args =>
+        field.Set("extend_insert", new NativeFun("extend_insert", 3, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -131,7 +131,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
             return None; 
         }));
-        properties.Add("remove", new NativeFun("remove", 2, args =>
+        field.Set("remove", new NativeFun("remove", 2, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -139,7 +139,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             if (args[1] is Obj obj) return self.Remove(obj);
             throw new ValueError("invalid argument");
         }));
-        properties.Add("remove_at", new NativeFun("remove_at", 2, args =>
+        field.Set("remove_at", new NativeFun("remove_at", 2, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -147,7 +147,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             if (args[1] is Int i) return self.RemoveAt(i);
             throw new ValueError("invalid argument");
         }));
-        properties.Add("index_of", new NativeFun("index_of", 2, args =>
+        field.Set("index_of", new NativeFun("index_of", 2, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -155,7 +155,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             if (args[1] is Obj obj) return self.IndexOf(obj);
             throw new ValueError("invalid argument");
         }));
-        properties.Add("contains", new NativeFun("contains", 2, args =>
+        field.Set("contains", new NativeFun("contains", 2, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -163,14 +163,14 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             if (args[1] is Obj obj) return self.Contains(obj);
             throw new ValueError("invalid argument");
         }));
-        properties.Add("clone", new NativeFun("clone", 1, args =>
+        field.Set("clone", new NativeFun("clone", 1, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
 
             return self.Clone();
         }));
-        properties.Add("sort", new NativeFun("sort", 1, args =>
+        field.Set("sort", new NativeFun("sort", 1, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -178,7 +178,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             self.Sort();
             return None;
         }));
-        properties.Add("reverse", new NativeFun("reverse", 1, args =>
+        field.Set("reverse", new NativeFun("reverse", 1, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
@@ -186,7 +186,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             self.Reverse();
             return None;
         }));
-        properties.Add("order", new NativeFun("order", 2, args =>
+        field.Set("order", new NativeFun("order", 2, args =>
         {
             if (args[0] is not Iter self || args[1] is not Fun f)
                 throw new ValueError("invalid argument");
@@ -194,21 +194,21 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             self.Order(f);
             return None;
         }));
-        properties.Add("binary_search", new NativeFun("binary_search", 2, args =>
+        field.Set("binary_search", new NativeFun("binary_search", 2, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
 
             return self.BinarySearch(args[1]);
         }));
-        properties.Add("lower_bound", new NativeFun("lower_bound", 2, args =>
+        field.Set("lower_bound", new NativeFun("lower_bound", 2, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");
 
             return self.LowerBound(args[1]);
         }));
-        properties.Add("upper_bound", new NativeFun("upper_bound", 2, args =>
+        field.Set("upper_bound", new NativeFun("upper_bound", 2, args =>
         {
             if (args[0] is not Iter self)
                 throw new ValueError("invalid argument");

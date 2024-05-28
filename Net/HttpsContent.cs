@@ -8,19 +8,19 @@ public class HttpsContent : Ref<HttpContent>
 
     public override void Init()
     {
-        properties.Add("headers", new NativeFun("headers", 1, args =>
+        field.Set("headers", new NativeFun("headers", 1, args =>
         {
             if (args[0] is not HttpsContent self)
                 throw new ValueError("invalid argument");
             return new HttpsHeaders(self.value.Headers);
         }));
-        properties.Add("stream", new NativeFun("stream", 1, args =>
+        field.Set("stream", new NativeFun("stream", 1, args =>
         {
             if (args[0] is not HttpsContent self)
                 throw new ValueError("invalid argument");
             return new IO.Stream(self.value.ReadAsStreamAsync().Result);
         }));
-        properties.Add("str", new NativeFun("str", 1, args =>
+        field.Set("str", new NativeFun("str", 1, args =>
         {
             if (args[0] is not HttpsContent self)
                 throw new ValueError("invalid argument");

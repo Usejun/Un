@@ -1,18 +1,22 @@
 ﻿import timer
 
 fn fib(k)	
-	if k < 2
+	if k < 0
+		return 0
+	if k < 2		
 		dp[k] = 1
 	if dp[k] == 0
 		dp[k] = fib(k - 1) + fib(k - 2)
 	return dp[k]
-	
+
+breakpoint()
 t = timer()
 n = 32
 dp = [0] * (n + 1)
+breakpoint()
 t.run()
 fib(n)
-
 writeln(dp)
 t.stop()
+
 writeln(t.time().milliseconds() + "ms")

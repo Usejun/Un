@@ -74,12 +74,12 @@ public class Math : Obj, IPackage, IStatic
     public Obj Static()
     {
         Math math = new();
-        math.properties.Add("pi", new Float(3.14159265));
-        math.properties.Add("e", new Float(2.718281828));
-        math.properties.Add("gcd", new NativeFun("gcd", 3, Gcd));
-        math.properties.Add("permutation", new NativeFun("permutation", 3, Permutation));
-        math.properties.Add("combination", new NativeFun("combination", 3, Combination));
-        math.properties.Add("factorial", new NativeFun("factorial", 2, Factorial));
+        math.field.Set("pi", new Float(3.14159265));
+        math.field.Set("e", new Float(2.718281828));
+        math.field.Set("gcd", new NativeFun("gcd", 3, Gcd));
+        math.field.Set("permutation", new NativeFun("permutation", 3, Permutation));
+        math.field.Set("combination", new NativeFun("combination", 3, Combination));
+        math.field.Set("factorial", new NativeFun("factorial", 2, Factorial));
         return math;
     }
 }

@@ -2,67 +2,67 @@
 	arr = []
 	count = 0
 
-	fn __init__(this, size)
-		this.arr = [0] * size
+	fn __init__(self, size)
+		self.arr = [0] * size
 
-	fn push(this, item)
+	fn push(self, item)
 		if (type(item) == "iter")
 			for i in item
-				this.push(i)
-			this.count += len(item)
+				self.push(i)
+			self.count += len(item)
 		else
-			if (this.is_full())
-				this.resize()
+			if (self.is_full())
+				self.resize()
 
-			this.arr[this.count] = item
-			this.count += 1
+			self.arr[self.count] = item
+			self.count += 1
 
-	fn pop(this)
-		assert(!this, "queue is empty")
+	fn pop(self)
+		assert(!self, "queue is empty")
 
-		item = this.arr[this.count - 1]
-		this.count -= 1
+		item = self.arr[self.count - 1]
+		self.count -= 1
 
 		return item
 
-	fn is_full(this)
-		return this.count == len(this.arr)
+	fn is_full(self)
+		return self.count == len(self.arr)
 
-	fn resize(this)
-		resized = [0] * (2 * len(this.arr))
+	fn resize(self)
+		resized = [0] * (2 * len(self.arr))
 
-		for i in range(0, this.count)
-			resized[i] = this.arr[i]
+		for i in range(0, self.count)
+			resized[i] = self.arr[i]
 
-		this.arr = resized
+		self.arr = resized
 
-	fn __add__(this, other)
-		this.push(other)
-		return this
+	fn __add__(self, other)
+		self.push(other)
+		return self
 
-	fn __bool__(this)
-		return this.count != 0
+	fn __bool__(self)
+		return self.count != 0
 
-	fn __len__(this)
-		return this.count
+	fn __len__(self)
+		return self.count
 
-	fn __str__(this)
+	fn __str__(self)
 		text = "["
 
-		for i in range(0, this.count)
-			text += this.arr[this.count - i]
-			if (i != this.count - 1)
+		for i in range(0, self.count)
+			text += self.arr[self.count - i]
+			if (i != self.count - 1)
 				text += ", "
 
 		text += "]"
 		
 		return text
 
-	fn __iter__(this)
+	fn __iter__(self)
 		enum = []
-		i = this.count
+		i = self.count
 
-		for k in range(0, this.count + 1)
-			enum += this.arr[i - k]
+		for k in range(0, self.count + 1)
+			enum += self.arr[i - k]
 
 		return enum

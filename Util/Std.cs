@@ -28,21 +28,21 @@ public class Std : Obj, IPackage
 
         if (args[0] is Fun f)
         {
-            foreach (var i in f.Call([]).properties)                
-                if (i.Value is Fun)
-                    func.Add(i.Key);
+            foreach (var i in f.Call([]).field.Keys)                
+                if (field[i] is Fun)
+                    func.Add(i);
         }
         else if (args[0] is Obj o)
         {
-            foreach (var i in o.properties)
-                if (i.Value is Fun)
-                    func.Add(i.Key);
+            foreach (var i in o.field.Keys)
+                if (field[i] is Fun)
+                    func.Add(i);
         }
         else
         {
-            foreach (var i in Process.Properties)
-                if (i.Value is Fun)
-                    func.Add(i.Key);
+            foreach (var i in Process.Field.Keys)
+                if (field[i] is Fun)
+                    func.Add(i);
         }
 
         return new Iter([.. func.Select(i => new Str(i))]);
@@ -150,7 +150,7 @@ public class Std : Obj, IPackage
         if (args.Count == 2)
             if (args[1] is Int i && i.value < 15 && i.value >= 0) return new Float((double)System.Math.Round(v, (int)i.value));
             else throw new ValueError("invalid argument");
-        else return new Float((double)System.Math.Round(v));
+        else return new Int((long)System.Math.Round(v));
     }
 
     Obj Sqrt(Iter args) 
@@ -160,18 +160,20 @@ public class Std : Obj, IPackage
         throw new ValueError("invalid argument");
     }
 
-    Obj Exit(Iter argss)
+    Obj Exit(Iter args)
     {
         Environment.Exit(0);
         return None;
     }
 
-    Obj Assert(Iter argss)
+    Obj Assert(Iter args)
     {
-        Debug.Assert(argss[0].CBool().value, argss[1].CStr().value);
+        Debug.Assert(args[0].CBool().value, args[1].CStr().value);
 
         return None;
     }
+
+    Obj Breakpoint(Iter args) => None;
 
     public IEnumerable<Fun> Import() =>
     [
@@ -195,6 +197,7 @@ public class Std : Obj, IPackage
         new NativeFun("sqrt", 1, Sqrt),
         new NativeFun("exit", 0, Exit),
         new NativeFun("assert", 2, Assert),
+        new NativeFun("breakpoint", 0, Breakpoint),
     ];
 
 }

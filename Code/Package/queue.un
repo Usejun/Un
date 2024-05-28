@@ -4,79 +4,79 @@
 	back = 0
 	count = 0
 
-	fn __init__(this, size)
-		this.arr = [0] * size
+	fn __init__(self, size)
+		self.arr = [0] * size
 
-	fn enqueue(this, item)
+	fn enqueue(self, item)
 		if (type(item) == "iter")
 			for i in item
-				this.enqueue(i)
-			this.count += len(item)
+				self.enqueue(i)
+			self.count += len(item)
 		else
-			if (this.is_full())
-				this.resize()
+			if (self.is_full())
+				self.resize()
 
-			this.arr[this.back] = item
-			this.back = (this.back + 1) % len(this.arr)
-			this.count += 1
+			self.arr[self.back] = item
+			self.back = (self.back + 1) % len(self.arr)
+			self.count += 1
 
-	fn dequeue(this)
-		assert(!this, "queue is empty")
+	fn dequeue(self)
+		assert(!self, "queue is empty")
 
-		item = this.arr[this.front]
-		this.front = (this.front + 1) % len(this.arr)
-		this.count -= 1
+		item = self.arr[self.front]
+		self.front = (self.front + 1) % len(self.arr)
+		self.count -= 1
 
 		return item
 
-	fn is_full(this)
-		return this.count == len(this.arr)
+	fn is_full(self)
+		return self.count == len(self.arr)
 
-	fn resize(this)
-		resized = [0] * (2 * len(this.arr))
-		j = this.front
+	fn resize(self)
+		resized = [0] * (2 * len(self.arr))
+		j = self.front
 
-		for i in range(0, this.count)
-			resized[i] = this.arr[j]
-			j = (j + 1) % len(this.arr)
+		for i in range(0, self.count)
+			resized[i] = self.arr[j]
+			j = (j + 1) % len(self.arr)
 
-		this.back = len(this.arr)
-		this.front = 0
-		this.arr = resized
+		self.back = len(self.arr)
+		self.front = 0
+		self.arr = resized
 
-	fn __add__(this, other)
-		this.enqueue(other)
-		return this
+	fn __add__(self, other)
+		self.enqueue(other)
+		return self
 
-	fn __len__(this)
-		return this.count
+	fn __len__(self)
+		return self.count
 
-	fn __bool__(this)
-		return this.count != 0
+	fn __bool__(self)
+		return self.count != 0
 
-	fn __str__(this)
+	fn __str__(self)
 		text = "["
 
-		i = this.front
-		j = this.back
+		i = self.front
+		j = self.back
 
-		for k in range(0, this.count)
-			text += this.arr[i]
-			i = (i + 1) % len(this.arr)
-			if (k != this.count - 1)
+		for k in range(0, self.count)
+			text += self.arr[i]
+			i = (i + 1) % len(self.arr)
+			if (k != self.count - 1)
 				text += ", "
 		
 		text += "]"
 		
 		return text
 
-	fn __iter__(this)
+	fn __iter__(self)
 		enum = []
-		i = this.front
-		j = this.back
+		i = self.front
+		j = self.back
 
-		for k in range(0, this.count)
-			enum += this.arr[i]
-			i = (i + 1) % len(this.arr)
+		for k in range(0, self.count)
+			enum += self.arr[i]
+			i = (i + 1) % len(self.arr)
 
 		return enum

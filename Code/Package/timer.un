@@ -4,11 +4,11 @@ class timer
 	start_time = 0
 	end_time = 0
 
-	fn run(this)
-		this.start_time = time.now()
+	fn run(self)
+		self.start_time = time.now()
 
-	fn stop(this)
-		this.end_time = time.now()
+	fn stop(self)
+		self.end_time = time.now()
 
-	fn time(this)
-		return this.end_time - this.start_time
+	fn time(self)
+		return self.end_time - self.start_time

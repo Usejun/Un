@@ -14,42 +14,42 @@ public class Version : Ref<System.Version>
 
     public override void Init()
     {
-        properties.Add("major", new NativeFun("major", 1, args =>
+        field.Set("major", new NativeFun("major", 1, args =>
         {
             if (args[0] is not Version self)
                 throw new ValueError("invalid argument");
 
             return value is null ? None : new Int(value.Major);
         }));
-        properties.Add("minor", new NativeFun("minor", 1, args =>
+        field.Set("minor", new NativeFun("minor", 1, args =>
         {
             if (args[0] is not Version self)
                 throw new ValueError("invalid argument");
 
             return value is null ? None : new Int(value.Minor);
         }));
-        properties.Add("build", new NativeFun("build", 1, args =>
+        field.Set("build", new NativeFun("build", 1, args =>
         {
             if (args[0] is not Version self)
                 throw new ValueError("invalid argument");
 
             return value is null ? None : new Int(value.Build);
         }));
-        properties.Add("revision", new NativeFun("revision", 1, args =>
+        field.Set("revision", new NativeFun("revision", 1, args =>
         {
             if (args[0] is not Version self)
                 throw new ValueError("invalid argument");
 
             return value is null ? None : new Int(value.Revision);
         }));
-        properties.Add("major_revision", new NativeFun("major_revision", 1, args =>
+        field.Set("major_revision", new NativeFun("major_revision", 1, args =>
         {
             if (args[0] is not Version self)
                 throw new ValueError("invalid argument");
 
             return value is null ? None : new Int(value.MajorRevision);
         }));
-        properties.Add("minor_revision", new NativeFun("minor_revision", 1, args =>
+        field.Set("minor_revision", new NativeFun("minor_revision", 1, args =>
         {
             if (args[0] is not Version self)
                 throw new ValueError("invalid argument");

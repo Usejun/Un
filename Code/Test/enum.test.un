@@ -1,0 +1,7 @@
+﻿enum types
+	a, b, c, 
+	d, e, f, 
+	g, h, i
+
+for i in range(0, len(types))
+	write(i, type(types(i)))

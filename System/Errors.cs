@@ -11,9 +11,9 @@ public abstract class Error : Exception
         StringBuilder result = new();
 
         result.AppendLine();
-        result.AppendLine($"   File <{Process.File}>, line [{Process.Line}]");
-        result.AppendLine($"      {Process.Code[Process.Line - 1].Trim()}");
-        result.AppendLine($"      {new string('^', Process.Code[Process.Line - 1].Trim().Length)}");
+        result.AppendLine($"   File <{Process.Public["__name__"].CStr().value}>, line [{Process.Line + 1}]");
+        result.AppendLine($"      {Process.Code[Process.Line].Trim()}");
+        result.AppendLine($"      {new string('^', Process.Code[Process.Line].Trim().Length)}");
         result.Append    ($"{GetType().Name} : {Message}");
 
         return result.ToString();

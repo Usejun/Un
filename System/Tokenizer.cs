@@ -11,7 +11,7 @@ public static class Tokenizer
         {
             SkipWhitespace(code);
             if (index >= code.Length) break;
-            else if (Token.IsComment(code[index])) return [];
+            else if (Token.IsComment(code[index])) tokens.Add(new($"{code[index++]}", Token.Type.Comment));
             else if (code[index] == '\"' || code[index] == '\'') tokens.Add(String(code));
             else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
             else if (char.IsDigit(code[index])) tokens.Add(Number(code));
@@ -116,7 +116,7 @@ public static class Tokenizer
             while (index < code.Length && (char.IsLetterOrDigit(code[index]) || code[index] == '_' ))
                 str += code[index++];
 
-            if (Process.TryGetProperty(str, out var property) && property is Fun)
+            if (Process.TryGetPublicProperty(str, out var property) && property is Fun)
                 return new(str, Token.Type.Function);
             if (Token.GetType(str) != Token.Type.None)
                 return new(str);

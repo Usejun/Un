@@ -10,7 +10,7 @@ public class Https : Obj, IPackage, IStatic
     {
         Https https = new();
 
-        https.properties.Add("get", new NativeFun("get", 2, args =>
+        https.field.Set("get", new NativeFun("get", 2, args =>
         {
             if (args[0] is not Https self)
                 throw new ValueError("invalid argument");

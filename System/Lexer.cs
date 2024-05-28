@@ -2,7 +2,7 @@
 
 public static class Lexer
 {
-    public static List<Token> Lex(List<Token> tokens, Dictionary<string, Obj> properties)
+    public static List<Token> Lex(List<Token> tokens, Field field)
     {
          List<Token> analyzedTokens = [];
 
@@ -36,8 +36,8 @@ public static class Lexer
 
                     if (colon > 0)
                     {
-                        Obj start = i + 1 == colon ? new Int(0) : Calculator.Calculate(Lex(tokens[(i + 1)..colon], properties), properties);
-                        Obj end = colon + 1 == j ? new Int(-1) : Calculator.Calculate(Lex(tokens[(colon + 1)..j], properties), properties);
+                        Obj start = i + 1 == colon ? new Int(0) : Calculator.Calculate(Lex(tokens[(i + 1)..colon], field), field);
+                        Obj end = colon + 1 == j ? new Int(-1) : Calculator.Calculate(Lex(tokens[(colon + 1)..j], field), field);
 
                         if (start is not Int || end is not Int) throw new SyntaxError();
 
@@ -45,7 +45,7 @@ public static class Lexer
                     } 
                     else
                     {
-                        Obj index = Calculator.Calculate(Lex(tokens[(i + 1)..j], properties), properties);
+                        Obj index = Calculator.Calculate(Lex(tokens[(i + 1)..j], field), field);
 
                         if (index is Str)
                             analyzedTokens.Add(new Token($"\"{index.CStr().value}\"", Token.Type.Indexer));
@@ -154,7 +154,8 @@ public static class Lexer
             else if (tokens[i].type == Token.Type.LParen)
             {
                 if (analyzedTokens.Count == 0 ||
-                   (analyzedTokens[^1].type != Token.Type.Function && 
+                   (analyzedTokens[^1].type != Token.Type.Variable &&
+                    analyzedTokens[^1].type != Token.Type.Function && 
                     analyzedTokens[^1].type != Token.Type.Method &&
                     analyzedTokens[^1].type != Token.Type.Class))
                 {
@@ -162,7 +163,7 @@ public static class Lexer
                     continue;
                 }
 
-                if (analyzedTokens[^1].type == Token.Type.Class)
+                if (analyzedTokens[^1].type == Token.Type.Class || analyzedTokens[^1].type == Token.Type.Variable)
                     analyzedTokens[^1].type = Token.Type.Function;
 
                 string value = "[";
@@ -185,12 +186,6 @@ public static class Lexer
                 i = j;
             }
             else analyzedTokens.Add(tokens[i]);
-
-            if (analyzedTokens[^1].type == Token.Type.Variable && Process.IsClass(tokens[i]))
-                analyzedTokens[^1].type = Token.Type.Class;
-
-            if (analyzedTokens[^1].type == Token.Type.Variable && properties.TryGetValue(tokens[i].value, out var f) && f is Fun)
-                analyzedTokens[^1].type = Token.Type.Function;
         }
 
         return analyzedTokens;

@@ -4,10 +4,12 @@ Process.Initialize("D:\\User\\Un\\Code");
 
 string[] testcase = [
     "test.un",
+    "Test\\set.test.un",
     "Test\\fib.test.un",
+    "Test\\token.test.un",
+    "Test\\enum.test.un",
     "Test\\class.test.un",
     "Test\\type.test.un",
-    "Test\\set.test.un",
     "Test\\iter.test.un",
     "Test\\dict.test.un",
     "Test\\math.test.un",
@@ -23,6 +25,4 @@ string[] euler = [
 //Process.Test(euler);
 //Process.Test(testcase);
 //Process.Run(euler[0]);
-Process.Run(testcase[0]);
-
-// Parser 바꾸깅
+//Process.Run(testcase[0]);

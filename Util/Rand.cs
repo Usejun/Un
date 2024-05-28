@@ -23,9 +23,9 @@ public class Rand : Obj, IPackage, IStatic
 
     public Obj Range(Iter args)
     {
-        if (args[1] is Int iS && args[2] is Int iE)
+        if (args[1] is Int iS && args[2] is Int iE && iS.CompareTo(iE) < 0)
             return new Int(rand.NextInt64(iS.value, iE.value));
-        if (args[1] is Float fS && args[2] is Float fE)
+        if (args[1] is Float fS && args[2] is Float fE && fS.CompareTo(fE) < 0)
             return new Float(double.Min(fE.value * rand.NextDouble() + fS.value, fE.value));
         throw new ValueError("invalid argument");
     }
@@ -59,12 +59,12 @@ public class Rand : Obj, IPackage, IStatic
     {
         Rand rand = new();
 
-        rand.properties.Add("seed", new NativeFun("seed", 2, Seed));
-        rand.properties.Add("choice", new NativeFun("choice", -1, Choice));
-        rand.properties.Add("shuffle", new NativeFun("shuffle", 2, Shuffle));
-        rand.properties.Add("range", new NativeFun("range", 3, Range));
-        rand.properties.Add("int", new NativeFun("int", 1, Int));
-        rand.properties.Add("random", new NativeFun("random", 1, Random));
+        rand.field.Set("seed", new NativeFun("seed", 2, Seed));
+        rand.field.Set("choice", new NativeFun("choice", -1, Choice));
+        rand.field.Set("shuffle", new NativeFun("shuffle", 2, Shuffle));
+        rand.field.Set("range", new NativeFun("range", 3, Range));
+        rand.field.Set("int", new NativeFun("int", 1, Int));
+        rand.field.Set("random", new NativeFun("random", 1, Random));
 
         return rand;
     }

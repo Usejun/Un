@@ -23,8 +23,8 @@ public class Time : Obj, IPackage, IStatic
     public Obj Static()
     {
         Time time = new();
-        time.properties.Add("now", new NativeFun("now", 1, Now));
-        time.properties.Add("today", new NativeFun("today", 1, Today));
+        time.field.Set("now", new NativeFun("now", 1, Now));
+        time.field.Set("today", new NativeFun("today", 1, Today));
         return time;
     }
 }

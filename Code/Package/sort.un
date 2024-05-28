@@ -26,11 +26,16 @@ fn insertion_sort(arr)
 			j -= 1
 
 fn binary_insertion_sort(arr)
+	assert(true, "test")
 
 fn quick_sort(arr)
+	assert(true, "test")
 
 fn merge_sort(arr)
+	assert(true, "test")
 
 fn heap_sort(arr)
+	assert(true, "test")
 
 fn tim_sort(arr)
+	assert(true, "test")

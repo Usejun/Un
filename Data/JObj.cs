@@ -22,28 +22,28 @@ public class JObj : Ref<JToken>
 
     public override Int CInt()
     {
-        if (Convert($"{value}", []) is Int i)
+        if (Convert($"{value}", new()) is Int i)
             return i;
         return base.CInt();
     }
 
     public override Bool CBool()
     {
-        if (Convert($"{value}", []) is Bool b)
+        if (Convert($"{value}", new()) is Bool b)
             return b;
         return base.CBool();
     }
 
     public override Float CFloat()
     {
-        if (Convert($"{value}", []) is Float f)
+        if (Convert($"{value}", new()) is Float f)
             return f;
         return base.CFloat();
     }
 
     public override Iter CIter()
     {
-        if (Convert($"{value}", []) is Iter i)
+        if (Convert($"{value}", new()) is Iter i)
             return i;
         return base.CIter();
     }

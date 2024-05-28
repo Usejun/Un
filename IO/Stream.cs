@@ -15,28 +15,28 @@ public class Stream : Ref<System.IO.Stream>
 
     public override void Init()
     {
-        properties.Add("read_all", new NativeFun("read_all", 1, args =>
+        field.Set("read_all", new NativeFun("read_all", 1, args =>
         {
             if (args[0] is not Stream self)
                 throw new ValueError("invalid argument");
 
             return new Str(self.r.ReadToEnd());
         }));
-        properties.Add("read", new NativeFun("read", 1, args =>
+        field.Set("read", new NativeFun("read", 1, args =>
         {
             if (args[0] is not Stream self)
                 throw new ValueError("invalid argument");
 
             return new Str((char)self.r.Read());
         }));
-        properties.Add("readln", new NativeFun("readln", 1, args =>
+        field.Set("readln", new NativeFun("readln", 1, args =>
         {
             if (args[0] is not Stream self)
                 throw new ValueError("invalid argument");
 
             return new Str(self.r.ReadLine()!);
         }));
-        properties.Add("write", new NativeFun("write", -1, args =>
+        field.Set("write", new NativeFun("write", -1, args =>
         {
             if (args[0] is not Stream self)
                 throw new ValueError("invalid argument");
@@ -46,7 +46,7 @@ public class Stream : Ref<System.IO.Stream>
             
             return None;
         }));
-        properties.Add("writeln", new NativeFun("writeln", -1, args =>
+        field.Set("writeln", new NativeFun("writeln", -1, args =>
         {
             if (args[0] is not Stream self)
                 throw new ValueError("invalid argument");
@@ -56,7 +56,7 @@ public class Stream : Ref<System.IO.Stream>
 
             return None;
         }));
-        properties.Add("close", new NativeFun("close", 1, args =>
+        field.Set("close", new NativeFun("close", 1, args =>
         {
             if (args[0] is not Stream self)
                 throw new ValueError("invalid argument");
@@ -64,7 +64,7 @@ public class Stream : Ref<System.IO.Stream>
             self.Close();
             return None;
         }));
-        properties.Add("is_end", new NativeFun("is_end", 1, args =>
+        field.Set("is_end", new NativeFun("is_end", 1, args =>
         {
             if (args[0] is not Stream self)
                 throw new ValueError("invalid argument");

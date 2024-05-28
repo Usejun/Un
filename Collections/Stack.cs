@@ -17,7 +17,7 @@ public class Stack : Ref<Stack<Obj>>
 
     public override void Init()
     {
-        properties.Add("push", new NativeFun("push", -1, args =>
+        field.Set("push", new NativeFun("push", -1, args =>
         {
             if (args[0] is not Stack self)
                 throw new ValueError("invalid argument");
@@ -27,7 +27,7 @@ public class Stack : Ref<Stack<Obj>>
 
             return None;
         }));
-        properties.Add("push_extend", new NativeFun("push_extend", -1, args =>
+        field.Set("push_extend", new NativeFun("push_extend", -1, args =>
         {
             if (args[0] is not Stack self)
                 throw new ValueError("invalid argument");
@@ -39,7 +39,7 @@ public class Stack : Ref<Stack<Obj>>
 
             return None;
         }));
-        properties.Add("pop", new NativeFun("pop", -1, args =>
+        field.Set("pop", new NativeFun("pop", -1, args =>
         {
             if (args[0] is not Stack self)
                 throw new ValueError("invalid argument");

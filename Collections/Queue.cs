@@ -17,7 +17,7 @@ public class Queue : Ref<Queue<Obj>>
 
     public override void Init()
     {
-        properties.Add("enqueue", new NativeFun("enqueue", -1, args =>
+        field.Set("enqueue", new NativeFun("enqueue", -1, args =>
         {
             if (args[0] is not Queue self)
                 throw new ValueError("invalid argument");
@@ -27,7 +27,7 @@ public class Queue : Ref<Queue<Obj>>
 
             return None;
         }));
-        properties.Add("enqueue_extend", new NativeFun("enqueue_extend", -1, args =>
+        field.Set("enqueue_extend", new NativeFun("enqueue_extend", -1, args =>
         {
             if (args[0] is not Queue self)
                 throw new ValueError("invalid argument");
@@ -38,7 +38,7 @@ public class Queue : Ref<Queue<Obj>>
 
             return None;
         }));
-        properties.Add("dequeue", new NativeFun("dequeue", -1, args =>
+        field.Set("dequeue", new NativeFun("dequeue", -1, args =>
         {
             if (args[0] is not Queue self)
                 throw new ValueError("invalid argument");

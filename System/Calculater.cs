@@ -31,7 +31,7 @@ public class Calculator
         return postfix;
     }
 
-    public static Obj Calculate(List<Token> expression, Dictionary<string, Obj> properties)
+    public static Obj Calculate(List<Token> expression, Field field)
     {
         if (expression.Count == 0) return Obj.None;
 
@@ -42,7 +42,11 @@ public class Calculator
         {
             Token token = postfix[i];
 
-            if (Process.TryGetClass(token, out var cla))
+            if (Process.TryGetStaticClass(token, out var staticCla) && token.type == Token.Type.Variable)
+            {
+                calculateStack.Push(staticCla);
+            }
+            else if (Process.TryGetClass(token, out var cla))
             {
                 if (token.type == Token.Type.Function && calculateStack.TryPop(out var obj) && obj is Iter args)
                     calculateStack.Push(cla.Clone().Init(args));
@@ -51,14 +55,14 @@ public class Calculator
             }
             else if (token.type == Token.Type.Function)
             {
-                if (properties.TryGetValue(token.value, out var local))
+                if (field.Get(token.value, out var local))
                 {
                     if (local is Fun fun && calculateStack.TryPop(out var a) && a is Iter args)
                         local = fun.Clone().Call(args);
 
                     calculateStack.Push(local);
                 }
-                else if (Process.TryGetProperty(token, out var global))
+                else if (Process.TryGetPublicProperty(token, out var global))
                 {
                     if (global is Fun fun && calculateStack.TryPop(out var a) && a is Iter args)
                         global = fun.Clone().Call(args);
@@ -72,7 +76,7 @@ public class Calculator
                 Obj a = calculateStack.Pop(), b;
                 if (token.type == Token.Type.Indexer)
                 {
-                    b = Obj.Convert(token.value, properties);
+                    b = Obj.Convert(token.value, field);
 
                     calculateStack.Push(a.GetItem(new Iter([b])));
                 }             
@@ -80,7 +84,7 @@ public class Calculator
                 {
                     var index = token.value.Split(':');
 
-                    calculateStack.Push(a.Slice([Obj.Convert(index[0], properties), Obj.Convert(index[1], properties)]));
+                    calculateStack.Push(a.Slice([Obj.Convert(index[0], field), Obj.Convert(index[1], field)]));
                 }
                 else if (token.type == Token.Type.Property)
                 {
@@ -152,13 +156,9 @@ public class Calculator
                     calculateStack.Push(c);
                 }
             }                
-            else if (Process.TryGetStaticClass(token, out var staticCla))
-            {
-                calculateStack.Push(staticCla);
-            }
             else
             {
-                calculateStack.Push(Obj.Convert(token.value, properties));
+                calculateStack.Push(Obj.Convert(token.value, field));
             }
         }
 

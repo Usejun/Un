@@ -4,7 +4,7 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 {
     public Dict() : base("dict", []) { }
 
-    public Dict(string str, Dictionary<string, Obj> properties) : base("dict", [])
+    public Dict(string str, Field field) : base("dict", [])
     {
         var pairs = str.Trim('{', '}').Split(',');
 
@@ -13,8 +13,8 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
             if (string.IsNullOrEmpty(pairs[i])) continue;
 
             var pair = pairs[i].Trim().Split(':');
-            var key = Convert(pair[0], properties);
-            var value = Convert(pair[1], properties);
+            var key = Convert(pair[0], field);
+            var value = Convert(pair[1], field);
 
             this.value.Add(key, value);
         }          
@@ -29,7 +29,7 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
     public override void Init()
     {
-        properties.Add("add", new NativeFun("add", -1, args =>
+        field.Set("add", new NativeFun("add", -1, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
@@ -38,28 +38,28 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
             return self;
         }));
-        properties.Add("remove", new NativeFun("remove", 2, args =>
+        field.Set("remove", new NativeFun("remove", 2, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
             return new Bool(self.value.Remove(args[1]));
         }));
-        properties.Add("contains_key", new NativeFun("contains_key", 2, args =>
+        field.Set("contains_key", new NativeFun("contains_key", 2, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
             return new Bool(self.value.ContainsKey(args[1]));
         }));
-        properties.Add("contains_value", new NativeFun("contains_value", 2, args =>
+        field.Set("contains_value", new NativeFun("contains_value", 2, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
             return new Bool(self.value.ContainsValue(args[1]));
         }));
-        properties.Add("clear", new NativeFun("clear", 1, args =>
+        field.Set("clear", new NativeFun("clear", 1, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
@@ -68,14 +68,14 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
             return None;
         }));
-        properties.Add("keys", new NativeFun("keys", 1, args =>
+        field.Set("keys", new NativeFun("keys", 1, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
             return new Iter([.. self.value.Keys]);
         }));
-        properties.Add("values", new NativeFun("values", 1, args =>
+        field.Set("values", new NativeFun("values", 1, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");

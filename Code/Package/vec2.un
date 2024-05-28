@@ -2,36 +2,36 @@
 	x = 0
 	y = 0
 
-	fn __init__(this, x, y)
-		this.x = x
-		this.y = y
+	fn __init__(self, x, y)
+		self.x = x
+		self.y = y
 	
-	fn __add__(this, other)
-		return vec2(this.x + other.x, this.y + other.y)
+	fn __add__(self, other)
+		return vec2(self.x + other.x, self.y + other.y)
 
-	fn __sub__(this, other)
-		return vec2(this.x - other.x, this.y - other.y)
+	fn __sub__(self, other)
+		return vec2(self.x - other.x, self.y - other.y)
 
-	fn __mul__(this, other)
-		return vec2(this.x * other.x, this.y * other.y)
+	fn __mul__(self, other)
+		return vec2(self.x * other.x, self.y * other.y)
 
-	fn __div__(this, other)
-		return vec2(this.x / other.x, this.y / other.y)
+	fn __div__(self, other)
+		return vec2(self.x / other.x, self.y / other.y)
 
-	fn __idiv__(this, other)
-		return vec2(this.x // other.x, this.y // other.y)
+	fn __idiv__(self, other)
+		return vec2(self.x // other.x, self.y // other.y)
 
-	fn __mod__(this, other)
-		return vec2(this.x % other.x, this.y % other.y)
+	fn __mod__(self, other)
+		return vec2(self.x % other.x, self.y % other.y)
 
-	fn __bor__(this, other)
-		return vec2(this.x | other.x, this.y | other.y)
+	fn __bor__(self, other)
+		return vec2(self.x | other.x, self.y | other.y)
 
-	fn __band__(this, other)
-		return vec2(this.x & other.x, this.y & other.y)
+	fn __band__(self, other)
+		return vec2(self.x & other.x, self.y & other.y)
 
-	fn __bxor__(this, other)
-		return vec2(this.x ^ other.x, this.y ^ other.y)
+	fn __bxor__(self, other)
+		return vec2(self.x ^ other.x, self.y ^ other.y)
 
 	fn __len__()
 		return 2
@@ -39,14 +39,14 @@
 	fn __type__()
 		return "vec2"
 
-	fn __str__(this)
-		return "(" + this.x + ", " + this.y + ")"
+	fn __str__(self)
+		return "(" + self.x + ", " + self.y + ")"
 
-	fn __int__(this)
-		return int((this.x + this.y) / 2)
+	fn __int__(self)
+		return int((self.x + self.y) / 2)
 
-	fn __eq__(this, other)
-		return this.x == other.x and this.y == other.y
+	fn __eq__(self, other)
+		return self.x == other.x and self.y == other.y
 
-	fn __lt__(this, other)
-		return this.x == other.x or this.y == other.y
+	fn __lt__(self, other)
+		return self.x == other.x or self.y == other.y

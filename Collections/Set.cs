@@ -4,13 +4,13 @@ public class Set : Ref<HashSet<Obj>>
 {
     public Set() : base("set", []) { }
 
-    public Set(string str, Dictionary<string, Obj> properties) : base("dict", [])
+    public Set(string str, Field field) : base("set", [])
     {
         var values = str.Trim('{', '}').Split(',');
 
         for (int i = 0; i < values.Length; i++)
         {
-            var value = Convert(values[i].Trim(), properties);
+            var value = Convert(values[i].Trim(), field);
             this.value.Add(value);
         }
     }
@@ -28,7 +28,7 @@ public class Set : Ref<HashSet<Obj>>
 
     public override void Init()
     {
-        properties.Add("add", new NativeFun("add", -1, args =>
+        field.Set("add", new NativeFun("add", -1, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
@@ -38,7 +38,7 @@ public class Set : Ref<HashSet<Obj>>
 
             return None;
         }));
-        properties.Add("extend", new NativeFun("extend", -1, args =>
+        field.Set("extend", new NativeFun("extend", -1, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
@@ -49,21 +49,21 @@ public class Set : Ref<HashSet<Obj>>
 
             return None;
         }));
-        properties.Add("remove", new NativeFun("remove", 2, args =>
+        field.Set("remove", new NativeFun("remove", 2, args =>
         {                
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
 
             return new Bool(self.value.Remove(args[1]));
         }));
-        properties.Add("contains", new NativeFun("contains", 2, args =>
+        field.Set("contains", new NativeFun("contains", 2, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
 
             return new Bool(self.value.Contains(args[1]));
         }));
-        properties.Add("clear", new NativeFun("clear", 1, args =>
+        field.Set("clear", new NativeFun("clear", 1, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
@@ -72,7 +72,7 @@ public class Set : Ref<HashSet<Obj>>
 
             return None;
         }));
-        properties.Add("values", new NativeFun("values", 1, args =>
+        field.Set("values", new NativeFun("values", 1, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");

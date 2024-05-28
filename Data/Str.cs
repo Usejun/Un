@@ -38,35 +38,35 @@ public class Str : Val<string>, IEnumerable<char>
 
     public override void Init()
     {
-        properties.Add("split", new NativeFun("split", 2, args =>
+        field.Set("split", new NativeFun("split", 2, args =>
         {
             if (args[0] is not Str self || args[1] is not Str sep)
                 throw new ValueError("invalid argument");
 
             return new Iter(self.value.Split(sep.value));
         }));
-        properties.Add("join", new NativeFun("join", 3, args =>
+        field.Set("join", new NativeFun("join", 3, args =>
         {
             if (args[0] is not Str self || args[1] is not Str sep)
                 throw new ValueError("invalid argument");
 
             return self.Add(new Str(string.Join(sep.value, args[2].CIter().Select(i => i.CStr().value))));
         }));
-        properties.Add("index_of", new NativeFun("index_of", -1, args =>
+        field.Set("index_of", new NativeFun("index_of", -1, args =>
         {
             if (args[0] is not Str self || args[1] is not Str str)
                 throw new ValueError("invalid argument");
 
             return new Int(self.value.IndexOf(str.value, args.Count == 2 && args[2] is Int index ? (int)index.value : 0));
         }));
-        properties.Add("contains", new NativeFun("contains", -1, args =>
+        field.Set("contains", new NativeFun("contains", -1, args =>
         {
             if (args[0] is not Str self || args[1] is not Str str)
                 throw new ValueError("invalid argument");               
 
             return new Bool(self.value.Contains(str.value));
         }));
-        properties.Add("is_number", new NativeFun("is_number", 1, args =>
+        field.Set("is_number", new NativeFun("is_number", 1, args =>
         {
             if (args[0] is not Str self)
                 throw new ValueError("invalid argument");
@@ -79,7 +79,7 @@ public class Str : Val<string>, IEnumerable<char>
             return new Bool(isNumber);
 
         }));
-        properties.Add("is_alphabet", new NativeFun("is_number", 1, args =>
+        field.Set("is_alphabet", new NativeFun("is_number", 1, args =>
         {
             if (args[0] is not Str self)
                 throw new ValueError("invalid argument");

@@ -2,7 +2,7 @@
 
 public class Enu : Obj
 {
-    public Dictionary<int, string> convert = [];
+    public List<Str> number = [];
 
     public Enu(string className) : base(className) { }
 
@@ -13,21 +13,28 @@ public class Enu : Obj
 
         for (int i = 1; i < code.Length; i++)
         {
-            var line = code[i].Split(',');
+            var line = code[i].Split(',').Where(s => !string.IsNullOrWhiteSpace(s));
             foreach (var var in line)
             {
-                properties.Add(var.Trim(), new EnuElm($"{ClassName}.{var.Trim()}", value));
-                convert.Add(value, var.Trim());
-                value++;
+                if (string.IsNullOrWhiteSpace(var)) continue;
+
+                field.Set(var.Trim(), new EnuElm($"{ClassName}.{var.Trim()}", value));
+                number.Add(new($"{ClassName}.{var.Trim()}"));
             }
         }
     }
 
     public override Obj Init(Iter args)
     {
-        if (args[0] is Int i) return properties[convert[(int)i.value]];
-        if (args[0] is Str s) return properties[s.value];
+        if (args[0] is Int i) return new EnuElm($"{number[(int)i.value].value}", (int)i.value);
+        if (args[0] is Str s) return field[s.value];
 
         return base.Init(args);
     }
+
+    public override Obj Clone() => this;
+
+    public override Obj Copy() => this;
+
+    public override Int Len() => new(number.Count);
 }

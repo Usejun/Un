@@ -3,38 +3,23 @@
 public static class Process
 {
     public static string Path { get; private set; } = "";
-
     public static string File { get; private set; } = "";
 
-    public static string[] Code { get; private set; } = [];
+    public static string[] Code => Main.Code;
+    public static int Line => Main.Line;
+    public static int Index => Main.Index;
+    public static int Nesting => Main.Nesting;
+    public static Field Field => Main.Field;
 
-    public static int Line { get; private set; } = 0;
+    public static Parser Main { get; private set; } = new([], new());
 
-    public static Parser Main { get; private set; } = new([], []);
+    public static Field Public = new();
 
     private readonly static HashSet<string> Imported = [];
+    public readonly static Field Package = new();
 
-    public readonly static Dictionary<string, Obj> Package = new()
-    {
-        {"std", new Util.Std()}, 
-        {"math", new Util.Math()}, 
-        {"time", new Util.Time()},
-        {"https", new Net.Https()}, 
-        {"rand", new Util.Rand()},
-
-        {"stack", new Stack() },
-        {"queue", new Queue() },
-        {"json", new JObj() },
-        {"long", new Long() },
-        {"matrix", new Matrix() },
-        {"date", new Date() },
-    };
-
-    public readonly static Dictionary<string, Obj> Class = [];
-
-    public readonly static Dictionary<string, Obj> StaticClass = [];
-
-    public readonly static Dictionary<string, Obj> Properties = [];
+    public readonly static Field Class = new();
+    public readonly static Field StaticClass = new();    
 
     public static void Initialize(string path)
     {
@@ -49,49 +34,66 @@ public static class Process
             Token.Types.Add(str, Enum.Parse<Token.Type>(keyword));
             if (str.Length > 1)
                 Token.Union.Add(str);
-        }            
+        }
+
+        Package.Set("std", new Util.Std());
+        Package.Set("math", new Util.Math());
+        Package.Set("time", new Util.Time());
+        Package.Set("https", new Https());
+        Package.Set("rand", new Util.Rand());
+        Package.Set("stack", new Stack());
+        Package.Set("queue", new Queue());
+        Package.Set("json", new JObj());
+        Package.Set("long", new Long());
+        Package.Set("matrix", new Matrix());
+        Package.Set("date", new Date());
 
         Path = path;
     }
 
     public static void Run(string file)
     {
-        Properties.Clear();
+        Public.Clear();
         Class.Clear();
         StaticClass.Clear();
         Imported.Clear();
 
-        Class.Add("int", new Int());
-        Class.Add("float", new Float());
-        Class.Add("iter", new Iter());
-        Class.Add("bool", new Bool());
-        Class.Add("str", new Str());
-        Class.Add("stream", new IO.Stream());
-        Class.Add("map", new Map());
-        Class.Add("dict", new Dict());
-        Class.Add("set", new Set());
+        Class.Set("int", new Int());
+        Class.Set("float", new Float());
+        Class.Set("iter", new Iter());
+        Class.Set("bool", new Bool());
+        Class.Set("str", new Str());
+        Class.Set("stream", new IO.Stream());
+        Class.Set("map", new Map());
+        Class.Set("dict", new Dict());
+        Class.Set("set", new Set());
 
         Import("std");
 
         using StreamReader r = new(new FileStream($"{Path}\\{file}", FileMode.Open));
 
-        File = file;
-        Code = r.ReadToEnd().Split('\n');
-        Main = new(Code, Properties);
-        Properties.Add("__main__", new Str(file));
-        Properties.Add("__name__", new Str(file));
+        Public.Set("__main__", new Str(file));
+        Public.Set("__name__", new Str(file));
 
-        do Line++; 
-        while (Main.TryInterpret()) ;
+        Interpret(file, r.ReadToEnd().Split('\n'), Public, []);
     }
 
-    public static void Interpret(string[] code, Dictionary<string, Obj> properties, int index = 0, int line = 0, int nesting = 0)
+    public static Obj Interpret(string name, string[] code, Field field, List<string> usings, int index = 0, int line = 0, int nesting = 0)
     {
-        var prevCode = Code;
-        var prevProperties = Properties;
-        var prevIndex = Main.Index;
-        var prevLine = Main.Index;
-        var prevNesting = Main.Nesting;
+        (var prevCode, var pervField, var prevUsings, var prevIndex, var prevLine, var prevNesting, var prevName) = (Code, Field, Main.Usings, Index, Line, Nesting, Public["__name__"]);
+
+        Public["__name__"] = new Str(name);
+        Main.Change(code, field, usings, index, line, nesting);
+
+        while (Main.TryInterpret()) { };
+
+        var returnValue = Main.ReturnValue;
+        Main.ReturnValue = null;
+
+        Public["__name__"] = prevName;
+        Main.Change(prevCode, pervField, prevUsings, prevIndex, prevLine, prevNesting);
+
+        return returnValue ?? Obj.None;
     }
 
     public static void Import(string name)
@@ -106,18 +108,18 @@ public static class Process
             if (Package[name] is IPackage pack)
             {
                 foreach (var fun in pack.Import())
-                    Properties.Add(fun.name, fun);
+                    Public.Set(fun.name, fun);
 
                 foreach (var include in pack.Include())
                     Class[include.ClassName].Init();
             }
             else
             {
-                Class.Add(name, Package[name]);
+                Class.Set(name, Package[name]);
             }
 
             if (Package[name] is IStatic sta)
-                StaticClass.Add(name, sta.Static());
+                StaticClass.Set(name, sta.Static());
         }
         else
         {
@@ -127,11 +129,9 @@ public static class Process
             using StreamReader r = new(new FileStream($"{Path}\\Package\\{name}.un", FileMode.Open));
             Imported.Add(name);
 
-            Properties["__name__"] = new Str($"{name}.un");
+            Public["__name__"] = new Str($"{name}.un");
 
-            Parser interpreter = new(r.ReadToEnd().Split('\n'), []);
-
-            while (interpreter.TryInterpret()) ;
+            Interpret($"{name}.un", r.ReadToEnd().Split('\n'), new(), []);
         }
     }
 
@@ -164,31 +164,31 @@ public static class Process
 
 
 
-    public static bool TryGetProperty(string name, out Obj property) => Properties.TryGetValue(name, out property);
+    public static bool TryGetPublicProperty(string name, out Obj property) => Public.Get(name, out property);
 
-    public static bool TryGetProperty(Token token, out Obj property) => Properties.TryGetValue(token.value, out property);
+    public static bool TryGetPublicProperty(Token token, out Obj property) => Public.Get(token.value, out property);
 
-    public static bool TryGetClass(string name, out Obj cla) => Class.TryGetValue(name, out cla);
+    public static bool TryGetClass(string name, out Obj cla) => Class.Get(name, out cla);
 
-    public static bool TryGetClass(Token token, out Obj cla) => Class.TryGetValue(token.value, out cla);
+    public static bool TryGetClass(Token token, out Obj cla) => Class.Get(token.value, out cla);
 
-    public static bool TryGetStaticClass(string name, out Obj cla) => StaticClass.TryGetValue(name, out cla);
+    public static bool TryGetStaticClass(string name, out Obj cla) => StaticClass.Get(name, out cla);
 
-    public static bool TryGetStaticClass(Token token, out Obj cla) => StaticClass.TryGetValue(token.value, out cla);
+    public static bool TryGetStaticClass(Token token, out Obj cla) => StaticClass.Get(token.value, out cla);
 
-    public static bool IsClass(Token token) => Class.ContainsKey(token.value);
+    public static bool IsClass(Token token) => Class.Key(token.value);
 
-    public static bool IsClass(string str) => Class.ContainsKey(str);
+    public static bool IsClass(string str) => Class.Key(str);
 
-    public static bool IsStaticClass(Token token) => StaticClass.ContainsKey(token.value);
+    public static bool IsStaticClass(Token token) => StaticClass.Key(token.value);
 
-    public static bool IsStaticClass(string str) => StaticClass.ContainsKey(str);
+    public static bool IsStaticClass(string str) => StaticClass.Key(str);
 
-    public static bool IsPackage(Token token) => Package.ContainsKey(token.value);
+    public static bool IsPackage(Token token) => Package.Key(token.value);
 
-    public static bool IsPackage(string str) => Package.ContainsKey(str);
+    public static bool IsPackage(string str) => Package.Key(str);
 
-    public static bool IsProperty(Token token) => Properties.ContainsKey(token.value);
+    //public static bool IsProperty(Token token) => Properties.ContainsKey(token.value);
 
-    public static bool IsProperty(string str) => Properties.ContainsKey(str);
+    //public static bool IsProperty(string str) => Properties.ContainsKey(str);
 }

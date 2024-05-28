@@ -10,12 +10,13 @@ C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한
 
 ## 기본 자료형
 <ul>
-	<li>Int : 부호가 있는 64bit 정수형
-	<li>Float : 부호가 있는 64bit 부동 실수형
-	<li>Str : 문자열
-	<li>Bool : Boolean 
-	<li>Iter : 다양한 자료형이 반복적으로 있는 구조
-	<li>Dict : 사전, (키:값) 구조
+	<li>int : 부호가 있는 64bit 정수형
+	<li>float : 부호가 있는 64bit 부동 실수형
+	<li>str : 문자열
+	<li>bool : Boolean 	
+	<li>iter : 다양한 자료형이 반복적으로 있는 구조
+	<li>dict : 사전, (키:값) 구조
+	<li>set : 집합
 </ul>
 
 ## 함수
@@ -37,8 +38,21 @@ fn my_function(arg)
 	<li> readln : 한 줄을 읽어 Str로 반환
 	<li> type : 인수로 받은 값의 자료형을 반환
 	<li> func : 구현된 모든 함수를 Iter로 반환
-	<li> len : Iter나 Str의 길이를 반환
+	<li> len : Iter나 Str의 길이를 반환	
 	<li> range : [start, length] 형식의 인자를 받아 iter를 반환
+	<li> hash : 인자로 받은 값의 hash 값 반환
+	<li> open : 파일을 스트림으로 열고 그 스트림을 반환
+	<li> sum : 인자로 받은 값들을 앞에서부터 더하기 연산 후 반환
+	<li> max : 인자로 받은 값들을 비교해서 가장 큰 값을 반환
+	<li> min : 인자로 받은 값들을 비고해서 가장 작은 값을 반환
+	<li> abs : 숫자 형식을 받아 절댓값으로 변환 후 반환
+	<li> pow : [number, power] 형식을 받아 number를 power번 곱한 값을 반환
+	<li> ceil : 숫자 형식에 버림 후 반환
+	<li> floor : 숫자 형식에 올림 후 반환
+	<li> round : [number, digit] or [number]의 형식으로 받아 특정 자리수로 반올림 후 반환, 자리수가 없다면 자연수 값만 반환
+	<li> sqrt : 숫자 형식을 받아 제곱근 결과를 반환
+	<li> exit : 프로그램 종료
+	<li> assert : [condition, message] 형식으로 조건이 true라면 예외와 함께 메세지가 출력
 </ul>
 
 ## 조건문
@@ -59,7 +73,8 @@ else
 
 ## 반복문
 
-**for [Variable] in [Iter]** 과 **while (Bool)** 의 형식을 사용한다.
+**for [Variable] in [Iterator]** 과 **while (Bool)** 의 형식이나 
+**for [Initialization], [Condition], [Increment]** 를 사용한다.
 
 ### for
 
@@ -91,6 +106,7 @@ writeln(fib)
 
 class 키워드 후에 클래스의 이름을 지어준다.
 클래스는 필드와 메서드를 가지고 있다.
+메서드의 첫 번째 인자는 자기 자신을 받는다.
 
 ```
 class point
@@ -98,7 +114,7 @@ class point
     y = 0
 
     fn print(self)
-	writeln(x + " : " + y)
+		writeln(self.x + " : " + self.y)
 ```
 
 클래스의 예약 함수를 통해 여러 연산 기능을 추가할 수 있다.
@@ -138,13 +154,28 @@ class point
 	<li> __exit__ : using 탈출
 </ul>
 
-## 이외
+## import 
 
-### import 
+**import [Package name, ...]** 의 꼴로 사용되며, 다른 코드나, 패키지를 불러오기 위한 구문이다.
 
-**import [Package name...]** 의 꼴로 사용되며, 다른 코드나, 패키지를 불러오기 위한 구문이다.
-
-
-### using
+## using
 
 **using [name] = [value]** 의 꼴로 사용되며, value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.
+
+## enum
+
+**enum [name]** 의 꼴로 사용되며, 열거형을 만들 수 있다. 모든 값들은 콤마로 구분된다.
+
+```
+enum rank
+	bronze, sliver
+	gold, diamond
+```
+
+## slice
+
+**iterable[start:end]** 꼴로 사용되며, 인덱싱이 구현된 자료형이라면 슬라이스를 사용할 수 있다. 
+```
+l = [1, 2, 3, 4, 5]
+write(l[0:3]) # [1, 2, 3]
+```
