@@ -15,7 +15,7 @@ public class Map : Ref<Obj[]>
         value = new Obj[iter.Count];
 
         for (int i = 0; i < iter.Count; i++)
-            value[i] = fun.Call(iter[i].CIter()).Clone();
+            value[i] = fun.Call([iter[i]]).Clone();
 
         return this;
     }

@@ -25,8 +25,6 @@ public class Https : Obj, IPackage, IStatic
 
     public IEnumerable<Obj> Include() =>
     [
-        new HttpsContent(),
-        new HttpsResponse(),
-        new HttpsHeaders(),
+
     ];
 }

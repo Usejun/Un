@@ -12,7 +12,7 @@ public static class Tokenizer
             SkipWhitespace(code);
             if (index >= code.Length) break;
             else if (Token.IsComment(code[index])) tokens.Add(new($"{code[index++]}", Token.Type.Comment));
-            else if (code[index] == '\"' || code[index] == '\'') tokens.Add(String(code));
+            else if (Token.IsString(code[index])) tokens.Add(String(code));
             else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
             else if (char.IsDigit(code[index])) tokens.Add(Number(code));
             else if (Token.IsOperator(code[index])) tokens.Add(Operator(code));

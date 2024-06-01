@@ -112,7 +112,7 @@ public class Token
     public Token(char c)
     {
         value = $"{c}";
-        type = GetType(c);
+        type = GetType(value);
     }
 
     public Token(string s)
@@ -165,6 +165,20 @@ public class Token
     public static bool IsOperator(string str) => IsOperator(GetType(str));
 
     public static bool IsOperator(char chr) => IsOperator(GetType(chr));
+
+
+    public static bool IsBasicOperator(Token token) => IsBasicOperator(token.type);
+
+    public static bool IsBasicOperator(Type type) => type switch
+    {
+        > Type.None and < Type.Indexer => true,
+        > Type.Function and < Type.Dot => true,
+        _ => false
+    };
+
+    public static bool IsBasicOperator(string str) => IsBasicOperator(GetType(str));
+
+    public static bool IsBasicOperator(char chr) => IsBasicOperator(GetType(chr));
 
 
     public static bool IsLoop(Token token) => IsLoop(token.type);
@@ -232,6 +246,14 @@ public class Token
     {
         >= Type.Integer and <= Type.Lambda => true,
         _ => false
+    };   
+    
+    
+    public static bool IsString(char chr) => chr switch
+    {
+        '\'' or '"' or '`' => true,
+        _ => false 
     };
+
 
 }

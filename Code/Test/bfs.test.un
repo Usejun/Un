@@ -1,0 +1,45 @@
+﻿import queue
+
+n, m = map(int, readln().split(" "))
+board = []
+day = []
+q = queue()
+dx = [0, 1, 0, -1]
+dy = [1, 0, -1, 0]
+
+for i in range(0, m)
+	board.add(iter(map(int, readln().split(" "))))
+	day.add([0] * n)
+
+for i in range(0, m)
+	for j in range(0, n)
+		if (board[i][j] == 1)
+			q.enqueue([i, j])
+			day[i][j] = 1
+		elif (board[i][j] == -1)
+			day[i][j] = -1
+
+while q
+	x, y = map(int, q.dequeue())
+	
+	for i in range(0, 4)
+		nx = x + dx[i]
+		ny = y + dy[i]
+
+		if nx >= 0 and ny >= 0 and nx < m and ny < n
+			if board[nx][ny] == 0 and day[nx][ny] == 0
+				q.enqueue([nx, ny])
+				day[nx][ny] = day[x][y] + 1
+
+answer = -1
+
+for i in range(0, m)
+	if (0 in day[i])
+		max = -1
+		break
+	answer = max(day[i] + answer)
+
+if (answer == -1)
+	write(-1)
+else
+	write(answer - 1)

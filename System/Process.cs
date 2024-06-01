@@ -36,17 +36,7 @@ public static class Process
                 Token.Union.Add(str);
         }
 
-        Package.Set("std", new Util.Std());
-        Package.Set("math", new Util.Math());
-        Package.Set("time", new Util.Time());
-        Package.Set("https", new Https());
-        Package.Set("rand", new Util.Rand());
-        Package.Set("stack", new Stack());
-        Package.Set("queue", new Queue());
-        Package.Set("json", new JObj());
-        Package.Set("long", new Long());
-        Package.Set("matrix", new Matrix());
-        Package.Set("date", new Date());
+        InitializePackage();
 
         Path = path;
     }
@@ -67,6 +57,7 @@ public static class Process
         Class.Set("map", new Map());
         Class.Set("dict", new Dict());
         Class.Set("set", new Set());
+        Class.Set("obj", new Data.Object());
 
         Import("std");
 
@@ -111,7 +102,7 @@ public static class Process
                     Public.Set(fun.name, fun);
 
                 foreach (var include in pack.Include())
-                    Class[include.ClassName].Init();
+                    Class.Set(include.ClassName, include);                 
             }
             else
             {
@@ -162,6 +153,21 @@ public static class Process
         Console.WriteLine(string.Join("\n", logs));
     }
 
+    private static void InitializePackage()
+    {
+        Package.Set("std", new Util.Std());
+        Package.Set("math", new Util.Math());
+        Package.Set("time", new Util.Time());
+        Package.Set("https", new Https());
+        Package.Set("rand", new Util.Rand());
+        Package.Set("stack", new Stack());
+        Package.Set("queue", new Queue());
+        Package.Set("json", new JObj());
+        Package.Set("long", new Long());
+        Package.Set("matrix", new Matrix());
+        Package.Set("date", new Date());
+    }
+
 
 
     public static bool TryGetPublicProperty(string name, out Obj property) => Public.Get(name, out property);
@@ -187,8 +193,4 @@ public static class Process
     public static bool IsPackage(Token token) => Package.Key(token.value);
 
     public static bool IsPackage(string str) => Package.Key(str);
-
-    //public static bool IsProperty(Token token) => Properties.ContainsKey(token.value);
-
-    //public static bool IsProperty(string str) => Properties.ContainsKey(str);
 }

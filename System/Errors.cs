@@ -2,10 +2,8 @@
 
 namespace Un;
 
-public abstract class Error : Exception
+public abstract class Error(string message) : Exception(message)
 {
-    public Error(string message) : base(message) { }
-
     public override string ToString()
     {
         StringBuilder result = new();

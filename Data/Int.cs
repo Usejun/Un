@@ -70,7 +70,11 @@ public class Int : Val<long>
 
     public override Obj Pow(Obj arg)
     {
-        if (arg is Int i) return new Int((long)Math.Pow(value, i.value));
+        if (arg is Int i)
+        {
+            if (i.value < 0) return new Float(Math.Pow(value, i.value));
+            return new Int((long)Math.Pow(value, i.value));
+        }
         if (arg is Float f) return new Float(Math.Pow(value, f.value));
 
         return base.Pow(arg);
@@ -112,10 +116,6 @@ public class Int : Val<long>
 
         return base.RSh(arg);
     }
-
-    public override Obj And(Obj arg) => new Bool(CBool().value && arg.CBool().value);
-
-    public override Obj Or(Obj arg) => new Bool(CBool().value || arg.CBool().value);
 
     public override Obj Xor(Obj arg) => new Bool(CBool().value ^ arg.CBool().value);
 

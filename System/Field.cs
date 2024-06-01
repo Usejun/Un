@@ -21,7 +21,6 @@
         {
             if (!field.TryAdd(name, value))
                 field[name] = value;
-
         }
 
         public void Remove(string name)

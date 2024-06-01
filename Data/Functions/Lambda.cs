@@ -9,7 +9,7 @@ public class Lambda : Fun
         var v = str[7..].Split("=>");
         name = "lambda";
 
-        foreach (var arg in v[0].Split(","))
+        foreach (var arg in v[0].Split(",").Reverse())
             if (arg != "_") args.Add(arg);
 
         code = [("return " + v[1])];
@@ -17,8 +17,7 @@ public class Lambda : Fun
 
     public override Obj Call(Iter args)
     {
-        Field field = new();
-        field.Copy(field);
+        Field field = new(this.field);
 
         for (int i = 0; i < this.args.Count; i++)
             field.Set(this.args[i], args[i]);

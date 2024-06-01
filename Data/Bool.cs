@@ -24,10 +24,6 @@ public class Bool : Val<bool>
         return base.Add(arg);
     }
 
-    public override Obj And(Obj arg) => new Bool(value && arg.CBool().value);
-
-    public override Obj Or(Obj arg) => new Bool(value || arg.CBool().value);
-
     public override Obj Xor(Obj arg) => new Bool(value ^ arg.CBool().value);
 
     public override Str CStr() => new(value ? "true" : "false");

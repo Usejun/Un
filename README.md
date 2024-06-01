@@ -84,6 +84,9 @@ Iter 내부를 순회를 끝내면 반복문이 끝난다.
 ```
 for i in range(1, 100)
     writeln(i)
+
+for i = 0, i < 10, i += 1
+	writeln(i)
 ```
 
 ### while 

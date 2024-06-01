@@ -124,10 +124,6 @@ public class Long : Val<BigInteger>
         return base.RSh(arg);
     }
 
-    public override Obj And(Obj arg) => new Bool(CBool().value || arg.CBool().value);
-
-    public override Obj Or(Obj arg) => new Bool(CBool().value || arg.CBool().value);
-
     public override Obj Xor(Obj arg) => new Bool(CBool().value || arg.CBool().value);
 
     public override Bool Equals(Obj arg)

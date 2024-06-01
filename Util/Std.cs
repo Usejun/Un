@@ -35,7 +35,7 @@ public class Std : Obj, IPackage
         else if (args[0] is Obj o)
         {
             foreach (var i in o.field.Keys)
-                if (field[i] is Fun)
+                if (o.field[i] is Fun)
                     func.Add(i);
         }
         else
@@ -46,6 +46,29 @@ public class Std : Obj, IPackage
         }
 
         return new Iter([.. func.Select(i => new Str(i))]);
+    }
+
+    Iter Memb(Iter args)
+    {
+        List<string> memb = [];
+
+        if (args[0] is Fun f)
+        {
+            foreach (var i in f.Call([]).field.Keys)
+                memb.Add(i);
+        }
+        else if (args[0] is Obj o)
+        {
+            foreach (var i in o.field.Keys)
+                memb.Add(i);
+        }
+        else
+        {
+            foreach (var i in Process.Field.Keys)
+                memb.Add(i);
+        }
+
+        return new Iter([.. memb.Select(i => new Str(i))]);
     }
 
     Iter Range(Iter args)
@@ -68,7 +91,13 @@ public class Std : Obj, IPackage
 
     Int Hash(Iter args) => args[0].Hash();
 
-    IO.Stream Open(Iter args) => new(File.Open(args[0].CStr().value, FileMode.Open));
+    IO.Stream Open(Iter args) 
+    {
+        if (args[0] is Str s) return new(File.Open(s.value, FileMode.Open));
+        if (args[0] is HttpsResponse hr) return new(hr.value.Content.ReadAsStreamAsync().Result);
+
+        throw new FileError("File types you can't open");
+    }
 
     Obj Sum(Iter args)
     {
@@ -182,6 +211,7 @@ public class Std : Obj, IPackage
         new NativeFun("readln", 0, Readln),
         new NativeFun("type", 1, Type),
         new NativeFun("func", -1, Func),
+        new NativeFun("memb", -1, Memb),
         new NativeFun("range", 2, Range),
         new NativeFun("len", 1, Len),
         new NativeFun("hash", 1, Hash),

@@ -1,7 +1,5 @@
 ﻿namespace Un;
 
-// TODD : using
-
 public class Parser(string[] code, Field field, int index = 0, int line = 0, int nesting = 0)
 {
     public Obj? ReturnValue = null;
@@ -29,6 +27,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
 
         Parse(Lexer.Lex(Tokenizer.Tokenize(Code[Line]), Field));
         Line++;
+
         return true;
     }
 
@@ -87,8 +86,9 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         }
         else if (Token.IsControl(analyzedTokens[0].value))
         {
-            if (analyzedTokens[0].type == Token.Type.Else ||
-                Calculator.Calculate(analyzedTokens[1..], Field) is Bool b && b.value)
+            Bool condition = analyzedTokens[0].type == Token.Type.Else ? new(true) : Calculator.Calculate(analyzedTokens[1..], Field).CBool();
+
+            if (condition.value)
             {
                 Nesting++;
                 Line++;
@@ -296,7 +296,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                                     var.GetItem(new Iter([Obj.Convert(token.value, Field)])), 
                                     value, 
                                     analyzedTokens[assign].type).Copy()]));
-                        else if (token.type == Token.Type.Property && var.HasProperty(token.value))
+                        else if (token.type == Token.Type.Property)
                             var.Set(token.value, AssignCalculate(var.Get(token.value), value, analyzedTokens[assign].type).Copy());
                         else throw new SyntaxError("unreachable");
 

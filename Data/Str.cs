@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Text;
 
 namespace Un.Data;
 
@@ -134,7 +136,7 @@ public class Str : Val<string>, IEnumerable<char>
         return new Str($"{value[(int)i.value]}");
     }
 
-    public override Obj Clone() => new Str(value) { };
+    public override Obj Clone() => new Str(value);
 
     public override Obj Copy() => new Str(value);
 
@@ -156,5 +158,49 @@ public class Str : Val<string>, IEnumerable<char>
 
 
     public static bool IsDoubleStr(string str) => str[0] == '"' && str[^1] == '"';
+    
     public static bool IsSingleStr(string str) => str[0] == '\'' && str[^1] == '\'';
+    
+    public static bool IsFStr(string str) => str[0] == '`' && str[^1] == '`';
+
+    public static Str FStr(string str, Field field)
+    {
+        StringBuilder result = new(), buffer = new();
+        int index = 0;
+        bool isFormat = false;
+
+        while (index < str.Length)
+        {
+            if (str[index] == '}')
+            {
+                isFormat = false;
+                index++;
+                result.Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize($"{buffer}"), field), field).CStr().value);
+            }
+            else if (isFormat)
+            {
+                if (str[index] == '\\')
+                {
+                    index++;
+                    buffer.Append($"\\{str[index]}");
+                    index++;
+                }
+                else buffer.Append(str[index++]);
+            }
+            else if(str[index] == '\\')
+            {
+                index++;
+                result.Append($"\\{str[index]}");
+                index++;
+            }
+            else if (str[index] == '{')
+            {
+                isFormat = true;
+                index++;
+            }
+            else result.Append(str[index++]);
+        }
+
+        return new($"{result}");
+    }
 }

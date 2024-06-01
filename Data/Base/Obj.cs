@@ -1,4 +1,6 @@
-﻿namespace Un.Data;
+﻿using System.Diagnostics;
+
+namespace Un.Data;
 
 public class Obj : IComparable<Obj>
 {
@@ -205,20 +207,6 @@ public class Obj : IComparable<Obj>
         throw new TypeError("Types that cannot perform bitwise Not operations");
     }
 
-    public virtual Obj And(Obj arg)
-    {
-        if (field.Get("__and__", out var value) && value is Fun fun)
-            return fun.Call(new Iter([this, arg]));
-        throw new TypeError("Types that cannot perform the boolean AND operation.");
-    }
-
-    public virtual Obj Or(Obj arg)
-    {
-        if (field.Get("__or__", out var value) && value is Fun fun)
-            return fun.Call(new Iter([this, arg]));
-        throw new TypeError("Types that cannot perform the boolean OR operation.");
-    }
-
     public virtual Obj Xor(Obj arg)
     {
         if (field.Get("__xor__", out var value) && value is Fun fun)
@@ -393,6 +381,7 @@ public class Obj : IComparable<Obj>
         if (Process.TryGetPublicProperty(str, out var property)) return property;
         if (Str.IsDoubleStr(str)) return new Str(str.Trim('\"'));
         if (Str.IsSingleStr(str)) return new Str(str.Trim('\''));
+        if (Str.IsFStr(str)) return Str.FStr(str.Trim('`'), field);
         if (Iter.IsIter(str)) return new Iter(str, field);
         if (Dict.IsDict(str)) return new Dict(str, field);
         if (Collections.Set.IsSet(str)) return new Set(str, field);

@@ -38,15 +38,15 @@ public class Calculator
         Stack<Obj> calculateStack = [];
         List<Token> postfix = Postfix(expression);
 
-        for (int i = 0; i < postfix.Count; i++)
+         for (int i = 0; i < postfix.Count; i++)
         {
             Token token = postfix[i];
 
-            if (Process.TryGetStaticClass(token, out var staticCla) && token.type == Token.Type.Variable)
+            if (token.type == Token.Type.Variable && Process.TryGetStaticClass(token, out var staticCla))
             {
                 calculateStack.Push(staticCla);
             }
-            else if (Process.TryGetClass(token, out var cla))
+            else if ((token.type == Token.Type.Variable || token.type == Token.Type.Function) && Process.TryGetClass(token, out var cla))
             {
                 if (token.type == Token.Type.Function && calculateStack.TryPop(out var obj) && obj is Iter args)
                     calculateStack.Push(cla.Clone().Init(args));
@@ -57,15 +57,15 @@ public class Calculator
             {
                 if (field.Get(token.value, out var local))
                 {
-                    if (local is Fun fun && calculateStack.TryPop(out var a) && a is Iter args)
-                        local = fun.Clone().Call(args);
+                    if (local is Fun fun && calculateStack.TryPeek(out var a) && a is Iter args)
+                        local = fun.Clone().Call(calculateStack.Pop().CIter());
 
                     calculateStack.Push(local);
                 }
                 else if (Process.TryGetPublicProperty(token, out var global))
                 {
-                    if (global is Fun fun && calculateStack.TryPop(out var a) && a is Iter args)
-                        global = fun.Clone().Call(args);
+                    if (global is Fun fun && calculateStack.TryPeek(out var a) && a is Iter args)
+                        global = fun.Clone().Call(calculateStack.Pop().CIter());
 
                     calculateStack.Push(global);
                 }
@@ -116,13 +116,17 @@ public class Calculator
                     else
                         calculateStack.Push(new Bool(b.ClassName == a.ClassName));
                 }
-                else if (token.type == Token.Type.Plus && calculateStack.Count == 0)
+                else if (token.type == Token.Type.And)
                 {
-                    calculateStack.Push(a.CInt().Mul(new Int(1)));
+                    b = calculateStack.Pop();
+
+                    calculateStack.Push(b.CBool().value ? a.CBool() : new Bool(false));
                 }
-                else if (token.type == Token.Type.Minus && calculateStack.Count == 0)
+                else if (token.type == Token.Type.Or)
                 {
-                    calculateStack.Push(a.CInt().Mul(new Int(-1)));
+                    b = calculateStack.Pop();
+
+                    calculateStack.Push(!b.CBool().value ? a.CBool() : new Bool(true));
                 }
                 else
                 {
@@ -137,8 +141,6 @@ public class Calculator
                         Token.Type.Slash => b.Div(a),
                         Token.Type.DoubleSlash => b.IDiv(a),
                         Token.Type.Percent => b.Mod(a),
-                        Token.Type.And => b.And(a),
-                        Token.Type.Or => b.Or(a),
                         Token.Type.Xor => b.Xor(a),
                         Token.Type.BAnd => b.BAnd(a),
                         Token.Type.BOr => b.BOr(a),

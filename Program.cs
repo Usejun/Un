@@ -25,4 +25,4 @@ string[] euler = [
 //Process.Test(euler);
 //Process.Test(testcase);
 //Process.Run(euler[0]);
-//Process.Run(testcase[0]);
+Process.Run(testcase[0]);

@@ -185,6 +185,30 @@ public static class Lexer
 
                 i = j;
             }
+            else if (tokens[i].type == Token.Type.Plus)
+            {
+                if (analyzedTokens.Count == 0 || (analyzedTokens.Count != 0 && Token.IsBasicOperator(analyzedTokens[^1])))
+                {
+                    if (tokens[i + 1].type == Token.Type.Integer)
+                        analyzedTokens.Add(new Token("+" + tokens[i + 1].value, Token.Type.Integer));
+                    else if (tokens[i + 1].type == Token.Type.Float)
+                        analyzedTokens.Add(new Token("+" + tokens[i + 1].value, Token.Type.Float));
+                    i++;
+                }
+                else analyzedTokens.Add(tokens[i]);
+            }
+            else if (tokens[i].type == Token.Type.Minus)
+            {
+                if (analyzedTokens.Count == 0 || (analyzedTokens.Count != 0 && Token.IsBasicOperator(analyzedTokens[^1])))
+                {
+                    if (tokens[i + 1].type == Token.Type.Integer)
+                        analyzedTokens.Add(new Token("-" + tokens[i + 1].value, Token.Type.Integer));
+                    else if (tokens[i + 1].type == Token.Type.Float)
+                        analyzedTokens.Add(new Token("-" + tokens[i + 1].value, Token.Type.Float));
+                    i++;
+                }
+                else analyzedTokens.Add(tokens[i]);
+            }
             else analyzedTokens.Add(tokens[i]);
         }
 

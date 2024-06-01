@@ -51,4 +51,6 @@ public class HttpsResponse : Ref<HttpResponseMessage>
             return new Str($"{self.value.ReasonPhrase}");
         }));
     }
+
+    public override Str CStr() => new(value.Content.ReadAsStringAsync().Result);
 }

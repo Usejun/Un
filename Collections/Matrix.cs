@@ -65,7 +65,7 @@ public class Matrix : Val<Iter>
                 foreach (var item in iter[i].CIter())
                     value[i].Add(item);
 
-                for (int j = 0; j < column - ((int)value[i].Len().value); j++)
+                for (int j = 0; j < column - ((int)iter[i].Len().value); j++)
                     value[i].Add(new Int());
             }
         }
