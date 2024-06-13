@@ -10,17 +10,17 @@
 
         public Field(Field other)
         {
-            this.Copy(other);
+            Copy(other);
         }
 
         private readonly Dictionary<string, Obj> field = [];
 
-        public bool Get(string name, out Obj value) => field.TryGetValue(name, out value!);
+        public bool Get(string name, out Obj Value) => field.TryGetValue(name, out Value!);
 
-        public void Set(string name, Obj value)
+        public void Set(string name, Obj Value)
         {
-            if (!field.TryAdd(name, value))
-                field[name] = value;
+            if (!field.TryAdd(name, Value))
+                field[name] = Value;
         }
 
         public void Remove(string name)
@@ -34,8 +34,8 @@
 
         public void Copy(Field other)
         {
-            foreach ((var key, var value) in other.field)
-                Set(key, value);
+            foreach ((var key, var Value) in other.field)
+                Set(key, Value);
         }
 
         public void Clear() => field.Clear();   

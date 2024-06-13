@@ -6,49 +6,49 @@ public class Rand : Obj, IPackage, IStatic
 
     public string Name => "rand";
     
-    public Obj Seed(Iter args)
+    public Obj Seed(List args)
     {
         if (args[1] is Int seed)
         {
-            rand = new((int)(seed.value % int.MaxValue));
+            rand = new((int)(seed.Value % int.MaxValue));
             return None;
         }
 
         throw new ValueError("invalid argument");
     }
 
-    public Int Int(Iter args) => new(rand.NextInt64());
+    public Int Int(List args) => new(rand.NextInt64());
 
-    public Float Random(Iter args) => new(rand.NextDouble());
+    public Float Random(List args) => new(rand.NextDouble());
 
-    public Obj Range(Iter args)
+    public Obj Range(List args)
     {
         if (args[1] is Int iS && args[2] is Int iE && iS.CompareTo(iE) < 0)
-            return new Int(rand.NextInt64(iS.value, iE.value));
+            return new Int(rand.NextInt64(iS.Value, iE.Value));
         if (args[1] is Float fS && args[2] is Float fE && fS.CompareTo(fE) < 0)
-            return new Float(double.Min(fE.value * rand.NextDouble() + fS.value, fE.value));
+            return new Float(double.Min(fE.Value * rand.NextDouble() + fS.Value, fE.Value));
         throw new ValueError("invalid argument");
     }
 
-    public Iter Choice(Iter args)
+    public List Choice(List args)
     {
-        if (args[1] is Iter iter)
+        if (args[1] is List list)
         {
             if (args.Count > 2 && args[2] is Int count)
-                return new(rand.GetItems(iter.value[..iter.Count], (int)count.value));
-            else return new(rand.GetItems(iter.value[..iter.Count], 1));
+                return new(rand.GetItems(list.Value[..list.Count], (int)count.Value));
+            else return new(rand.GetItems(list.Value[..list.Count], 1));
         }
         throw new ValueError("invalid argument");
     }
 
-    public Obj Shuffle(Iter args)
+    public Obj Shuffle(List args)
     {
-        if (args[1] is Iter iter)
+        if (args[1] is List list)
         {
-            for (int i = 0; i < iter.Count; i++)
+            for (int i = 0; i < list.Count; i++)
             {
-                int index = rand.Next(0, iter.Count - 1);
-                (iter[index], iter[i]) = (iter[i], iter[index]);
+                int index = rand.Next(0, list.Count - 1);
+                (list[index], list[i]) = (list[i], list[index]);
             }
             return None;
         }

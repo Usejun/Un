@@ -4,14 +4,14 @@ public class Bool : Val<bool>
 {
     public Bool() : base("bool", false) { }
 
-    public Bool(bool value) : base("bool", value) { }
+    public Bool(bool Value) : base("bool", Value) { }
 
-    public override Obj Init(Iter args)
+    public override Obj Init(List args)
     {
         if (args.Count == 0)
-            value = false;
+            Value = false;
         else if (args.Count == 1)
-            value = args[0].CBool().value;
+            Value = args[0].CBool().Value;
         else
             throw new ClassError("initialize error");
 
@@ -24,15 +24,15 @@ public class Bool : Val<bool>
         return base.Add(arg);
     }
 
-    public override Obj Xor(Obj arg) => new Bool(value ^ arg.CBool().value);
+    public override Obj Xor(Obj arg) => new Bool(Value ^ arg.CBool().Value);
 
-    public override Str CStr() => new(value ? "true" : "false");
+    public override Str CStr() => new(Value ? "true" : "false");
 
-    public override Bool CBool() => new(value);
+    public override Bool CBool() => new(Value);
 
-    public override Obj Clone() => new Bool(value);
+    public override Obj Clone() => new Bool(Value);
 
-    public override Obj Copy() => new Bool(value);
+    public override Obj Copy() => new Bool(Value);
 
     public static bool IsBool(string str) => str == "true" || str == "false";
 }

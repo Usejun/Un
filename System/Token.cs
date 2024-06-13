@@ -91,7 +91,7 @@ public class Token
         LBrace, RBrace,
         LBrack, RBrack,
 
-        Dot, Comma,Colon,
+        Dot, Comma, Colon,
 
         Func, Class, Enum,
         True, False,
@@ -103,37 +103,39 @@ public class Token
 
         Variable,
 
-        Integer, Float, String, Boolean, Iterator, Dictionary, Lambda,
+        Integer, Float, String, Boolean, Listator, Dictionary, Lambda,
+
+        Async, Await
     }
 
     public Type type;
-    public string value;
+    public string Value;
 
     public Token(char c)
     {
-        value = $"{c}";
-        type = GetType(value);
+        Value = $"{c}";
+        type = GetType(Value);
     }
 
     public Token(string s)
     {
-        value = s;
+        Value = s;
         type = GetType(s);
     }
 
     public Token(Obj obj)
     {
-        value = obj.CStr().value;
+        Value = obj.CStr().Value;
         type = GetType(obj);
     }
 
     public Token(string s, Type type)
     {
-        value = s;
+        Value = s;
         this.type = type;
     }
 
-    public override string ToString() => $"{type} : {value}";
+    public override string ToString() => $"{type} : {Value}";
 
     public static Type GetType(char chr) => GetType($"{chr}");
 
@@ -149,7 +151,7 @@ public class Token
         if (obj is Float) return Type.Float;
         if (obj is Str) return Type.String;
         if (obj is Bool) return Type.Boolean;
-        if (obj is Iter) return Type.Iterator;
+        if (obj is List) return Type.Listator;
         return Type.None;
     }
 
@@ -240,9 +242,9 @@ public class Token
     public static bool IsSymbol(char chr) => IsSymbol(GetType(chr));
 
 
-    public static bool IsLiteral(Token token) => IsLiteral(token.type);
+    public static bool IsLlistal(Token token) => IsLlistal(token.type);
 
-    public static bool IsLiteral(Type type) => type switch
+    public static bool IsLlistal(Type type) => type switch
     {
         >= Type.Integer and <= Type.Lambda => true,
         _ => false
@@ -254,6 +256,4 @@ public class Token
         '\'' or '"' or '`' => true,
         _ => false 
     };
-
-
 }

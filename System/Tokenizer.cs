@@ -41,10 +41,24 @@ public static class Tokenizer
                 if (code[index] == '\\')
                 {
                     index++;
-                    str += $"\\{code[index]}";
+                    str += code[index] switch
+                    {
+                        'n' => '\n',
+                        'b' => '\b',
+                        '"' => '\"',
+                        'r' => '\r',
+                        't' => '\t',
+                        'a' => '\a',
+                        'f' => '\f',
+                        'v' => '\v',
+                        '0' => '\0',
+                        '\\' => '\\',
+                        (char)39 => '\'',
+                        _ => $"\\{code[index]}",
+                    };
                     index++;
                 }
-                else str += code[index++];
+                str += code[index++];
 
                 if (str[^1] == str[0]) break;
             }
@@ -116,7 +130,7 @@ public static class Tokenizer
             while (index < code.Length && (char.IsLetterOrDigit(code[index]) || code[index] == '_' ))
                 str += code[index++];
 
-            if (Process.TryGetPublicProperty(str, out var property) && property is Fun)
+            if (Process.TryGetGlobalProperty(str, out var property) && property is Fun)
                 return new(str, Token.Type.Function);
             if (Token.GetType(str) != Token.Type.None)
                 return new(str);

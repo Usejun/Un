@@ -8,7 +8,7 @@
 		self.arr = [0] * size
 
 	fn enqueue(self, item)
-		if (type(item) == "iter")
+		if (item is list)
 			for i in item
 				self.enqueue(i)
 			self.count += len(item)
@@ -55,22 +55,9 @@
 		return self.count != 0
 
 	fn __str__(self)
-		text = "["
+		return `[{"".join(", ", list(self))}]`
 
-		i = self.front
-		j = self.back
-
-		for k in range(0, self.count)
-			text += self.arr[i]
-			i = (i + 1) % len(self.arr)
-			if (k != self.count - 1)
-				text += ", "
-		
-		text += "]"
-		
-		return text
-
-	fn __iter__(self)
+	fn __list__(self)
 		enum = []
 		i = self.front
 		j = self.back

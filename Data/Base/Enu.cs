@@ -8,7 +8,7 @@ public class Enu : Obj
 
     public Enu(string[] code)
     {
-        int value = 0;
+        int Value = 0;
         ClassName = code[0].Split()[1];
 
         for (int i = 1; i < code.Length; i++)
@@ -18,16 +18,16 @@ public class Enu : Obj
             {
                 if (string.IsNullOrWhiteSpace(var)) continue;
 
-                field.Set(var.Trim(), new EnuElm($"{ClassName}.{var.Trim()}", value));
+                field.Set(var.Trim(), new EnuElm($"{ClassName}.{var.Trim()}", Value));
                 number.Add(new($"{ClassName}.{var.Trim()}"));
             }
         }
     }
 
-    public override Obj Init(Iter args)
+    public override Obj Init(List args)
     {
-        if (args[0] is Int i) return new EnuElm($"{number[(int)i.value].value}", (int)i.value);
-        if (args[0] is Str s) return field[s.value];
+        if (args[0] is Int i) return new EnuElm($"{number[(int)i.Value].Value}", (int)i.Value);
+        if (args[0] is Str s) return field[s.Value];
 
         return base.Init(args);
     }

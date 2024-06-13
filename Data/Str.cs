@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Text;
 
 namespace Un.Data;
@@ -17,7 +16,7 @@ public class Str : Val<string>, IEnumerable<char>
         get
         {
             if (OutOfRange(index)) throw new IndexError("out of range");
-            return new Str($"{value[index]}");
+            return new Str($"{Value[index]}");
         }
     }
 
@@ -25,15 +24,25 @@ public class Str : Val<string>, IEnumerable<char>
     {
         get
         {
-            if (OutOfRange((int)i.value)) throw new IndexError("out of range");
-            return new Str($"{value[(int)i.value]}");
+            if (OutOfRange((int)i.Value)) throw new IndexError("out of range");
+            return new Str($"{Value[(int)i.Value]}");
         }
     }
 
-    public override Obj Init(Iter arg)
+    public override Obj Init(List arg)
     {
         if (arg.Count == 1)
-            value = arg[0].CStr().value;
+            Value = arg[0].CStr().Value;
+        else if (arg.Count == 2)
+        {
+            if (arg[1] is Int count)
+            {
+                RStr rStr = new();
+                for (long i = 0; i < count.Value; i++)
+                    rStr.Value.Append(arg[0].CStr().Value);
+                Value = rStr.CStr().Value;
+            }
+        }
         
         return this;
     }
@@ -45,28 +54,28 @@ public class Str : Val<string>, IEnumerable<char>
             if (args[0] is not Str self || args[1] is not Str sep)
                 throw new ValueError("invalid argument");
 
-            return new Iter(self.value.Split(sep.value));
+            return new List(self.Value.Split(sep.Value));
         }));
         field.Set("join", new NativeFun("join", 3, args =>
         {
             if (args[0] is not Str self || args[1] is not Str sep)
                 throw new ValueError("invalid argument");
 
-            return self.Add(new Str(string.Join(sep.value, args[2].CIter().Select(i => i.CStr().value))));
+            return self.Add(new Str(string.Join(sep.Value, args[2].CList().Select(i => i.CStr().Value))));
         }));
         field.Set("index_of", new NativeFun("index_of", -1, args =>
         {
             if (args[0] is not Str self || args[1] is not Str str)
                 throw new ValueError("invalid argument");
 
-            return new Int(self.value.IndexOf(str.value, args.Count == 2 && args[2] is Int index ? (int)index.value : 0));
+            return new Int(self.Value.IndexOf(str.Value, args.Count == 2 && args[2] is Int index ? (int)index.Value : 0));
         }));
         field.Set("contains", new NativeFun("contains", -1, args =>
         {
             if (args[0] is not Str self || args[1] is not Str str)
                 throw new ValueError("invalid argument");               
 
-            return new Bool(self.value.Contains(str.value));
+            return new Bool(self.Value.Contains(str.Value));
         }));
         field.Set("is_number", new NativeFun("is_number", 1, args =>
         {
@@ -75,8 +84,8 @@ public class Str : Val<string>, IEnumerable<char>
 
             bool isNumber = true;
 
-            for (int i = 0; i < self.value.Length; i++)
-                isNumber &= char.IsDigit(self.value[i]);
+            for (int i = 0; i < self.Value.Length; i++)
+                isNumber &= char.IsDigit(self.Value[i]);
 
             return new Bool(isNumber);
 
@@ -88,71 +97,83 @@ public class Str : Val<string>, IEnumerable<char>
 
             bool isAlphabet = true;
 
-            for (int i = 0; i < self.value.Length; i++)
-                isAlphabet &= char.IsLetter(self.value[i]);
+            for (int i = 0; i < self.Value.Length; i++)
+                isAlphabet &= char.IsLetter(self.Value[i]);
 
             return new Bool(isAlphabet);
         }));
+        field.Set("is_white_space", new NativeFun("is_whitespace", 1, args =>
+        {
+            if (args[0] is not Str self)
+                throw new ValueError("invalid argument");
+
+            bool isWhitespace = true;
+
+            for (int i = 0; i < self.Value.Length; i++)
+                isWhitespace &= char.IsWhiteSpace(self.Value[i]);
+
+            return new Bool(isWhitespace);
+        }));
     }
 
-    public override Obj Add(Obj obj) => new Str(value + obj.CStr().value);
+    public override Obj Add(Obj obj) => new Str(Value + obj.CStr().Value);
 
     public override Int CInt()
     {
-        if (long.TryParse(value, out var l))
+        if (long.TryParse(Value, out var l))
             return new(l);
         return base.CInt();
     }
 
     public override Float CFloat()
     {
-        if (decimal.TryParse(value, out var d))
+        if (decimal.TryParse(Value, out var d))
             return new((double)d);
         return base.CFloat();
     }
 
     public override Bool CBool()
     {
-        if (value == "true") return new(true);
-        if (value == "false") return new(false);
-        return new(string.IsNullOrWhiteSpace(value));
+        if (Value == "true") return new(true);
+        if (Value == "false") return new(false);
+        return new(string.IsNullOrWhiteSpace(Value));
     }
 
-    public override Iter CIter()
+    public override List CList()
     {
-        Iter iter = [];
+        List list = [];
 
-        foreach (char c in value)
-            iter.Append(new Str(c));
+        foreach (char c in Value)
+            list.Append(new Str(c));
 
-        return iter;
+        return list;
     }
 
-    public override Int Len() => new(value.Length);
+    public override Int Len() => new(Value.Length);
 
-    public override Obj GetItem(Iter args)
+    public override Obj GetItem(List args)
     {
-        if (args[0] is not Int i || OutOfRange((int)i.value)) throw new IndexError("out of range");
-        return new Str($"{value[(int)i.value]}");
+        if (args[0] is not Int i || OutOfRange((int)i.Value)) throw new IndexError("out of range");
+        return new Str($"{Value[(int)i.Value]}");
     }
 
-    public override Obj Clone() => new Str(value);
+    public override Obj Clone() => new Str(Value);
 
-    public override Obj Copy() => new Str(value);
+    public override Obj Copy() => new Str(Value);
 
 
-    bool OutOfRange(int index) => 0 > index || index >= value.Length;
+    bool OutOfRange(int index) => 0 > index || index >= Value.Length;
 
 
     public IEnumerator<char> GetEnumerator()
     {
-        foreach (var c in value)
+        foreach (var c in Value)
             yield return c;
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        foreach (var c in value)
+        foreach (var c in Value)
             yield return c;        
     }
 
@@ -175,7 +196,7 @@ public class Str : Val<string>, IEnumerable<char>
             {
                 isFormat = false;
                 index++;
-                result.Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize($"{buffer}"), field), field).CStr().value);
+                result.Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize($"{buffer}"), field), field).CStr().Value);
             }
             else if (isFormat)
             {

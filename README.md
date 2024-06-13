@@ -14,7 +14,7 @@ C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한
 	<li>float : 부호가 있는 64bit 부동 실수형
 	<li>str : 문자열
 	<li>bool : Boolean 	
-	<li>iter : 다양한 자료형이 반복적으로 있는 구조
+	<li>list : 다양한 자료형이 반복적으로 있는 구조
 	<li>dict : 사전, (키:값) 구조
 	<li>set : 집합
 </ul>
@@ -37,9 +37,9 @@ fn my_function(arg)
 	<li> writeln : 줄바꿈 있는 출력
 	<li> readln : 한 줄을 읽어 Str로 반환
 	<li> type : 인수로 받은 값의 자료형을 반환
-	<li> func : 구현된 모든 함수를 Iter로 반환
-	<li> len : Iter나 Str의 길이를 반환	
-	<li> range : [start, length] 형식의 인자를 받아 iter를 반환
+	<li> func : 구현된 모든 함수를 List로 반환
+	<li> len : List나 Str의 길이를 반환	
+	<li> range : [start, length] 형식의 인자를 받아 list를 반환
 	<li> hash : 인자로 받은 값의 hash 값 반환
 	<li> open : 파일을 스트림으로 열고 그 스트림을 반환
 	<li> sum : 인자로 받은 값들을 앞에서부터 더하기 연산 후 반환
@@ -73,13 +73,13 @@ else
 
 ## 반복문
 
-**for [Variable] in [Iterator]** 과 **while (Bool)** 의 형식이나 
+**for [Variable] in [Listator]** 과 **while (Bool)** 의 형식이나 
 **for [Initialization], [Condition], [Increment]** 를 사용한다.
 
 ### for
 
-in 키워드 후에는 **반드시 Iter 형식의 값**이 와야한다.
-Iter 내부를 순회를 끝내면 반복문이 끝난다.
+in 키워드 후에는 **반드시 List 형식의 값**이 와야한다.
+List 내부를 순회를 끝내면 반복문이 끝난다.
 
 ```
 for i in range(1, 100)
@@ -141,7 +141,7 @@ class point
 	<li> __int__ : int로의 형변환
 	<li> __float__ : float로의 형변환
 	<li> __bool__ : bool로의 형변환
-	<li> __iter__ : iter로의 형변환
+	<li> __list__ : list로의 형변환
 	<li> __getitem__ : get by index
 	<li> __setitem__ : set by index
 	<li> __and__ : AND 연산
@@ -163,7 +163,7 @@ class point
 
 ## using
 
-**using [name] = [value]** 의 꼴로 사용되며, value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.
+**using [name] = [Value]** 의 꼴로 사용되며, Value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.
 
 ## enum
 
@@ -177,7 +177,7 @@ enum rank
 
 ## slice
 
-**iterable[start:end]** 꼴로 사용되며, 인덱싱이 구현된 자료형이라면 슬라이스를 사용할 수 있다. 
+**listable[start:end]** 꼴로 사용되며, 인덱싱이 구현된 자료형이라면 슬라이스를 사용할 수 있다. 
 ```
 l = [1, 2, 3, 4, 5]
 write(l[0:3]) # [1, 2, 3]

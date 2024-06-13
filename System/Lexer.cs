@@ -23,7 +23,7 @@ public static class Lexer
 
                 if (analyzedTokens.Count > 0 &&
                    (analyzedTokens[^1].type == Token.Type.Variable ||
-                    analyzedTokens[^1].type == Token.Type.Iterator ||
+                    analyzedTokens[^1].type == Token.Type.Listator ||
                     analyzedTokens[^1].type == Token.Type.String ||
                     analyzedTokens[^1].type == Token.Type.Indexer ||
                     analyzedTokens[^1].type == Token.Type.Property))
@@ -41,21 +41,21 @@ public static class Lexer
 
                         if (start is not Int || end is not Int) throw new SyntaxError();
 
-                        analyzedTokens.Add(new Token($"{start.CStr().value}:{end.CStr().value}", Token.Type.Slicer));
+                        analyzedTokens.Add(new Token($"{start.CStr().Value}:{end.CStr().Value}", Token.Type.Slicer));
                     } 
                     else
                     {
                         Obj index = Calculator.Calculate(Lex(tokens[(i + 1)..j], field), field);
 
                         if (index is Str)
-                            analyzedTokens.Add(new Token($"\"{index.CStr().value}\"", Token.Type.Indexer));
+                            analyzedTokens.Add(new Token($"\"{index.CStr().Value}\"", Token.Type.Indexer));
                         else
-                            analyzedTokens.Add(new Token(index.CStr().value, Token.Type.Indexer));
+                            analyzedTokens.Add(new Token(index.CStr().Value, Token.Type.Indexer));
                     }
                 }
                 else
                 {
-                    string value = "[";
+                    string Value = "[";
                     depth = 1;
 
                     j = i + 1;
@@ -67,12 +67,12 @@ public static class Lexer
                         if (tokens[j].type == Token.Type.RBrack)
                             depth--;
                         if (depth <= 0) break;
-                        value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].value} " : tokens[j++].value;
+                        Value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].Value} " : tokens[j++].Value;
                     }
 
-                    value += "]";
+                    Value += "]";
 
-                    analyzedTokens.Add(new(value, Token.Type.Iterator));
+                    analyzedTokens.Add(new(Value, Token.Type.Listator));
                 }
 
                 i = j;
@@ -82,7 +82,7 @@ public static class Lexer
                 if (analyzedTokens.Count > 0 && analyzedTokens[^1].type == Token.Type.Class)
                     analyzedTokens[^1].type = Token.Type.Variable;
 
-                analyzedTokens.Add(new(tokens[i + 1].value, Token.Type.Property));
+                analyzedTokens.Add(new(tokens[i + 1].Value, Token.Type.Property));
                 i++;
                 if (tokens.Count > i + 1 && tokens[i + 1].type == Token.Type.LParen)
                     analyzedTokens[^1].type = Token.Type.Method;
@@ -95,7 +95,7 @@ public static class Lexer
 
                 while (analyzedTokens[^1].type == Token.Type.Variable)
                 {                       
-                    arg += analyzedTokens[^1].value;
+                    arg += analyzedTokens[^1].Value;
                     analyzedTokens.RemoveAt(analyzedTokens.Count - 1);
 
                     if (analyzedTokens.Count > 0 && analyzedTokens[^1].type == Token.Type.Comma)
@@ -114,7 +114,7 @@ public static class Lexer
                         depth++;
                     if (tokens[j].type == Token.Type.RParen)
                         depth--;
-                    code += tokens[j].value;
+                    code += tokens[j].Value;
 
                     if (depth <= 0 && tokens[j].type == Token.Type.RParen) break;
                     j++;
@@ -141,12 +141,12 @@ public static class Lexer
                     tokens.Add(new Token("{}", Token.Type.Dictionary));
                 else
                 {
-                    string value = "";
+                    string Value = "";
 
                     for (int k = i; k <= j; k++)
-                        value += tokens[k].value;
+                        Value += tokens[k].Value;
 
-                    tokens.Add(new Token(value, Token.Type.Dictionary));
+                    tokens.Add(new Token(Value, Token.Type.Dictionary));
                 }
 
                 i = j;
@@ -166,7 +166,7 @@ public static class Lexer
                 if (analyzedTokens[^1].type == Token.Type.Class || analyzedTokens[^1].type == Token.Type.Variable)
                     analyzedTokens[^1].type = Token.Type.Function;
 
-                string value = "[";
+                string Value = "[";
                 int j = i + 1, depth = 1;
 
                 while (j < tokens.Count)
@@ -176,12 +176,12 @@ public static class Lexer
                     if (tokens[j].type == Token.Type.RParen)
                         depth--;
                     if (depth <= 0) break;
-                    value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].value} " : tokens[j++].value;
+                    Value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].Value} " : tokens[j++].Value;
                 }
 
-                value += "]";
+                Value += "]";
 
-                analyzedTokens.Add(new(value, Token.Type.Iterator));
+                analyzedTokens.Add(new(Value, Token.Type.Listator));
 
                 i = j;
             }
@@ -190,9 +190,9 @@ public static class Lexer
                 if (analyzedTokens.Count == 0 || (analyzedTokens.Count != 0 && Token.IsBasicOperator(analyzedTokens[^1])))
                 {
                     if (tokens[i + 1].type == Token.Type.Integer)
-                        analyzedTokens.Add(new Token("+" + tokens[i + 1].value, Token.Type.Integer));
+                        analyzedTokens.Add(new Token("+" + tokens[i + 1].Value, Token.Type.Integer));
                     else if (tokens[i + 1].type == Token.Type.Float)
-                        analyzedTokens.Add(new Token("+" + tokens[i + 1].value, Token.Type.Float));
+                        analyzedTokens.Add(new Token("+" + tokens[i + 1].Value, Token.Type.Float));
                     i++;
                 }
                 else analyzedTokens.Add(tokens[i]);
@@ -202,9 +202,9 @@ public static class Lexer
                 if (analyzedTokens.Count == 0 || (analyzedTokens.Count != 0 && Token.IsBasicOperator(analyzedTokens[^1])))
                 {
                     if (tokens[i + 1].type == Token.Type.Integer)
-                        analyzedTokens.Add(new Token("-" + tokens[i + 1].value, Token.Type.Integer));
+                        analyzedTokens.Add(new Token("-" + tokens[i + 1].Value, Token.Type.Integer));
                     else if (tokens[i + 1].type == Token.Type.Float)
-                        analyzedTokens.Add(new Token("-" + tokens[i + 1].value, Token.Type.Float));
+                        analyzedTokens.Add(new Token("-" + tokens[i + 1].Value, Token.Type.Float));
                     i++;
                 }
                 else analyzedTokens.Add(tokens[i]);

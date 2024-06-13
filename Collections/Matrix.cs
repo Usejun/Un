@@ -1,6 +1,6 @@
 ﻿namespace Un.Collections;
 
-public class Matrix : Val<Iter>
+public class Matrix : Val<List>
 {
     public int row = 0, column = 0;
 
@@ -13,10 +13,10 @@ public class Matrix : Val<Iter>
 
         for (int i = 0; i < row; i++)
         {
-            Iter iter = [];
+            List list = [];
             for (int j = 0; j < column; j++)
-                iter.Append(new Int(0));
-            value.Append(iter);
+                list.Append(new Int(0));
+            Value.Append(list);
         }
     }
 
@@ -27,91 +27,91 @@ public class Matrix : Val<Iter>
 
         for (int i = 0; i < row; i++)
         {
-            value.Append(new Iter());
+            Value.Append(new List());
             for (int j = 0; j < column; j++)
-                value[i].Add(matrix[i][j].Clone());
+                Value[i].Add(matrix[i][j].Clone());
         }
     }
 
-    public Iter this[int index]
+    public List this[int index]
     {
         get
         {
             if (OutOfRange(index)) throw new IndexError("out of range");
-            return (Iter)value[index];
+            return (List)Value[index];
         }
         set
         {
             if (OutOfRange(index)) throw new IndexError("out of range");
-            this.value[index] = value;
+            this.Value[index] = Value;
         }
     }
 
-    public override Obj Init(Iter args)
+    public override Obj Init(List args)
     {
-        if (args.Count == 1 && args[0] is Iter iter)
+        if (args.Count == 1 && args[0] is List list)
         {
-            row = (int)iter.Len().value;
+            row = (int)list.Len().Value;
             column = 0;
-            value = [];
+            Value = [];
 
-            foreach (var item in iter)
-                column = Math.Max(column, (int)item.Len().value);
+            foreach (var item in list)
+                column = Math.Max(column, (int)item.Len().Value);
 
             for (int i = 0; i < row; i++)
             {
-                value.Append(new Iter());
+                Value.Append(new List());
 
-                foreach (var item in iter[i].CIter())
-                    value[i].Add(item);
+                foreach (var item in list[i].CList())
+                    Value[i].Add(item);
 
-                for (int j = 0; j < column - ((int)iter[i].Len().value); j++)
-                    value[i].Add(new Int());
+                for (int j = 0; j < column - ((int)list[i].Len().Value); j++)
+                    Value[i].Add(new Int());
             }
         }
         else if (args.Count == 1 && args[0] is Int x1)
         {
-            row = column = (int)x1.value;
-            value = [];           
+            row = column = (int)x1.Value;
+            Value = [];           
 
             for (int i = 0; i < row; i++)
             {
-                Iter buf = [];
+                List buf = [];
                 for (int j = 0; j < column; j++)
                     buf.Append(new Int());
-                value.Append(buf);
+                Value.Append(buf);
             }
         }     
-        else if (args.Count == 2 && args[0] is Int x2 && args[1] is Bool b && b.value)
+        else if (args.Count == 2 && args[0] is Int x2 && args[1] is Bool b && b.Value)
         {
-            row = column = (int)x2.value;
-            value = [];
+            row = column = (int)x2.Value;
+            Value = [];
 
             for (int i = 0; i < row; i++)
             {
-                Iter buf = [];
+                List buf = [];
                 for (int j = 0; j < column; j++)
                 {
                     if (i == j) buf.Append(new Int(1));
                     else buf.Append(new Int());
                 }
-                value.Append(buf);
+                Value.Append(buf);
             }
         }
         else if (args.Count == 2 && args[0] is Int x3 && args[1] is Int y)
         {
-            row = (int)x3.value;
-            column = (int)y.value;
-            value = [];
+            row = (int)x3.Value;
+            column = (int)y.Value;
+            Value = [];
 
-            column = (int)args[1].CInt().value;
+            column = (int)args[1].CInt().Value;
 
             for (int i = 0; i < row; i++)
             {
-                Iter buf = [];
+                List buf = [];
                 for (int j = 0; j < column; j++)
                     buf.Append(new Int());
-                value.Append(buf);
+                Value.Append(buf);
             }        
         }
         else throw new ClassError("initialize error");
@@ -176,41 +176,41 @@ public class Matrix : Val<Iter>
         return base.Mul(arg);
     }
 
-    public override Obj GetItem(Iter args)
+    public override Obj GetItem(List args)
     {
         if (args[0] is not Int i) 
             throw new IndexError("out of range");
 
-        int index = (int)i.value < 0 ? row + (int)i.value : (int)i.value;
+        int index = (int)i.Value < 0 ? row + (int)i.Value : (int)i.Value;
 
         if (OutOfRange(index)) 
             throw new IndexError("out of range");
 
-        return value[index];
+        return Value[index];
     }
 
-    public override Obj SetItem(Iter args)
+    public override Obj SetItem(List args)
     {
         if (args[0] is not Int i) 
             throw new IndexError("out of range");
 
-        int index = (int)i.value < 0 ? row + (int)i.value : (int)i.value;
+        int index = (int)i.Value < 0 ? row + (int)i.Value : (int)i.Value;
 
         if (OutOfRange(index)) 
             throw new IndexError("out of range");
 
-        value[(int)i.value] = args[1];
+        Value[(int)i.Value] = args[1];
 
-        return value[(int)i.value];
+        return Value[(int)i.Value];
     }
 
     public override Str CStr()
     {
         Obj str = new Str();
 
-        foreach (var iter in value)
+        foreach (var list in Value)
         {
-            str = str.Add(iter.CStr());
+            str = str.Add(list.CStr());
             str = str.Add(new("\n"));
         }
         

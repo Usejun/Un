@@ -2,16 +2,48 @@
 
 namespace Un.Collections;
 
-public class Iter : Ref<Obj[]>, IEnumerable<Obj>
+public class List : Ref<Obj[]>, IEnumerable<Obj>
 {
-    public static Iter Empty => [];
+    public struct Enumerator : IEnumerator<Obj>
+    {
+        private readonly List list;
+        private int index;
 
-    public bool IsFull => Count + 1 >= value.Length;
+        public readonly Obj Current => list[index];
+
+        readonly object IEnumerator.Current => list[index];
+
+        internal Enumerator(List list)
+        {
+            this.list = list;
+            index = -1;
+        }
+
+        public bool MoveNext()
+        {
+            index++;
+            return index < list.Count;
+        }
+
+        public void Reset()
+        {
+            index = -1;
+        }
+
+        public void Dispose()
+        {
+
+        }
+    }
+
+    public static List Empty => [];
+
+    public bool IsFull => Count + 1 >= Value.Length;
     public int Count { get; protected set; }
 
-    public Iter() : base("iter", []) { }
+    public List() : base("list", []) { }
 
-    public Iter(string str, Field field) : base("iter", [])
+    public List(string str, Field field) : base("list", [])
     {
         int index = 0, depth = 0;
         bool isStr = false;
@@ -20,14 +52,14 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         while (str.Length - 2 > index)
         {
             index++;
-            if (str[index] == '\"') isStr = !isStr;
+            if (str[index] == '\"' || str[index] == '\'' || str[index] == '`') isStr = !isStr;
             if (str[index] == '[' || str[index] == '(') depth++;
             if (str[index] == ']' || str[index] == ')') depth--;
 
             if (depth == 0 && !isStr && str[index] == ',')
             {
-                if (!string.IsNullOrWhiteSpace(buffer) && IsIter(buffer)) 
-                    Append(new Iter(buffer, field));
+                if (!string.IsNullOrWhiteSpace(buffer) && IsList(buffer)) 
+                    Append(new List(buffer, field));
                 else Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), field), field));
                 buffer = "";
             }
@@ -39,7 +71,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), field), field));
     }
 
-    public Iter(IEnumerable enumerable) : base("iter", [])
+    public List(IEnumerable enumerable) : base("list", [])
     {
         foreach (var i in enumerable)
             Append(i switch
@@ -53,9 +85,9 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             });
     }
 
-    public Iter(Obj[] value) : base("iter", value)
+    public List(Obj[] Value) : base("list", Value)
     {
-        Count = value.Length;
+        Count = Value.Length;
     }
 
     public Obj this[int index]
@@ -63,12 +95,12 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         get
         {
             if (OutOfRange(index)) throw new IndexError("out of range");
-            return value[index];
+            return Value[index];
         }
         set
         {
             if (OutOfRange(index)) throw new IndexError("out of range");
-            this.value[index] = value;
+            this.Value[index] = value;
         }
     }
 
@@ -76,13 +108,13 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
     {
         get
         {
-            if (OutOfRange((int)i.value)) throw new IndexError("out of range");
-            return value[(int)i.value];
+            if (OutOfRange((int)i.Value)) throw new IndexError("out of range");
+            return Value[(int)i.Value];
         }
         set
         {
-            if (OutOfRange((int)i.value)) throw new IndexError("out of range");
-            this.value[(int)i.value] = value;
+            if (OutOfRange((int)i.Value)) throw new IndexError("out of range");
+            this.Value[(int)i.Value] = value;
         }
     }
 
@@ -90,50 +122,50 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
     {
         field.Set("add", new NativeFun("add", -1, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)
-                self.Append(args.value[i]);                
+                self.Append(args.Value[i]);                
 
             return None;
         }));
         field.Set("insert", new NativeFun("insert", 3, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
             if (args[2] is not Int i)
                 throw new ValueError("invalid argument");
 
-            self.Insert(args[1], (int)i.value);
+            self.Insert(args[1], (int)i.Value);
 
             return None;
         }));
         field.Set("extend", new NativeFun("extend", -1, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)
-                foreach (var item in args[i].CIter())
+                foreach (var item in args[i].CList())
                     self.Append(item);
 
             return None;
         }));
         field.Set("extend_insert", new NativeFun("extend_insert", 3, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
             if (args[2] is not Int i)
                 throw new ValueError("invalid argument");
 
-            self.ExtendInsert(args[1], (int)i.value);
+            self.ExtendInsert(args[1], (int)i.Value);
 
             return None; 
         }));
         field.Set("remove", new NativeFun("remove", 2, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             if (args[1] is Obj obj) return self.Remove(obj);
@@ -141,7 +173,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         }));
         field.Set("remove_at", new NativeFun("remove_at", 2, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             if (args[1] is Int i) return self.RemoveAt(i);
@@ -149,7 +181,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         }));
         field.Set("index_of", new NativeFun("index_of", 2, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             if (args[1] is Obj obj) return self.IndexOf(obj);
@@ -157,7 +189,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         }));
         field.Set("contains", new NativeFun("contains", 2, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             if (args[1] is Obj obj) return self.Contains(obj);
@@ -165,14 +197,14 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         }));
         field.Set("clone", new NativeFun("clone", 1, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             return self.Clone();
         }));
         field.Set("sort", new NativeFun("sort", 1, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             self.Sort();
@@ -180,7 +212,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         }));
         field.Set("reverse", new NativeFun("reverse", 1, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             self.Reverse();
@@ -188,7 +220,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         }));
         field.Set("order", new NativeFun("order", 2, args =>
         {
-            if (args[0] is not Iter self || args[1] is not Fun f)
+            if (args[0] is not List self || args[1] is not Fun f)
                 throw new ValueError("invalid argument");
 
             self.Order(f);
@@ -196,45 +228,45 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         }));
         field.Set("binary_search", new NativeFun("binary_search", 2, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             return self.BinarySearch(args[1]);
         }));
         field.Set("lower_bound", new NativeFun("lower_bound", 2, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             return self.LowerBound(args[1]);
         }));
         field.Set("upper_bound", new NativeFun("upper_bound", 2, args =>
         {
-            if (args[0] is not Iter self)
+            if (args[0] is not List self)
                 throw new ValueError("invalid argument");
 
             return self.UpperBound(args[1]);
         }));
     }
 
-    public override Obj Init(Iter args)
+    public override Obj Init(List args)
     {
         if (args.Count == 0)
         {
-            value = [];
+            Value = [];
         }
-        else if (args[0] is Fun fun && args[1] is Iter iter)
+        else if (args[0] is Fun fun && args[1] is List list)
         {
-            value = [];
+            Value = [];
 
-            for (int i = 0; i < iter.Count; i++)
-                Append(fun.Call([iter[i]]));                                
+            for (int i = 0; i < list.Count; i++)
+                Append(fun.Call([list[i]]));                                
         }
         else
         {
-            var cIter = args[0].CIter();
-            value = cIter.value;
-            Count = cIter.Count;
+            var cList = args[0].CList();
+            Value = cList.Value;
+            Count = cList.Count;
         }
 
         return this;
@@ -242,7 +274,7 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Obj Add(Obj arg)
     {
-        if (arg is Iter l) Extend(l);
+        if (arg is List l) Extend(l);
         else Append(arg);
 
         return this;
@@ -250,10 +282,10 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Obj Sub(Obj arg)
     {
-        if (arg is Iter args)
+        if (arg is List args)
         {
-            foreach (var value in args)
-                Remove(value);
+            foreach (var Value in args)
+                Remove(Value);
         }
         else Remove(arg);
 
@@ -265,13 +297,13 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
         if (arg is Int pow)
         {
             int len = Count;
-            Obj[] objs = new Obj[len * pow.value];
+            Obj[] objs = new Obj[len * pow.Value];
 
-            for (int i = 0; i < pow.value; i++)
+            for (int i = 0; i < pow.Value; i++)
                 for (int j = 0; j < len; j++)
-                    objs[len * i + j] = value[j].Clone();
+                    objs[len * i + j] = Value[j].Clone();
 
-            return new Iter(objs);
+            return new List(objs);
         }
 
         return base.Mul(arg);
@@ -281,47 +313,47 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Bool LessThen(Obj arg)
     {
-        if (arg is Iter i) return new(Count.CompareTo(i.Count) < 0);
+        if (arg is List i) return new(Count.CompareTo(i.Count) < 0);
         return base.LessThen(arg);
     }
 
     public override Bool Equals(Obj arg)
     {
-        if (arg is Iter i) return new(Count.CompareTo(i.Count) == 0);
+        if (arg is List i) return new(Count.CompareTo(i.Count) == 0);
         return base.Equals(arg);
     }
 
-    public override Iter CIter() => this;
+    public override List CList() => this;
 
-    public override Str CStr() => new($"[{string.Join(", ", value.Take(Count).Select(o => o.CStr().value))}]");
+    public override Str CStr() => new($"[{string.Join(", ", Value.Take(Count).Select(o => o.CStr().Value))}]");
 
-    public override Obj GetItem(Iter args)
+    public override Obj GetItem(List args)
     {
         if (args[0] is not Int i) throw new IndexError("out of range");
 
-        int index = (int)i.value < 0 ? Count + (int)i.value : (int)i.value;
+        int index = (int)i.Value < 0 ? Count + (int)i.Value : (int)i.Value;
 
         if (OutOfRange(index)) throw new IndexError("out of range");
 
-        return value[index];
+        return Value[index];
     }
 
-    public override Obj SetItem(Iter args)
+    public override Obj SetItem(List args)
     {
-        if (args[0] is not Int i || OutOfRange((int)i.value)) throw new IndexError("out of range");
+        if (args[0] is not Int i || OutOfRange((int)i.Value)) throw new IndexError("out of range");
 
-        int index = (int)i.value < 0 ? Count + (int)i.value : (int)i.value;
+        int index = (int)i.Value < 0 ? Count + (int)i.Value : (int)i.Value;
 
         if (OutOfRange(index)) throw new IndexError("out of range");
 
-        value[index] = args[1];
+        Value[index] = args[1];
 
-        return value[index];
+        return Value[index];
     }
 
-    public override Obj Clone() => new Iter()
+    public override Obj Clone() => new List()
     {
-        value = value,
+        Value = Value,
         Count = Count
     };
 
@@ -329,60 +361,60 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
 
 
-    public Iter Extend(Obj obj)
+    public List Extend(Obj obj)
     {
         if (IsFull)
             Resize();
 
-        foreach (var item in obj.CIter())
+        foreach (var item in obj.CList())
             Append(item);
 
         return this;
     }
 
-    public Iter Extend(Obj[] objs)
+    public List Extend(Obj[] objs)
     {
         foreach (var obj in objs)
             Extend(obj);
         return this;
     }
 
-    public Iter ExtendInsert(Obj obj, int index)
+    public List ExtendInsert(Obj obj, int index)
     {
         if (IsFull)
             Resize();
 
-        foreach (var item in obj.CIter())
+        foreach (var item in obj.CList())
             Insert(item, index);
 
         return this;
     }
 
-    public Iter ExtendInsert(Obj[] objs, int index)
+    public List ExtendInsert(Obj[] objs, int index)
     {
         foreach (var obj in objs)
             ExtendInsert(obj, index);
         return this;
     }
 
-    public Iter Append(Obj obj)
+    public List Append(Obj obj)
     {
         if (IsFull)
             Resize();
 
-        value[Count++] = obj.Copy();
+        Value[Count++] = obj.Copy();
 
         return this;
     }
 
-    public Iter Append(Obj[] objs)
+    public List Append(Obj[] objs)
     {
         foreach (var obj in objs)
             Append(obj);
         return this;
     }
 
-    public Iter Insert(Obj obj, int index)
+    public List Insert(Obj obj, int index)
     {
         if (Count == 0)
         {
@@ -396,14 +428,14 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
             Resize();
 
         for (int i = Count - 1; i >= index; i--)
-            value[i + 1] = value[i];
-        value[index] = obj.Copy();
+            Value[i + 1] = Value[i];
+        Value[index] = obj.Copy();
         Count++;
 
         return this;
     }
 
-    public Iter Insert(Obj[] objs, int index)
+    public List Insert(Obj[] objs, int index)
     {
         foreach (var obj in objs)
             Insert(obj, index);
@@ -413,15 +445,15 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
     public Bool Remove(Obj obj)
     {
         for (int i = 0; i < Count; i++)
-            if (value[i].Equals(obj).value)
+            if (Value[i].Equals(obj).Value)
                 return RemoveAt(new(i));
         return new(false);
     }
 
     public Bool RemoveAt(Int index)
     {
-        for (int i = (int)index.value; i < Count - 1; i++)
-            value[i] = value[i + 1];
+        for (int i = (int)index.Value; i < Count - 1; i++)
+            Value[i] = Value[i + 1];
         Count--;
         return new(true);
     }
@@ -429,37 +461,37 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
     public Int IndexOf(Obj obj)
     {
         for (int i = 0; i < Count; i++)
-            if (value[i].Equals(obj).value)
+            if (Value[i].Equals(obj).Value)
                 return new(i);
         return new(-1);
     }
 
-    public Bool Contains(Obj obj) => new(IndexOf(obj).value != -1);
+    public Bool Contains(Obj obj) => new(IndexOf(obj).Value != -1);
 
     public void Sort()
     {
-        Array.Sort(value, 0, Count);
+        Array.Sort(Value, 0, Count);
     }
 
     public void Order(Fun fun)
     {
-        Array.Sort(value, 0, Count, Comparer<Obj>.Create((i, j) => fun.Call([i]).CompareTo(fun.Call([j]))));
+        Array.Sort(Value, 0, Count, Comparer<Obj>.Create((i, j) => fun.Call([i]).CompareTo(fun.Call([j]))));
     }
 
     public void Reverse()
     {
-        Array.Reverse(value, 0, Count);
+        Array.Reverse(Value, 0, Count);
     }
 
-    public Int BinarySearch(Obj obj) => new(Array.BinarySearch(value, 0, Count, obj));
+    public Int BinarySearch(Obj obj) => new(Array.BinarySearch(Value, 0, Count, obj));
 
     public Int LowerBound(Obj obj)
     {
-        int l = 0, r = Count, m = 0;
+        int l = 0, r = Count - 1, m = 0;
         while (r > l)
         {
             m = (l + r) / 2;
-            if (value[m].LessThen(obj).value) l = m + 1;
+            if (Value[m].LessThen(obj).Value) l = m + 1;
             else r = m;
         }
         return new(r);
@@ -467,11 +499,11 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
     public Int UpperBound(Obj obj)
     {
-        int l = 0, r = Count, m = 0;
+        int l = 0, r = Count - 1, m = 0;
         while (r > l)
         {
             m = (l + r) / 2;
-            if (value[m].LessOrEquals(obj).value) l = m + 1;
+            if (Value[m].LessOrEquals(obj).Value) l = m + 1;
             else r = m;
         }
         return new(r);
@@ -480,24 +512,20 @@ public class Iter : Ref<Obj[]>, IEnumerable<Obj>
 
     void Resize()
     {
-        Array.Resize(ref value, Count * 9 / 5 + 2);
+        var resized = new Obj[Count * 9 / 5 + 2];
+
+        for (int i = 0; i < Count; i++)
+            resized[i] = Value[i];
+
+        Value = resized;     
     }
 
     bool OutOfRange(int index) => index < 0 || index >= Count;
 
 
-    public IEnumerator<Obj> GetEnumerator()
-    {
-        for (int i = 0; i < Count; i++)
-            yield return value[i];
-    }
+    public IEnumerator<Obj> GetEnumerator() => new Enumerator(this);
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        for (int i = 0; i < Count; i++)
-            yield return value[i];
-    }
+    IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 
-
-    public static bool IsIter(string str) => str[0] == '[' && str[^1] == ']';
+    public static bool IsList(string str) => str[0] == '[' && str[^1] == ']';
 }

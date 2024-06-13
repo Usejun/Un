@@ -5,20 +5,27 @@ public class Stream : Ref<System.IO.Stream>
     public StreamReader r;
     public StreamWriter w;
 
-    public Stream() : base("stream", null) { }
+    public Stream() : base("stream", System.IO.Stream.Null) 
+    {
+        r = StreamReader.Null;
+        w = StreamWriter.Null;
+    }
 
     public Stream(System.IO.Stream stream) : base("stream", stream)
     {
-        if (value.CanWrite) w = new(value);
-        if (value.CanRead) r = new(value);
+        r = StreamReader.Null;
+        w = StreamWriter.Null;
+
+        if (Value.CanWrite) w = new(Value);
+        if (Value.CanRead) r = new(Value);
     }
 
     public override void Init()
-    {
+    {        
         field.Set("read_all", new NativeFun("read_all", 1, args =>
         {
             if (args[0] is not Stream self)
-                throw new ValueError("invalid argument");
+                throw new ValueError("invalid argument");            
 
             return new Str(self.r.ReadToEnd());
         }));
@@ -36,13 +43,14 @@ public class Stream : Ref<System.IO.Stream>
 
             return new Str(self.r.ReadLine()!);
         }));
+
         field.Set("write", new NativeFun("write", -1, args =>
         {
             if (args[0] is not Stream self)
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)
-                self.w.Write(args[i].CStr().value);
+                self.w.Write(args[i].CStr().Value);
             
             return None;
         }));
@@ -52,10 +60,29 @@ public class Stream : Ref<System.IO.Stream>
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)
-                self.w.WriteLine(args[i].CStr().value);
+                self.w.WriteLine(args[i].CStr().Value);
 
             return None;
         }));
+        field.Set("flush", new NativeFun("flush", 1, args =>
+        {
+            if (args[0] is not Stream self)
+                throw new ValueError("invalid argument");
+
+            self.w.Flush();
+
+            return None;
+        }));
+        //field.Set("flush", new AsyncFun("flush", 1, args =>
+        //{
+        //    if (args[0] is not Stream self)
+        //        throw new ValueError("invalid argument");
+
+        //    self.w.WriteLineAsync();
+
+        //    return None;
+        //}));
+
         field.Set("close", new NativeFun("close", 1, args =>
         {
             if (args[0] is not Stream self)
@@ -73,7 +100,7 @@ public class Stream : Ref<System.IO.Stream>
         }));
     }
 
-    public override Obj Clone() => new Stream() { value = value };
+    public override Obj Clone() => new Stream() { Value = Value };
 
     public override Obj Copy() => this;
 
@@ -92,6 +119,6 @@ public class Stream : Ref<System.IO.Stream>
     {
         w?.Close();
         r?.Close();
-        value.Close();
+        Value.Close();
     }
 }

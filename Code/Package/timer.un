@@ -12,3 +12,28 @@ class timer
 
 	fn time(self)
 		return self.end_time - self.start_time
+
+	fn __str__(self)
+		times = self.time()
+		text = ""
+		n = times.hour()
+
+		if n != 0
+			text += n + "h"
+
+		n = times.minute()
+
+		if n != 0
+			text += n + "m"
+
+		n = times.second()
+
+		if n != 0
+			text += n + "s"
+
+		n = times.milliseconds()
+
+		if n != 0
+			text += n + "ms"
+
+		return text

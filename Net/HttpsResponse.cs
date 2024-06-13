@@ -12,45 +12,45 @@ public class HttpsResponse : Ref<HttpResponseMessage>
         {
             if (args[0] is not HttpsResponse self)
                 throw new ValueError("invalid argument");
-            return new Str($"{self.value.StatusCode}");
+            return new Str($"{self.Value.StatusCode}");
         }));
         field.Set("content", new NativeFun("content", 1, args =>
         {
             if (args[0] is not HttpsResponse self)
                 throw new ValueError("invalid argument");
-            return new HttpsContent(self.value.Content);
+            return new HttpsContent(self.Value.Content);
         }));
         field.Set("headers", new NativeFun("headers", 1, args =>
         {
             if (args[0] is not HttpsResponse self)
                 throw new ValueError("invalid argument");
-            return new HttpsHeaders(self.value.Headers);
+            return new HttpsHeaders(self.Value.Headers);
         }));
         field.Set("version", new NativeFun("version", 1, args =>
         {
             if (args[0] is not HttpsResponse self)
                 throw new ValueError("invalid argument");
-            return new Version(self.value.Version);
+            return new Version(self.Value.Version);
         }));
         field.Set("is_success_status_code", new NativeFun("is_success_status_code", 1, args =>
         {
             if (args[0] is not HttpsResponse self)
                 throw new ValueError("invalid argument");
-            return new Bool(self.value.IsSuccessStatusCode);
+            return new Bool(self.Value.IsSuccessStatusCode);
         }));
         field.Set("trailing_headers", new NativeFun("trailing_headers", 1, args =>
         {
             if (args[0] is not HttpsResponse self)
                 throw new ValueError("invalid argument");
-            return new HttpsHeaders(self.value.TrailingHeaders);
+            return new HttpsHeaders(self.Value.TrailingHeaders);
         }));
         field.Set("reason_phrase", new NativeFun("status_code", 1, args =>
         {
             if (args[0] is not HttpsResponse self)
                 throw new ValueError("invalid argument");
-            return new Str($"{self.value.ReasonPhrase}");
+            return new Str($"{self.Value.ReasonPhrase}");
         }));
     }
 
-    public override Str CStr() => new(value.Content.ReadAsStringAsync().Result);
+    public override Str CStr() => new(Value.Content.ReadAsStringAsync().Result);
 }

@@ -17,7 +17,7 @@ public class Https : Obj, IPackage, IStatic
             if (args[1] is not Str url)
                 throw new ValueError("invalid argument");
 
-            return new HttpsResponse(client.GetAsync(url.value).Result);
+            return new HttpsResponse(client.GetAsync(url.Value).Result);
         }));
 
         return https;

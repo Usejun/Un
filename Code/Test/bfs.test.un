@@ -8,7 +8,7 @@ dx = [0, 1, 0, -1]
 dy = [1, 0, -1, 0]
 
 for i in range(0, m)
-	board.add(iter(map(int, readln().split(" "))))
+	board.add(list(map(int, readln().split(" "))))
 	day.add([0] * n)
 
 for i in range(0, m)

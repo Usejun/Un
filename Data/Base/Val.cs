@@ -3,15 +3,15 @@
 public abstract class Val<T>(string type, T value) : Obj(type)
     where T : IComparable<T>
 {
-    public T value = value;
+    public T Value { get; protected set; } = value;
 
-    public override Str CStr() => new($"{value}");
+    public override Str CStr() => new($"{Value}");
 
-    public override Iter CIter() => new([Clone()]);
+    public override List CList() => new([Clone()]);
 
-    public override Bool Equals(Obj obj) => new(obj is Val<T> v && value.CompareTo(v.value) == 0);
+    public override Bool Equals(Obj obj) => new(obj is Val<T> v && Value.CompareTo(v.Value) == 0);
 
-    public override Bool LessThen(Obj obj) => new(obj is Val<T> v && value.CompareTo(v.value) < 0);
+    public override Bool LessThen(Obj obj) => new(obj is Val<T> v && Value.CompareTo(v.Value) < 0);
 
-    public override int GetHashCode() => value.GetHashCode();
+    public override int GetHashCode() => Value.GetHashCode();
 }

@@ -4,20 +4,20 @@ public class Time : Obj, IPackage, IStatic
 {
     public string Name => "time";
 
-    Obj Sleep(Iter args)
+    Obj Sleep(List args)
     {
         if (args[0] is Int i)
-            Thread.Sleep((int)i.value);
+            Thread.Sleep((int)i.Value);
         return None;
     }
 
-    Date Now(Iter args) => new(DateTime.Now);
+    Date Now(List args) => new(DateTime.Now);
 
-    Date Today(Iter args) => new(DateTime.Today);
+    Date Today(List args) => new(DateTime.Today);
 
     public IEnumerable<Fun> Import() =>
     [
-        new NativeFun("sleep", 2, Sleep),
+        new NativeFun("sleep", 1, Sleep),
     ];
 
     public Obj Static()

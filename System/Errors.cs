@@ -9,7 +9,7 @@ public abstract class Error(string message) : Exception(message)
         StringBuilder result = new();
 
         result.AppendLine();
-        result.AppendLine($"   File <{Process.Public["__name__"].CStr().value}>, line [{Process.Line + 1}]");
+        result.AppendLine($"   File <{Process.Global["__name__"].CStr().Value}>, line [{Process.Line + 1}]");
         result.AppendLine($"      {Process.Code[Process.Line].Trim()}");
         result.AppendLine($"      {new string('^', Process.Code[Process.Line].Trim().Length)}");
         result.Append    ($"{GetType().Name} : {Message}");
@@ -38,7 +38,7 @@ public class KeyError : Error
 
 public class ValueError : Error
 {
-    public ValueError() : base("invalid value") { }
+    public ValueError() : base("invalid Value") { }
     public ValueError(string message) : base(message) { }
 }
 

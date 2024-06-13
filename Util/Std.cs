@@ -4,25 +4,31 @@ public class Std : Obj, IPackage
 {
     public string Name => "std";
 
-    Obj Write(Iter args)
+    Obj Write(List args)
     {
         foreach (var p in args)
-            Console.Write(p.CStr().value + " ");
+            Console.Write(p.CStr().Value + " ");
         return None;
     }
 
-    Obj Writeln(Iter args)
+    Obj Writeln(List args)
     {
         Write(args);
         Console.Write('\n');
         return None;
     }
 
-    Str Readln(Iter args) => new(Console.ReadLine()!);
+    Obj Clear(List args)
+    {
+        Console.Clear();
+        return None;
+    }
 
-    Str Type(Iter args) => args[0].Type();
+    Str Readln(List args) => new(Console.ReadLine()!);
 
-    Iter Func(Iter args)
+    Str Type(List args) => args[0].Type();
+
+    List Func(List args)
     {
         List<string> func = [];
 
@@ -45,63 +51,60 @@ public class Std : Obj, IPackage
                     func.Add(i);
         }
 
-        return new Iter([.. func.Select(i => new Str(i))]);
+        return new List([.. func.Select(i => new Str(i))]);
     }
 
-    Iter Memb(Iter args)
+    List Memb(List args)
     {
-        List<string> memb = [];
+        List membs = [];
 
-        if (args[0] is Fun f)
+        foreach (var arg in args)
         {
-            foreach (var i in f.Call([]).field.Keys)
-                memb.Add(i);
-        }
-        else if (args[0] is Obj o)
-        {
-            foreach (var i in o.field.Keys)
-                memb.Add(i);
-        }
-        else
-        {
-            foreach (var i in Process.Field.Keys)
-                memb.Add(i);
-        }
+            string[] keys;
 
-        return new Iter([.. memb.Select(i => new Str(i))]);
+            if (arg is Fun f) keys = f.Call([]).field.Keys;
+            else if (arg is Obj o) keys = o.field.Keys;
+            else throw new ValueError();
+
+            membs.Extend(new List(keys));
+        }        
+
+        return args.Count == 0 ? new(Process.Field.Keys) : membs;
     }
 
-    Iter Range(Iter args)
+    List Pack(List args) => new(Process.Package.Keys);        
+
+    List Range(List args)
     {
         if (args[0] is not Int start)
             throw new ValueError("invalid argument");
         if (args[1] is not Int end)
             throw new ValueError("invalid argument");
 
-        int diff = (int)(end.value - start.value);
+        int diff = (int)(end.Value - start.Value);
         Obj[] objs = new Obj[diff];
 
         for (int i = 0; i < diff; i++)
-            objs[i] = new Int(i + start.value);
+            objs[i] = new Int(i + start.Value);
 
-        return new Iter(objs);
+        return new List(objs);
     }
 
-    Int Len(Iter args) => args[0].Len();
+    Int Len(List args) => args[0].Len();
 
-    Int Hash(Iter args) => args[0].Hash();
+    Int Hash(List args) => args[0].Hash();
 
-    IO.Stream Open(Iter args) 
+    IO.Stream Open(List args) 
     {
-        if (args[0] is Str s) return new(File.Open(s.value, FileMode.Open));
-        if (args[0] is HttpsResponse hr) return new(hr.value.Content.ReadAsStreamAsync().Result);
+        if (args[0] is Str s) return new(File.Open(s.Value, FileMode.Open));
+        if (args[0] is HttpsResponse hr) return new(hr.Value.Content.ReadAsStreamAsync().Result);
 
         throw new FileError("File types you can't open");
     }
 
-    Obj Sum(Iter args)
+    Obj Sum(List args)
     {
-        if (args[0] is Iter iter) return Sum(iter);
+        if (args[0] is List list) return Sum(list);
 
         Obj sum = args[0];
         for (int i = 1; i < args.Count; i++)
@@ -109,109 +112,132 @@ public class Std : Obj, IPackage
         return sum;
     }
 
-    Obj Max(Iter args)
+    Obj Max(List args)
     {
-        if (args[0] is Iter iter) return Max(iter);
+        if (args[0] is List list) return Max(list);
 
         Obj max = args[0];
         for (int i = 1; i < args.Count; i++)
-            if (max.LessThen(args[i]).value)
+            if (max.LessThen(args[i]).Value)
                 max = args[i];
         return max;
     }
 
-    Obj Min(Iter args)
+    Obj Min(List args)
     {
-        if (args[0] is Iter iter) return Min(iter);
+        if (args[0] is List list) return Min(list);
 
         Obj min = args[0];
         for (int i = 1; i < args.Count; i++)
-            if (min.GreaterThen(args[i]).value)
+            if (min.GreaterThen(args[i]).Value)
                 min = args[i];
         return min;
     }
 
-    Obj Abs(Iter args)
+    Obj Abs(List args)
     {
-        if (args[0] is Int i) return new Int(System.Math.Abs(i.value));
-        if (args[0] is Float f) return new Float(System.Math.Abs(f.value));
+        if (args[0] is Int i) return new Int(System.Math.Abs(i.Value));
+        if (args[0] is Float f) return new Float(System.Math.Abs(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Obj Pow(Iter args)
+    Obj Pow(List args)
     {
         if (args[1] is not Int i) throw new ValueError("invalid argument");
 
-        int count = (int)i.value;
+        int count = (int)i.Value;
 
         if (count == 0) return new Int(0);
         if (count == 1) return args[0];
-        if (count % 2 == 1) return args[0].Mul(Pow(new Iter([args[0], new Int(count - 1)])));
-        var p = Pow(new Iter([args[0], new Int(count / 2)]));
+        if (count % 2 == 1) return args[0].Mul(Pow(new List([args[0], new Int(count - 1)])));
+        var p = Pow(new List([args[0], new Int(count / 2)]));
         return p.Mul(p);
     }
 
-    Obj Ceil(Iter args)
+    Obj Ceil(List args)
     {
-        if (args[0] is Int i) return new Int((long)System.Math.Ceiling((decimal)i.value));
-        if (args[0] is Float f) return new Float(System.Math.Ceiling(f.value));
+        if (args[0] is Int i) return new Int((long)System.Math.Ceiling((decimal)i.Value));
+        if (args[0] is Float f) return new Float(System.Math.Ceiling(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Obj Floor(Iter args)
+    Obj Floor(List args)
     {
-        if (args[0] is Int i) return new Int((long)System.Math.Floor((decimal)i.value));
-        if (args[0] is Float f) return new Float(System.Math.Floor(f.value));
+        if (args[0] is Int i) return new Int((long)System.Math.Floor((decimal)i.Value));
+        if (args[0] is Float f) return new Float(System.Math.Floor(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Obj Round(Iter args)
+    Obj Round(List args)
     {
         if (args.Count > 2) throw new ValueError("invalid argument");
 
         double v = args[0] switch
         {
-            Int i => i.value,
-            Float f => f.value,
+            Int i => i.Value,
+            Float f => f.Value,
             _ => throw new ValueError("invalid argument"),
         };
 
         if (args.Count == 2)
-            if (args[1] is Int i && i.value < 15 && i.value >= 0) return new Float((double)System.Math.Round(v, (int)i.value));
+            if (args[1] is Int i && i.Value < 15 && i.Value >= 0) return new Float((double)System.Math.Round(v, (int)i.Value));
             else throw new ValueError("invalid argument");
         else return new Int((long)System.Math.Round(v));
     }
 
-    Obj Sqrt(Iter args) 
+    Obj Sqrt(List args) 
     {
-        if (args[0] is Int i) return new Float(System.Math.Sqrt(i.value));
-        if (args[0] is Float f) return new Float(System.Math.Sqrt(f.value));
+        if (args[0] is Int i) return new Float(System.Math.Sqrt(i.Value));
+        if (args[0] is Float f) return new Float(System.Math.Sqrt(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Obj Exit(Iter args)
+    Obj Sin(List args)
+    {
+        if (args[0] is Int i) return new Float(System.Math.Sin(i.Value));
+        if (args[0] is Float f) return new Float(System.Math.Sin(f.Value));
+        throw new ValueError("invalid argument");
+    }
+
+    Obj Cos(List args)
+    {
+        if (args[0] is Int i) return new Float(System.Math.Cos(i.Value));
+        if (args[0] is Float f) return new Float(System.Math.Cos(f.Value));
+        throw new ValueError("invalid argument");
+    }
+
+    Obj Tan(List args)
+    {
+        if (args[0] is Int i) return new Float(System.Math.Tan(i.Value));
+        if (args[0] is Float f) return new Float(System.Math.Tan(f.Value));
+        throw new ValueError("invalid argument");
+    }
+
+    Obj Exit(List args)
     {
         Environment.Exit(0);
         return None;
     }
 
-    Obj Assert(Iter args)
+    Obj Assert(List args)
     {
-        Debug.Assert(args[0].CBool().value, args[1].CStr().value);
+        Debug.Assert(args[0].CBool().Value, args[1].CStr().Value);
 
         return None;
     }
 
-    Obj Breakpoint(Iter args) => None;
+    Obj Breakpoint(List args) => None;
 
     public IEnumerable<Fun> Import() =>
     [
         new NativeFun("write", -1, Write),
         new NativeFun("writeln", -1, Writeln),
+        new NativeFun("clear", -1, Clear),
         new NativeFun("readln", 0, Readln),
         new NativeFun("type", 1, Type),
         new NativeFun("func", -1, Func),
         new NativeFun("memb", -1, Memb),
+        new NativeFun("pack", 0, Pack),
         new NativeFun("range", 2, Range),
         new NativeFun("len", 1, Len),
         new NativeFun("hash", 1, Hash),
@@ -221,6 +247,9 @@ public class Std : Obj, IPackage
         new NativeFun("min", -1, Min),
         new NativeFun("pow", 2, Pow),
         new NativeFun("abs", 1, Abs),
+        new NativeFun("sin", 1, Sin),
+        new NativeFun("cos", 1, Cos),
+        new NativeFun("tan", 1, Tan),
         new NativeFun("ceil", 1, Ceil),
         new NativeFun("floor", 1, Floor),
         new NativeFun("round", -1, Round),

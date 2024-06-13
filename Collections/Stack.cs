@@ -4,13 +4,13 @@ public class Stack : Ref<Stack<Obj>>
 {
     public Stack() : base("queue", []) { }
 
-    public override Obj Init(Iter args)
+    public override Obj Init(List args)
     {
-        value.Clear();
+        Value.Clear();
 
         foreach (var arg in args)
-            foreach (var item in arg.CIter())
-                value.Push(item);
+            foreach (var item in arg.CList())
+                Value.Push(item);
 
         return this;
     }
@@ -23,7 +23,7 @@ public class Stack : Ref<Stack<Obj>>
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)
-                value.Push(args[i]);
+                Value.Push(args[i]);
 
             return None;
         }));
@@ -34,8 +34,8 @@ public class Stack : Ref<Stack<Obj>>
 
 
             for (int i = 1; i < args.Count; i++)
-                foreach (var item in args[i].CIter())
-                    self.value.Push(item);
+                foreach (var item in args[i].CList())
+                    self.Value.Push(item);
 
             return None;
         }));
@@ -44,29 +44,29 @@ public class Stack : Ref<Stack<Obj>>
             if (args[0] is not Stack self)
                 throw new ValueError("invalid argument");
 
-            if (args.Count == 1) return self.value.Pop();
+            if (args.Count == 1) return self.Value.Pop();
             else if (args.Count == 2 && args[1] is Int count)
             {
-                Iter objs = [];
-                for (int i = 0; i < count.value; i++)
-                    objs.Append(self.value.Pop());
+                List objs = [];
+                for (int i = 0; i < count.Value; i++)
+                    objs.Append(self.Value.Pop());
                 return objs;
             }
             throw new ValueError("invalid argument");
         }));
     }
 
-    public override Int Len() => new(value.Count);
+    public override Int Len() => new(Value.Count);
 
-    public override Bool CBool() => new(value.Count != 0);
+    public override Bool CBool() => new(Value.Count != 0);
 
-    public override Iter CIter() => new([.. value]);
+    public override List CList() => new([.. Value]);
 
-    public override Str CStr() => new($"[{string.Join(", ", value.Select(i => i.CStr().value))}]");
+    public override Str CStr() => new($"[{string.Join(", ", Value.Select(i => i.CStr().Value))}]");
 
     public override Obj Clone() => new Stack()
     {
-        value = value
+        Value = Value
     };
 
     public override Obj Copy() => this;

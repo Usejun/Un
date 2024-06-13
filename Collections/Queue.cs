@@ -4,13 +4,13 @@ public class Queue : Ref<Queue<Obj>>
 {
     public Queue() : base("queue", []) { }
 
-    public override Obj Init(Iter args)
+    public override Obj Init(List args)
     {
-        value.Clear();
+        Value.Clear();
 
         foreach (var arg in args)
-            foreach (var item in arg.CIter())
-                value.Enqueue(item);
+            foreach (var item in arg.CList())
+                Value.Enqueue(item);
 
         return this;
     }
@@ -23,7 +23,7 @@ public class Queue : Ref<Queue<Obj>>
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)
-                self.value.Enqueue(args[i]);                
+                self.Value.Enqueue(args[i]);                
 
             return None;
         }));
@@ -33,8 +33,8 @@ public class Queue : Ref<Queue<Obj>>
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)
-                foreach (var item in args[i].CIter())
-                    self.value.Enqueue(item);
+                foreach (var item in args[i].CList())
+                    self.Value.Enqueue(item);
 
             return None;
         }));
@@ -43,29 +43,29 @@ public class Queue : Ref<Queue<Obj>>
             if (args[0] is not Queue self)
                 throw new ValueError("invalid argument");
 
-            if (args.Count == 1) return self.value.Dequeue();
+            if (args.Count == 1) return self.Value.Dequeue();
             else if (args.Count == 2 && args[1] is Int count)
             {
-                Iter objs = [];
-                for (int i = 0; i < count.value; i++)
-                    objs.Append(self.value.Dequeue());
+                List objs = [];
+                for (int i = 0; i < count.Value; i++)
+                    objs.Append(self.Value.Dequeue());
                 return objs;                   
             }
             throw new ValueError("invalid argument");
         }));
     }
 
-    public override Int Len() => new(value.Count);
+    public override Int Len() => new(Value.Count);
 
-    public override Bool CBool() => new(value.Count != 0);
+    public override Bool CBool() => new(Value.Count != 0);
 
-    public override Iter CIter() => new([.. value]);
+    public override List CList() => new([.. Value]);
 
-    public override Str CStr() => new($"[{string.Join(", ", value.Select(i => i.CStr().value))}]");
+    public override Str CStr() => new($"[{string.Join(", ", Value.Select(i => i.CStr().Value))}]");
 
     public override Obj Clone() => new Queue()
     {
-        value = value
+        Value = Value
     };
 
     public override Obj Copy() => this;

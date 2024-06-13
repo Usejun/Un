@@ -1,1 +1,11 @@
-﻿a = obj()
+﻿import time
+a = sys.t()
+
+a.start()
+
+for i in range(0, 10)
+	write(i)
+	sleep(100)
+	
+writeln(a.result())
+a.wait()

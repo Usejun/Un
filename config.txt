@@ -64,3 +64,5 @@ Enum enum
 Lambda =>
 Func fn
 Using using
+Async async
+Await await

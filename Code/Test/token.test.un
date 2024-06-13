@@ -5,9 +5,10 @@
 	fn __init__(self, t_type, value)
 		self.t_type = t_type
 		self.value = value
+		writeln(value)
 
 	fn __str__(self)
-		return "(" + self.t_type + ", " + self.value + ")"
+		return `({self.t_type}, {self.value})`
 
 enum token_type
 	number, plus, minus

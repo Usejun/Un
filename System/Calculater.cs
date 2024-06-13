@@ -39,7 +39,7 @@ public class Calculator
         List<Token> postfix = Postfix(expression);
 
          for (int i = 0; i < postfix.Count; i++)
-        {
+         {
             Token token = postfix[i];
 
             if (token.type == Token.Type.Variable && Process.TryGetStaticClass(token, out var staticCla))
@@ -48,24 +48,24 @@ public class Calculator
             }
             else if ((token.type == Token.Type.Variable || token.type == Token.Type.Function) && Process.TryGetClass(token, out var cla))
             {
-                if (token.type == Token.Type.Function && calculateStack.TryPop(out var obj) && obj is Iter args)
+                if (token.type == Token.Type.Function && calculateStack.TryPop(out var obj) && obj is List args)
                     calculateStack.Push(cla.Clone().Init(args));
                 else
-                    calculateStack.Push(new NativeFun(token.value, -1, cla.Init));
+                    calculateStack.Push(new NativeFun(token.Value, -1, cla.Init));
             }
             else if (token.type == Token.Type.Function)
             {
-                if (field.Get(token.value, out var local))
+                if (field.Get(token.Value, out var local))
                 {
-                    if (local is Fun fun && calculateStack.TryPeek(out var a) && a is Iter args)
-                        local = fun.Clone().Call(calculateStack.Pop().CIter());
+                    if (local is Fun fun && calculateStack.TryPeek(out var a) && a is List args)
+                        local = fun.Clone().Call(calculateStack.Pop().CList());
 
                     calculateStack.Push(local);
                 }
-                else if (Process.TryGetPublicProperty(token, out var global))
+                else if (Process.TryGetGlobalProperty(token, out var global))
                 {
-                    if (global is Fun fun && calculateStack.TryPeek(out var a) && a is Iter args)
-                        global = fun.Clone().Call(calculateStack.Pop().CIter());
+                    if (global is Fun fun && calculateStack.TryPeek(out var a) && a is List args)
+                        global = fun.Clone().Call(calculateStack.Pop().CList());
 
                     calculateStack.Push(global);
                 }
@@ -76,28 +76,28 @@ public class Calculator
                 Obj a = calculateStack.Pop(), b;
                 if (token.type == Token.Type.Indexer)
                 {
-                    b = Obj.Convert(token.value, field);
+                    b = Obj.Convert(token.Value, field);
 
-                    calculateStack.Push(a.GetItem(new Iter([b])));
+                    calculateStack.Push(a.GetItem(new List([b])));
                 }             
                 else if (token.type == Token.Type.Slicer)
                 {
-                    var index = token.value.Split(':');
+                    var index = token.Value.Split(':');
 
                     calculateStack.Push(a.Slice([Obj.Convert(index[0], field), Obj.Convert(index[1], field)]));
                 }
                 else if (token.type == Token.Type.Property)
                 {
-                    b = a.Get(token.value);
+                    b = a.Get(token.Value);
 
                     if (b is Fun fun)
-                        b = fun.Call(calculateStack.Pop().CIter().ExtendInsert(a, 0));
+                        b = fun.Call(calculateStack.Pop().CList().ExtendInsert(a, 0));
 
                     calculateStack.Push(b);
                 }
                 else if (token.type == Token.Type.Bang || token.type == Token.Type.Not)
                 {
-                    calculateStack.Push(new Bool(!a.CBool().value));
+                    calculateStack.Push(new Bool(!a.CBool().Value));
                 }
                 else if (token.type == Token.Type.BNot)
                 {
@@ -105,7 +105,7 @@ public class Calculator
                 }
                 else if (token.type == Token.Type.In)
                 {
-                    calculateStack.Push(a.CIter().Contains(calculateStack.Pop()));
+                    calculateStack.Push(a.CList().Contains(calculateStack.Pop()));
                 }
                 else if (token.type == Token.Type.Is)
                 {
@@ -120,13 +120,13 @@ public class Calculator
                 {
                     b = calculateStack.Pop();
 
-                    calculateStack.Push(b.CBool().value ? a.CBool() : new Bool(false));
+                    calculateStack.Push(b.CBool().Value ? a.CBool() : new Bool(false));
                 }
                 else if (token.type == Token.Type.Or)
                 {
                     b = calculateStack.Pop();
 
-                    calculateStack.Push(!b.CBool().value ? a.CBool() : new Bool(true));
+                    calculateStack.Push(!b.CBool().Value ? a.CBool() : new Bool(true));
                 }
                 else
                 {
@@ -151,7 +151,7 @@ public class Calculator
                         Token.Type.LessOrEqual => b.LessOrEquals(a),
                         Token.Type.GreaterThen => b.GreaterThen(a),
                         Token.Type.LessThen => b.LessThen(a),
-                        Token.Type.Method => ((Fun)b.Get(token.value)).Call(a.CIter().Insert(b, 0)),
+                        Token.Type.Method => ((Fun)b.Get(token.Value)).Call(b.Type().Value == "obj" ? a.CList() : a.CList().Insert(b, 0)),
                         _ => throw new OperatorError()
                     };
 
@@ -160,7 +160,7 @@ public class Calculator
             }                
             else
             {
-                calculateStack.Push(Obj.Convert(token.value, field));
+                calculateStack.Push(Obj.Convert(token.Value, field));
             }
         }
 

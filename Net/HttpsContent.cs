@@ -12,19 +12,19 @@ public class HttpsContent : Ref<HttpContent>
         {
             if (args[0] is not HttpsContent self)
                 throw new ValueError("invalid argument");
-            return new HttpsHeaders(self.value.Headers);
+            return new HttpsHeaders(self.Value.Headers);
         }));
         field.Set("stream", new NativeFun("stream", 1, args =>
         {
             if (args[0] is not HttpsContent self)
                 throw new ValueError("invalid argument");
-            return new IO.Stream(self.value.ReadAsStreamAsync().Result);
+            return new IO.Stream(self.Value.ReadAsStreamAsync().Result);
         }));
         field.Set("str", new NativeFun("str", 1, args =>
         {
             if (args[0] is not HttpsContent self)
                 throw new ValueError("invalid argument");
-            return new Str(self.value.ReadAsStringAsync().Result);
+            return new Str(self.Value.ReadAsStringAsync().Result);
         }));
     }
 }

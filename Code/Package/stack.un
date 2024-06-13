@@ -6,7 +6,7 @@
 		self.arr = [0] * size
 
 	fn push(self, item)
-		if (type(item) == "iter")
+		if (type(item) == "list")
 			for i in item
 				self.push(i)
 			self.count += len(item)
@@ -58,7 +58,7 @@
 		
 		return text
 
-	fn __iter__(self)
+	fn __list__(self)
 		enum = []
 		i = self.count
 

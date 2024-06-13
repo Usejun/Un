@@ -6,7 +6,7 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
     public Dict(string str, Field field) : base("dict", [])
     {
-        var pairs = str.Trim('{', '}').Split(',');
+        var pairs = str[1..^1].Split(',');
 
         for (int i = 0; i < pairs.Length; i++)
         {
@@ -14,15 +14,15 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
             var pair = pairs[i].Trim().Split(':');
             var key = Convert(pair[0], field);
-            var value = Convert(pair[1], field);
+            var Value = Convert(pair[1], field);
 
-            this.value.Add(key, value);
+            this.Value.Add(key, Value);
         }          
     }
 
-    public override Obj Init(Iter args)
+    public override Obj Init(List args)
     {
-        value.Clear();
+        Value.Clear();
 
         return this;
     }
@@ -34,7 +34,7 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            self.value.Add(args[1], args[2]);
+            self.Value.Add(args[1], args[2]);
 
             return self;
         }));
@@ -43,28 +43,28 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.value.Remove(args[1]));
+            return new Bool(self.Value.Remove(args[1]));
         }));
         field.Set("contains_key", new NativeFun("contains_key", 2, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.value.ContainsKey(args[1]));
+            return new Bool(self.Value.ContainsKey(args[1]));
         }));
         field.Set("contains_value", new NativeFun("contains_value", 2, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.value.ContainsValue(args[1]));
+            return new Bool(self.Value.ContainsValue(args[1]));
         }));
         field.Set("clear", new NativeFun("clear", 1, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            self.value.Clear();
+            self.Value.Clear();
 
             return None;
         }));
@@ -73,28 +73,28 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            return new Iter([.. self.value.Keys]);
+            return new List([.. self.Value.Keys]);
         }));
         field.Set("values", new NativeFun("values", 1, args =>
         {
             if (args[0] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            return new Iter([.. self.value.Values]);
+            return new List([.. self.Value.Values]);
         }));           
     }
 
-    public override Obj GetItem(Iter args) => value[args[0]];
+    public override Obj GetItem(List args) => Value[args[0]];
 
-    public override Obj SetItem(Iter args) => value[args[0]] = args[1];
+    public override Obj SetItem(List args) => Value[args[0]] = args[1];
 
-    public override Int Len() => new(value.Count);
+    public override Int Len() => new(Value.Count);
 
-    public override Str CStr() => new($"{{ {string.Join(", ", value.Select(i => $"{i.Key.CStr().value}:{i.Value.CStr().value}"))} }}");
+    public override Str CStr() => new($"{{ {string.Join(", ", Value.Select(i => $"{i.Key.CStr().Value}:{i.Value.CStr().Value}"))} }}");
 
     public override Obj Clone() => new Dict() 
     { 
-        value = value 
+        Value = Value 
     };
 
     public override Obj Copy() => this;

@@ -6,22 +6,22 @@ public class Set : Ref<HashSet<Obj>>
 
     public Set(string str, Field field) : base("set", [])
     {
-        var values = str.Trim('{', '}').Split(',');
+        var Values = str.Trim('{', '}').Split(',');
 
-        for (int i = 0; i < values.Length; i++)
+        for (int i = 0; i < Values.Length; i++)
         {
-            var value = Convert(values[i].Trim(), field);
-            this.value.Add(value);
+            var Value = Convert(Values[i].Trim(), field);
+            this.Value.Add(Value);
         }
     }
 
-    public override Obj Init(Iter args)
+    public override Obj Init(List args)
     {
-        value.Clear();
+        Value.Clear();
 
         foreach (var arg in args)
-            foreach (var item in arg.CIter())
-                value.Add(item);
+            foreach (var item in arg.CList())
+                Value.Add(item);
 
         return this;
     }
@@ -34,7 +34,7 @@ public class Set : Ref<HashSet<Obj>>
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)                
-                self.value.Add(args[i]);
+                self.Value.Add(args[i]);
 
             return None;
         }));
@@ -44,8 +44,8 @@ public class Set : Ref<HashSet<Obj>>
                 throw new ValueError("invalid argument");
 
             for (int i = 1; i < args.Count; i++)
-                foreach (var item in args[1].CIter())
-                    self.value.Add(item);
+                foreach (var item in args[1].CList())
+                    self.Value.Add(item);
 
             return None;
         }));
@@ -54,58 +54,58 @@ public class Set : Ref<HashSet<Obj>>
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.value.Remove(args[1]));
+            return new Bool(self.Value.Remove(args[1]));
         }));
         field.Set("contains", new NativeFun("contains", 2, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.value.Contains(args[1]));
+            return new Bool(self.Value.Contains(args[1]));
         }));
         field.Set("clear", new NativeFun("clear", 1, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
 
-            self.value.Clear();
+            self.Value.Clear();
 
             return None;
         }));
-        field.Set("values", new NativeFun("values", 1, args =>
+        field.Set("Values", new NativeFun("Values", 1, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");
 
-            return new Iter([.. self.value]);
+            return new List([.. self.Value]);
         }));
     }
 
-    public override Obj GetItem(Iter args) => new Bool(value.Contains(args[0]));
+    public override Obj GetItem(List args) => new Bool(Value.Contains(args[0]));
 
     public override Obj Add(Obj arg)
     {
-        foreach (var item in arg.CIter())
-            value.Add(item);            
+        foreach (var item in arg.CList())
+            Value.Add(item);            
 
         return this;
     }
 
     public override Obj Sub(Obj arg)
     {
-        foreach (var item in arg.CIter())
-            value.Remove(item);
+        foreach (var item in arg.CList())
+            Value.Remove(item);
 
         return this;
     }
 
-    public override Int Len() => new(value.Count);
+    public override Int Len() => new(Value.Count);
 
-    public override Str CStr() => new($"{{ {string.Join(", ", value.Select(i => i.CStr().value))} }}");
+    public override Str CStr() => new($"{{ {string.Join(", ", Value.Select(i => i.CStr().Value))} }}");
 
     public override Obj Clone() => new Set()
     {
-        value = value
+        Value = Value
     };
 
     public override Obj Copy() => this;
