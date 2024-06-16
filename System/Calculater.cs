@@ -41,7 +41,7 @@ public class Calculator
          for (int i = 0; i < postfix.Count; i++)
          {
             Token token = postfix[i];
-
+            
             if (token.type == Token.Type.Variable && Process.TryGetStaticClass(token, out var staticCla))
             {
                 calculateStack.Push(staticCla);
@@ -89,9 +89,6 @@ public class Calculator
                 else if (token.type == Token.Type.Property)
                 {
                     b = a.Get(token.Value);
-
-                    if (b is Fun fun)
-                        b = fun.Call(calculateStack.Pop().CList().ExtendInsert(a, 0));
 
                     calculateStack.Push(b);
                 }
@@ -151,7 +148,7 @@ public class Calculator
                         Token.Type.LessOrEqual => b.LessOrEquals(a),
                         Token.Type.GreaterThen => b.GreaterThen(a),
                         Token.Type.LessThen => b.LessThen(a),
-                        Token.Type.Method => ((Fun)b.Get(token.Value)).Call(b.Type().Value == "obj" ? a.CList() : a.CList().Insert(b, 0)),
+                        Token.Type.Method => ((Fun)b.Get(token.Value)).Call(b is Data.Object ? a.CList() : a.CList().Insert(b, 0)),
                         _ => throw new OperatorError()
                     };
 

@@ -57,6 +57,9 @@
                 if (args[0] is not Task self)
                     throw new ValueError("invalid argument");
 
+                self.Value.Start();
+                self.Value.Wait();
+
                 return self.Value.Result;
             }));
             field.Set("result", new NativeFun("result", 1, args =>

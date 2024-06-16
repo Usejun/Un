@@ -23,7 +23,7 @@ public static class Lexer
 
                 if (analyzedTokens.Count > 0 &&
                    (analyzedTokens[^1].type == Token.Type.Variable ||
-                    analyzedTokens[^1].type == Token.Type.Listator ||
+                    analyzedTokens[^1].type == Token.Type.List ||
                     analyzedTokens[^1].type == Token.Type.String ||
                     analyzedTokens[^1].type == Token.Type.Indexer ||
                     analyzedTokens[^1].type == Token.Type.Property))
@@ -36,7 +36,7 @@ public static class Lexer
 
                     if (colon > 0)
                     {
-                        Obj start = i + 1 == colon ? new Int(0) : Calculator.Calculate(Lex(tokens[(i + 1)..colon], field), field);
+                        Obj start = i + 1 == colon ? new Int() : Calculator.Calculate(Lex(tokens[(i + 1)..colon], field), field);
                         Obj end = colon + 1 == j ? new Int(-1) : Calculator.Calculate(Lex(tokens[(colon + 1)..j], field), field);
 
                         if (start is not Int || end is not Int) throw new SyntaxError();
@@ -72,7 +72,7 @@ public static class Lexer
 
                     Value += "]";
 
-                    analyzedTokens.Add(new(Value, Token.Type.Listator));
+                    analyzedTokens.Add(new(Value, Token.Type.List));
                 }
 
                 i = j;
@@ -181,7 +181,7 @@ public static class Lexer
 
                 Value += "]";
 
-                analyzedTokens.Add(new(Value, Token.Type.Listator));
+                analyzedTokens.Add(new(Value, Token.Type.List));
 
                 i = j;
             }

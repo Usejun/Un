@@ -27,4 +27,6 @@ public class HttpsContent : Ref<HttpContent>
             return new Str(self.Value.ReadAsStringAsync().Result);
         }));
     }
+
+    public override Str CStr() => new(Value.ReadAsStringAsync().Result);
 }

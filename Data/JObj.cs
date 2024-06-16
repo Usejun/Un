@@ -16,6 +16,10 @@ public class JObj : Ref<JToken>
             Value = new JObject();
         else if (args[0] is Str s)
             Value = JObject.Parse(s.Value);
+        else if (args[0] is HttpsContent hpc)
+            Value = JObject.Parse(hpc.CStr().Value);
+        else if (args[0] is HttpsResponse hpr)
+            Value = JObject.Parse(hpr.CStr().Value);
         else if (args[0] is Dict d)
             Value = Parse(d);
         else if (args[0] is Object o)
@@ -28,31 +32,33 @@ public class JObj : Ref<JToken>
 
     public override Int CInt()
     {
-        if (Convert($"{Value}", new()) is Int i)
+        if (Convert($"{Value}", Field.Null) is Int i)
             return i;
         return base.CInt();
     }
 
     public override Bool CBool()
     {
-        if (Convert($"{Value}", new()) is Bool b)
+        if (Convert($"{Value}", Field.Null) is Bool b)
             return b;
         return base.CBool();
     }
 
     public override Float CFloat()
     {
-        if (Convert($"{Value}", new()) is Float f)
+        if (Convert($"{Value}", Field.Null) is Float f)
             return f;
         return base.CFloat();
     }
 
     public override List CList()
     {
-        if (Convert($"{Value}", new()) is List i)
+        if (Convert($"{Value}", Field.Null) is List i)
             return i;
         return base.CList();
     }
+
+    public override Str CStr() => new($"{Value}");
 
     public override Obj GetItem(List args)
     {

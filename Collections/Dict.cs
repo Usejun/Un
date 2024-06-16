@@ -14,9 +14,9 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
             var pair = pairs[i].Trim().Split(':');
             var key = Convert(pair[0], field);
-            var Value = Convert(pair[1], field);
+            var value = Convert(pair[1], field);
 
-            this.Value.Add(key, Value);
+            Value.Add(key, value);
         }          
     }
 

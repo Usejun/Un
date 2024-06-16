@@ -1,9 +1,12 @@
-﻿using Un.Util;
+﻿using System.Text;
+using Un.Util;
 
 namespace Un;
 
 public static class Process
 {
+    public static UnicodeEncoding Unicode { get; } = new(false, false);
+
     public static string Path { get; private set; } = "";
     public static string File { get; private set; } = "";
 
@@ -13,10 +16,10 @@ public static class Process
     public static int Nesting => Main.Nesting;
     public static Field Field => Main.Field;
 
-    public static Parser Main { get; private set; } = new([], new());
-    public static Field Global = new();
+    private static Parser Main { get; set; } = new([], new());
+    private static Field Global = new();
 
-    private readonly static HashSet<string> Imported = [];
+    private static HashSet<string> Imported = [];
 
     public readonly static Field Package = new();
 
@@ -49,20 +52,9 @@ public static class Process
         Class.Clear();
         StaticClass.Clear();
         Imported.Clear();
+        File = file;
 
-        Sys();
-
-        Class.Set("int", new Int());
-        Class.Set("float", new Float());
-        Class.Set("list", new List());
-        Class.Set("bool", new Bool());
-        Class.Set("str", new Str());
-        Class.Set("stream", new IO.Stream());
-        Class.Set("map", new Map());
-        Class.Set("dict", new Dict());
-        Class.Set("set", new Set());
-        Class.Set("obj", new Data.Object());
-
+        InitializeClass();
         Import(new Std());
 
         using StreamReader r = new(new FileStream($"{Path}\\{file}", FileMode.Open));
@@ -93,16 +85,11 @@ public static class Process
 
     public static void Import(IPackage package)
     {
-        if (!Imported.Contains(package.Name))
-        {
-            foreach (var fun in package.Import())
-                Global.Set(fun.name, fun);
+        foreach (var fun in package.Import())
+            Global.Set(fun.name, fun);
 
-            foreach (var include in package.Include())
-                Class.Set(include.ClassName, include);
-
-            Imported.Add(package.Name);
-        }
+        foreach (var include in package.Include())
+            Class.Set(include.ClassName, include);
     }
 
     public static void Import(string name)
@@ -112,13 +99,13 @@ public static class Process
             if (Imported.Contains(name))
                 return;
 
+            Imported.Add(name);
+
             if (Package[name] is IPackage pack) Import(pack);
             else Class.Set(name, Package[name]);
 
             if (Package[name] is IStatic sta)
                 StaticClass.Set(name, sta.Static());
-
-            Imported.Add(name);
         }
         else
         {
@@ -129,11 +116,11 @@ public static class Process
                 throw new FileError();
 
             using StreamReader r = new(new FileStream($"{Path}\\Package\\{name}.un", FileMode.Open));
+            
             Imported.Add(name);
-
             Global["__name__"] = new Str($"{name}.un");
 
-            Interpret($"{name}.un", r.ReadToEnd().Split('\n'), new(), []);
+            Interpret($"{name}.un", r.ReadToEnd().Split('\n'), Global, []);
         }
     }
 
@@ -164,12 +151,13 @@ public static class Process
         Console.WriteLine(string.Join("\n", logs));
     }
 
+
     private static void InitializePackage()
     {
         Package.Set("math", new Util.Math());
-        Package.Set("time", new Util.Time());
+        Package.Set("time", new Time());
         Package.Set("https", new Https());
-        Package.Set("rand", new Util.Rand());
+        Package.Set("rand", new Rand());
         Package.Set("stack", new Stack());
         Package.Set("queue", new Queue());
         Package.Set("json", new JObj());
@@ -177,20 +165,24 @@ public static class Process
         Package.Set("matrix", new Matrix());
         Package.Set("date", new Date());
         Package.Set("rstr", new RStr());
+        Package.Set("sys", new Sys());
     }
 
-    // TODO : SYS
-    public static void Sys()
+    private static void InitializeClass()
     {
-        var sys = new Data.Object();
-        var input = new IO.Stream(Console.OpenStandardInput());
-        var output = new IO.Stream(Console.OpenStandardOutput());     
-
-        Global.Set("sys", sys);
-
-        sys.Set("input", input);
-        sys.Set("output", output);
+        Class.Set("int", new Int());
+        Class.Set("float", new Float());
+        Class.Set("list", new List());
+        Class.Set("bool", new Bool());
+        Class.Set("str", new Str());
+        Class.Set("map", new Map());
+        Class.Set("dict", new Dict());
+        Class.Set("set", new Set());
+        Class.Set("obj", new Data.Object());
+        Class.Set("reader", new Reader());
+        Class.Set("writer", new Writer());
     }
+
 
     public static bool TryGetGlobalProperty(string name, out Obj property) => Global.Get(name, out property);
 

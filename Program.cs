@@ -1,5 +1,5 @@
-﻿Console.InputEncoding = System.Text.Encoding.Unicode;
-Console.OutputEncoding = System.Text.Encoding.Unicode;
+﻿Console.InputEncoding = Process.Unicode;
+Console.OutputEncoding = Process.Unicode;
 Process.Initialize("D:\\User\\Un\\Code");
 
 string[] testcase = [

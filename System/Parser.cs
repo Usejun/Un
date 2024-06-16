@@ -1,4 +1,6 @@
-﻿namespace Un;
+﻿using System.Xml.Linq;
+
+namespace Un;
 
 public class Parser(string[] code, Field field, int index = 0, int line = 0, int nesting = 0)
 {
@@ -36,7 +38,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         (Code, Field, Usings, Index, Line, Nesting) = (code, field, usings, index, line, nesting);
     }
 
-    void Parse(List<Token> analyzedTokens)
+    private void Parse(List<Token> analyzedTokens)
     {
         int comment = IndexOfComment(analyzedTokens);
         analyzedTokens = analyzedTokens[..comment];
@@ -53,22 +55,22 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         }
         else if (analyzedTokens[0].type == Token.Type.Await)
         {
-            if (analyzedTokens[2].type == Token.Type.Assign)
+            if (Token.IsAssigns(analyzedTokens[2]))
             {
                 string name = analyzedTokens[1].Value;
                 var value = Calculator.Calculate(analyzedTokens[3..], Field);
 
-                ((Fun)value.Get("start")).Call([value]);
-                ((Fun)value.Get("wait")).Call([value]);
+                if (!Fun.Invoke(value, "run", [value], out var result))
+                    throw new ValueError($"{name} is not task");
 
-                Field.Set(name, ((Fun)value.Get("result")).Call([value]));
+                Field.Set(name, result);
             }
             else
             {
                 var value = Calculator.Calculate(analyzedTokens[1..], Field);
 
-                ((Fun)value.Get("start")).Call([value]);
-                ((Fun)value.Get("wait")).Call([value]);
+                if (!Fun.Invoke(value, "run", [value], out var result))
+                    throw new ValueError("it is not task");
             }
         }
         else if (analyzedTokens[0].type == Token.Type.Import)
@@ -79,23 +81,19 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         else if (analyzedTokens[0].type == Token.Type.Class)
         {
             Process.Class.Set(analyzedTokens[1].Value, new([.. GetBody(includeHeader: true)], Field));
-            Line--;
         }
         else if (analyzedTokens[0].type == Token.Type.Enum)
         {
             Process.Class.Set(analyzedTokens[1].Value, new Enu([.. GetBody(includeHeader: true)]));
             Process.StaticClass.Set(analyzedTokens[1].Value, Process.Class[analyzedTokens[1].Value]);
-            Line--;
         }
         else if (analyzedTokens[0].type == Token.Type.Func)
         {          
             Process.Field.Set(analyzedTokens[1].Value, new LocalFun(analyzedTokens[1].Value, GetBody(includeHeader: true)));
-            Line--;
         }
         else if (analyzedTokens[0].type == Token.Type.Async)
         {
             Process.Field.Set(analyzedTokens[2].Value, new AsyncFun(analyzedTokens[2].Value, GetBody(includeHeader: true)));
-            Line--;
         }
         else if (analyzedTokens[0].type == Token.Type.Return)
         {
@@ -125,7 +123,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                         ReturnValue = null;
                         break;
                     }
-                    if (ReturnValue?.ClassName == "continue")
+                    else if (ReturnValue?.ClassName == "continue")
                         ReturnValue = null;
                 }
 
@@ -160,7 +158,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                     obj = Calculator.Calculate(analyzedTokens[3..], Field);
 
                     if (obj.CList() is not List list)                  
-                        throw new ValueError("invalid syntax");
+                        throw new ValueError("it is not iterable");
 
                     string var = analyzedTokens[1].Value;
 
@@ -176,7 +174,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                             Line = loop + 1;
                             Field[var] = item;
 
-                            while (Line < Code.Length && IsBody() && TryInterpret()) ;
+                            while (Line < Code.Length && IsBody() && TryInterpret()) { }
 
                             if (ReturnValue?.ClassName == "break")
                             {
@@ -305,7 +303,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
 
                     if (analyzedTokens[i + 1].type == Token.Type.Comma || Token.IsAssigns(analyzedTokens[i + 1]))
                     {
-                        if (Token.IsLlistal(analyzedTokens[i]))
+                        if (Token.IsLiteral(analyzedTokens[i]))
                             throw new SyntaxError();
 
                         if (Obj.IsNone(var))
@@ -317,11 +315,11 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                             Field[token.Value] = AssignCalculate(var, value, analyzedTokens[assign].type);
                         }
                         else if (token.type == Token.Type.Indexer)
-                            var.SetItem(new List([Obj.Convert(token.Value, Field), 
-                                AssignCalculate(
-                                    var.GetItem(new List([Obj.Convert(token.Value, Field)])), 
-                                    value, 
-                                    analyzedTokens[assign].type).Copy()]));
+                        {
+                            Obj index = Obj.Convert(token.Value, Field);
+
+                            var.SetItem(new([index, AssignCalculate(var.GetItem(new([index])), value, analyzedTokens[assign].type).Copy()]));
+                        }
                         else if (token.type == Token.Type.Property)
                             var.Set(token.Value, AssignCalculate(var.Get(token.Value), value, analyzedTokens[assign].type).Copy());
                         else throw new SyntaxError("unreachable");
@@ -363,19 +361,17 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
             {
                 if (analyzedTokens[next].type == Token.Type.Indexer)
                 {
-                    Obj objIndex = Obj.Convert(analyzedTokens[next].Value, Field);
-                    var = var.GetItem(new List([objIndex]));
+                    Obj index = Obj.Convert(analyzedTokens[next].Value, Field);
+                    var = var.GetItem(new List([index]));
                 }
                 else if (analyzedTokens[next].type == Token.Type.Property ||
                          analyzedTokens[next].type == Token.Type.Method)
                 {
-                    if (var.Get(analyzedTokens[next].Value) is Fun func)
-                    {
-                        if (var.Type().Value == "obj")
-                            var = func.Call(Obj.Convert(analyzedTokens[next + 1].Value, Field).CList());
-                        else
-                            var = func.Call(Obj.Convert(analyzedTokens[next + 1].Value, Field).CList().Insert(var, 0));
-                    }
+                    List args = Obj.Convert(analyzedTokens[next + 1].Value, Field).CList();
+
+                    if (Fun.Invoke(var, analyzedTokens[next].Value, var is Data.Object ? args : args.Insert(var, 0), out var result))
+                        var = result;
+                    else var = var.Get(analyzedTokens[next].Value);
                 }
                 else break;
                 next++;
@@ -388,7 +384,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         else throw new SyntaxError("unreachable");
     }
 
-    string[] GetBody(bool includeHeader = false)
+    private string[] GetBody(bool includeHeader = false)
     {
         List<string> buffer = [];
 
@@ -402,10 +398,11 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
             buffer.Add(Code[Line++]);
 
         Nesting--;
+        Line--;
         return [.. buffer];
     }
 
-    Obj AssignCalculate(Obj a, Obj b, Token.Type type) => type switch
+    private Obj AssignCalculate(Obj a, Obj b, Token.Type type) => type switch
     {
         Token.Type.PlusAssign => a.Add(b),
         Token.Type.MinusAssign => a.Sub(b),
@@ -422,7 +419,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         _ => b
     };
 
-    int IndexOfAssign(List<Token> analyzedTokens)
+    private int IndexOfAssign(List<Token> analyzedTokens)
     {
         int index = -1;
 
@@ -433,7 +430,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         return index;
     }
 
-    int IndexOfComment(List<Token> analyzedTokens)
+    private int IndexOfComment(List<Token> analyzedTokens)
     {
         int index = analyzedTokens.Count;
 
@@ -444,7 +441,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         return index;
     }
 
-    int NextComma(List<Token> analyzedTokens, int index)
+    private int NextComma(List<Token> analyzedTokens, int index)
     {
         int k = -1;
 
@@ -454,7 +451,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         return k;
     }
 
-    bool IsBody()
+    private bool IsBody()
     {
         if (string.IsNullOrWhiteSpace(Code[Line]) || string.IsNullOrEmpty(Code[Line])) return true;
 
@@ -471,13 +468,13 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         return a || b;
     }
 
-    void SkipWhitespace(string code)
+    private void SkipWhitespace(string code)
     {
         while (Index < code.Length && char.IsWhiteSpace(code[Index]))
             Index++;
     }
 
-    void SkipConditional()
+    private void SkipConditional()
     {
         while (Line < Code.Length)
         {
@@ -500,7 +497,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         }
     }
 
-    void SkipBody()
+    private void SkipBody()
     {
         while (Line < Code.Length && IsBody())
             Line++;

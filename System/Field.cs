@@ -2,6 +2,8 @@
 {
     public class Field 
     {
+        public static Field Null = new();
+
         public int Count => field.Count;
         public string[] Keys => [..field.Keys];
         public Obj[] Values => [..field.Values];
@@ -15,12 +17,12 @@
 
         private readonly Dictionary<string, Obj> field = [];
 
-        public bool Get(string name, out Obj Value) => field.TryGetValue(name, out Value!);
+        public bool Get(string name, out Obj value) => field.TryGetValue(name, out value!);
 
-        public void Set(string name, Obj Value)
+        public void Set(string name, Obj value)
         {
-            if (!field.TryAdd(name, Value))
-                field[name] = Value;
+            if (!field.TryAdd(name, value))
+                field[name] = value;
         }
 
         public void Remove(string name)

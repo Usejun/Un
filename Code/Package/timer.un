@@ -19,21 +19,21 @@ class timer
 		n = times.hour()
 
 		if n != 0
-			text += n + "h"
+			text += n + "h "
 
 		n = times.minute()
 
 		if n != 0
-			text += n + "m"
+			text += n + "m "
 
 		n = times.second()
 
 		if n != 0
-			text += n + "s"
+			text += n + "s "
 
 		n = times.milliseconds()
 
 		if n != 0
-			text += n + "ms"
+			text += n + "ms "
 
 		return text

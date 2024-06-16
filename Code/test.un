@@ -1,11 +1,3 @@
-﻿import time
-a = sys.t()
+﻿a = 2x22
 
-a.start()
-
-for i in range(0, 10)
-	write(i)
-	sleep(100)
-	
-writeln(a.result())
-a.wait()
+write(a)

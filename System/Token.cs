@@ -103,7 +103,7 @@ public class Token
 
         Variable,
 
-        Integer, Float, String, Boolean, Listator, Dictionary, Lambda,
+        Integer, Float, String, Boolean, List, Dictionary, Lambda,
 
         Async, Await
     }
@@ -151,7 +151,7 @@ public class Token
         if (obj is Float) return Type.Float;
         if (obj is Str) return Type.String;
         if (obj is Bool) return Type.Boolean;
-        if (obj is List) return Type.Listator;
+        if (obj is List) return Type.List;
         return Type.None;
     }
 
@@ -242,9 +242,9 @@ public class Token
     public static bool IsSymbol(char chr) => IsSymbol(GetType(chr));
 
 
-    public static bool IsLlistal(Token token) => IsLlistal(token.type);
+    public static bool IsLiteral(Token token) => IsLiteral(token.type);
 
-    public static bool IsLlistal(Type type) => type switch
+    public static bool IsLiteral(Type type) => type switch
     {
         >= Type.Integer and <= Type.Lambda => true,
         _ => false

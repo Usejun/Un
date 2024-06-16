@@ -8,8 +8,10 @@ public abstract class Error(string message) : Exception(message)
     {
         StringBuilder result = new();
 
+        Process.TryGetGlobalProperty("__name__", out var v);
+
         result.AppendLine();
-        result.AppendLine($"   File <{Process.Global["__name__"].CStr().Value}>, line [{Process.Line + 1}]");
+        result.AppendLine($"   File <{v.CStr().Value}>, line [{Process.Line + 1}]");
         result.AppendLine($"      {Process.Code[Process.Line].Trim()}");
         result.AppendLine($"      {new string('^', Process.Code[Process.Line].Trim().Length)}");
         result.Append    ($"{GetType().Name} : {Message}");

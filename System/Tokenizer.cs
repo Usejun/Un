@@ -38,7 +38,7 @@ public static class Tokenizer
 
             while (index < code.Length)
             {
-                if (code[index] == '\\')
+                if (code[index] == 92)
                 {
                     index++;
                     str += code[index] switch
@@ -52,7 +52,7 @@ public static class Tokenizer
                         'f' => '\f',
                         'v' => '\v',
                         '0' => '\0',
-                        '\\' => '\\',
+                        (char)92 => "\\\\",
                         (char)39 => '\'',
                         _ => $"\\{code[index]}",
                     };

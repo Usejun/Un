@@ -7,9 +7,9 @@ public class Str : Val<string>, IEnumerable<char>
 {
     public Str() : base("str", "") { }
 
-    public Str(string value) : base("str", value) { }
+    public Str(string? value) : base("str", value ?? "") { }
 
-    public Str(char value) : base("str", $"{value}") { }
+    public Str(char value) : this($"{value}") { }
 
     public Str this[int index]
     {
