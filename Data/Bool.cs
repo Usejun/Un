@@ -4,9 +4,9 @@ public class Bool : Val<bool>
 {
     public Bool() : base("bool", false) { }
 
-    public Bool(bool Value) : base("bool", Value) { }
+    public Bool(bool value) : base("bool", value) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args.Count == 0)
             Value = false;
@@ -22,11 +22,11 @@ public class Bool : Val<bool>
     {
         if (arg is Str) return CStr().Add(arg);
         return base.Add(arg);
-    }
+    }   
 
     public override Obj Xor(Obj arg) => new Bool(Value ^ arg.CBool().Value);
 
-    public override Str CStr() => new(Value ? "true" : "false");
+    public override Str CStr() => new(Value ? Literals.True : Literals.False);
 
     public override Bool CBool() => new(Value);
 
@@ -34,5 +34,5 @@ public class Bool : Val<bool>
 
     public override Obj Copy() => new Bool(Value);
 
-    public static bool IsBool(string str) => str == "true" || str == "false";
+    public static bool IsBool(string str) => str == Literals.True || str == Literals.False;
 }

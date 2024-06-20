@@ -4,9 +4,9 @@ public class Int : Val<long>
 {
     public Int() : base("int", 0) { }
 
-    public Int(long Value) : base("int", Value) { }
+    public Int(long value) : base("int", value) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args.Count == 0)
             Value = 0;

@@ -43,32 +43,9 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public List() : base("list", []) { }
 
-    public List(string str, Field field) : base("list", [])
+    public List(Map map) : base("list", map.Value)
     {
-        int index = 0, depth = 0;
-        bool isStr = false;
-        string buffer = "";
-
-        while (str.Length - 2 > index)
-        {
-            index++;
-            if (str[index] == '\"' || str[index] == '\'' || str[index] == '`') isStr = !isStr;
-            if (str[index] == '[' || str[index] == '(') depth++;
-            if (str[index] == ']' || str[index] == ')') depth--;
-
-            if (depth == 0 && !isStr && str[index] == ',')
-            {
-                if (!string.IsNullOrWhiteSpace(buffer) && IsList(buffer)) 
-                    Append(new List(buffer, field));
-                else Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), field), field));
-                buffer = "";
-            }
-            else
-                buffer += str[index];
-        }
-
-        if (!string.IsNullOrWhiteSpace(buffer))
-            Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize(buffer), field), field));
+        Count = map.Value.Length;
     }
 
     public List(IEnumerable enumerable) : base("list", [])
@@ -100,7 +77,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         set
         {
             if (OutOfRange(index)) throw new IndexError("out of range");
-            this.Value[index] = value;
+            Value[index] = value;
         }
     }
 
@@ -114,7 +91,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         set
         {
             if (OutOfRange((int)i.Value)) throw new IndexError("out of range");
-            this.Value[(int)i.Value] = value;
+            Value[(int)i.Value] = value;
         }
     }
 
@@ -249,7 +226,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         }));
     }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args.Count == 0)
         {
@@ -296,7 +273,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
     {
         if (arg is Int pow)
         {
-            int len = Count;
+            var len = Count;
             Obj[] objs = new Obj[len * pow.Value];
 
             for (int i = 0; i < pow.Value; i++)

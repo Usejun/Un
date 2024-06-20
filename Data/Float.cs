@@ -4,9 +4,9 @@ public class Float : Val<double>
 {
     public Float() : base("float", 0) { }
 
-    public Float(double Value) : base("float", Value) { }
+    public Float(double value) : base("float", value) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args.Count == 0)
             Value = 0;
@@ -30,7 +30,7 @@ public class Float : Val<double>
     public override Obj Sub(Obj arg)
     {
         if (arg is Int i) return new Float(Value - i.Value);
-        if (arg is Float f) return new Float(Value * f.Value);
+        if (arg is Float f) return new Float(Value - f.Value);
 
         return base.Sub(arg);
     }

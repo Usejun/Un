@@ -31,23 +31,23 @@ public class LocalFun : Fun
             args.Add(tokens[i].Value);
         }
 
-        this.name = name;
+        Name = name;
         this.code = code;
     }
 
-    public override Obj Call(List args)
+    public override Obj Call(Collections.Tuple args)
     {
         Field field = new(this.field);
 
         for (int i = 0; i < this.args.Count; i++)
             field.Set(this.args[i], args[i]);
 
-        return Process.Interpret(name, code, field, [], line: 1, nesting: nesting);
+        return Process.Interpret(Name, code, field, [], line: 1, nesting: nesting);
     }
 
     public override LocalFun Clone()
     {
-        return new(name)
+        return new(Name)
         {            
             code = code,
             nesting = nesting,

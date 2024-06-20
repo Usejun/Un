@@ -1,3 +1,9 @@
-﻿a = 2x22
+﻿fn t()
+	write(true)
+	return true
 
-write(a)
+fn f()
+	write(false)
+	return false
+
+write(t() or f())

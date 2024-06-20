@@ -29,7 +29,7 @@ public class Str : Val<string>, IEnumerable<char>
         }
     }
 
-    public override Obj Init(List arg)
+    public override Obj Init(Collections.Tuple arg)
     {
         if (arg.Count == 1)
             Value = arg[0].CStr().Value;
@@ -120,7 +120,13 @@ public class Str : Val<string>, IEnumerable<char>
 
     public override Int CInt()
     {
-        if (long.TryParse(Value, out var l))
+        if (Value.Length > 2 && Value[..2] == "0b")
+            return new(System.Convert.ToInt64(Value[2..], 2));
+        else if (Value.Length > 2 && Value[..2] == "0o")
+            return new(System.Convert.ToInt64(Value[2..], 8));
+        else if (Value.Length > 2 && Value[..2] == "0x")
+            return new(System.Convert.ToInt64(Value[2..], 16));
+        else if (long.TryParse(Value, out var l))
             return new(l);
         return base.CInt();
     }
@@ -178,11 +184,11 @@ public class Str : Val<string>, IEnumerable<char>
     }
 
 
-    public static bool IsDoubleStr(string str) => str[0] == '"' && str[^1] == '"';
+    public static bool IsDoubleStr(string str) => str[0] == Literals.Double && str[^1] == Literals.Double;
     
-    public static bool IsSingleStr(string str) => str[0] == '\'' && str[^1] == '\'';
+    public static bool IsSingleStr(string str) => str[0] == Literals.Single && str[^1] == Literals.Single;
     
-    public static bool IsFStr(string str) => str[0] == '`' && str[^1] == '`';
+    public static bool IsFStr(string str) => str[0] == Literals.Grave && str[^1] == Literals.Grave;
 
     public static Str FStr(string str, Field field)
     {
@@ -196,7 +202,7 @@ public class Str : Val<string>, IEnumerable<char>
             {
                 isFormat = false;
                 index++;
-                result.Append(Calculator.Calculate(Lexer.Lex(Tokenizer.Tokenize($"{buffer}"), field), field).CStr().Value);
+                result.Append(Calculator.All($"{buffer}", field).CStr().Value);
             }
             else if (isFormat)
             {

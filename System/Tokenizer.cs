@@ -70,35 +70,72 @@ public static class Tokenizer
         {
             string str = $"{code[index++]}";
 
-            while (index < code.Length && char.IsDigit(code[index]))
+            while (!OutOfRange() && char.IsDigit(code[index]))
                 str += code[index++];
 
-            if (index < code.Length && code[index] == '.')
+            if (OutOfRange()) return new(str, Token.Type.Integer);
+
+            if (code[index] == '.')
             {
                 str += code[index++];
-                while (index < code.Length && char.IsDigit(code[index]))
+                while (!OutOfRange() && char.IsDigit(code[index]))
                     str += code[index++];
 
                 return new(str, Token.Type.Float);
             }
-            if (index < code.Length && code[index] == 'b')
+            else if (IsBinary())
             {
                 str += code[index++];
-                while (index < code.Length && char.IsDigit(code[index]))
+                while (!OutOfRange() && IsBinaryDigit(code[index]))
                     str += code[index++];
 
-                return new(str, Token.Type.Integer);
+                return new($"{Convert.ToInt64(str, 2)}", Token.Type.Integer);
             }
-            if (index < code.Length && code[index] == 'x')
+            else if (IsOctal())
             {
                 str += code[index++];
-                while (index < code.Length && char.IsDigit(code[index]))
+                while (!OutOfRange() && IsOctalDigit(code[index]))
                     str += code[index++];
 
-                return new(str, Token.Type.Integer);
+                return new($"{Convert.ToInt64(str, 8)}", Token.Type.Integer);
             }
+            else if (IsHex())
+            {
+                str += code[index++];
+                while (!OutOfRange() && IsHexDigit(code[index]))
+                    str += code[index++];
 
-            return new(str, Token.Type.Integer);
+                return new($"{Convert.ToInt64(str, 16)}", Token.Type.Integer);
+            }
+            else return new(str, Token.Type.Integer);
+
+            bool IsBinary() => str == "0" && code[index] == 'b';
+
+            bool IsBinaryDigit(char chr) => chr switch
+            {
+                '0' or '1' => true,
+                _ => false
+            };
+
+            bool IsOctal() => str == "0" && code[index] == 'o';
+
+            bool IsOctalDigit(char chr) => chr switch
+            {
+                '0' or '1' or '2' or '3' or '4' or '5' or '6' or '7' => true,
+                _ => false
+            };
+
+            bool IsHex() => str == "0" && code[index] == 'x';
+
+            bool IsHexDigit(char chr) => chr switch
+            {
+                >= '0' and <= '9' => true,
+                >= 'a' and <= 'f' => true,
+                >= 'A' and <= 'F' => true,
+                _ => false
+            };
+
+            bool OutOfRange() => index >= code.Length;
         }
 
         Token Operator(string code)

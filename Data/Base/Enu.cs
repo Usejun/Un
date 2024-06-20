@@ -2,7 +2,7 @@
 
 public class Enu : Obj
 {
-    public List<Str> number = [];
+    private readonly List<Str> number = [];
 
     public Enu(string className) : base(className) { }
 
@@ -24,7 +24,7 @@ public class Enu : Obj
         }
     }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args[0] is Int i) return new EnuElm($"{number[(int)i.Value].Value}", (int)i.Value);
         if (args[0] is Str s) return field[s.Value];

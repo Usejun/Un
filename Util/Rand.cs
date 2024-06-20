@@ -6,7 +6,7 @@ public class Rand : Obj, IPackage, IStatic
 
     public string Name => "rand";
     
-    public Obj Seed(List args)
+    public Obj Seed(Collections.Tuple args)
     {
         if (args[1] is Int seed)
         {
@@ -17,11 +17,11 @@ public class Rand : Obj, IPackage, IStatic
         throw new ValueError("invalid argument");
     }
 
-    public Int Int(List args) => new(rand.NextInt64());
+    public Int Int(Collections.Tuple args) => new(rand.NextInt64());
 
-    public Float Random(List args) => new(rand.NextDouble());
+    public Float Random(Collections.Tuple args) => new(rand.NextDouble());
 
-    public Obj Range(List args)
+    public Obj Range(Collections.Tuple args)
     {
         if (args[1] is Int iS && args[2] is Int iE && iS.CompareTo(iE) < 0)
             return new Int(rand.NextInt64(iS.Value, iE.Value));
@@ -30,7 +30,7 @@ public class Rand : Obj, IPackage, IStatic
         throw new ValueError("invalid argument");
     }
 
-    public List Choice(List args)
+    public List Choice(Collections.Tuple args)
     {
         if (args[1] is List list)
         {
@@ -41,7 +41,7 @@ public class Rand : Obj, IPackage, IStatic
         throw new ValueError("invalid argument");
     }
 
-    public Obj Shuffle(List args)
+    public Obj Shuffle(Collections.Tuple args)
     {
         if (args[1] is List list)
         {

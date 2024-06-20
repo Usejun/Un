@@ -10,7 +10,7 @@ namespace Un.Data
 
         public RStr(Str str) : base("rstr", new(str.Value)) { }
 
-        public override Obj Init(List args)
+        public override Obj Init(Collections.Tuple args)
         {
             if (args.Count == 0)
                 Value = new();
@@ -23,7 +23,7 @@ namespace Un.Data
         }
 
         public override void Init()
-        {
+        {          
             field.Set("append", new NativeFun("append", -1, args =>
             {
                 if (args[0] is not RStr self)
@@ -41,6 +41,40 @@ namespace Un.Data
 
                 for (int i = 1; i < args.Count; i++)
                     self.Value.AppendLine(args[i].CStr().Value);
+
+                return self;
+            }));
+            field.Set("replace", new NativeFun("replace", 3, args =>
+            {
+                if (args[0] is not RStr self)
+                    throw new ValueError("invalid argument");
+
+                Str old = args[1].CStr(), change = args[2].CStr();
+
+                self.Value.Replace(old.Value, change.Value);
+
+                return self;
+            }));
+            field.Set("remove", new NativeFun("remove", 3, args =>
+            {
+                if (args[0] is not RStr self)
+                    throw new ValueError("invalid argument");
+
+                Str text = args[1].CStr();
+
+                self.Value.Replace(text.Value, "");
+
+                return self;
+            }));
+            field.Set("remove_at", new NativeFun("remove_at", 3, args =>
+            {
+                if (args[0] is not RStr self)
+                    throw new ValueError("invalid argument");
+
+                if (args[1] is not Int index || args[2] is not Int length)
+                    throw new ValueError("invalid argument");
+
+                self.Value.Remove((int)index.Value, (int)length.Value);
 
                 return self;
             }));

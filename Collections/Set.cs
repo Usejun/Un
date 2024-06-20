@@ -15,7 +15,7 @@ public class Set : Ref<HashSet<Obj>>
         }
     }
 
-    public override Obj Init(List args)
+    public override Obj Init(Tuple args)
     {
         Value.Clear();
 
@@ -72,7 +72,7 @@ public class Set : Ref<HashSet<Obj>>
 
             return None;
         }));
-        field.Set("Values", new NativeFun("Values", 1, args =>
+        field.Set("values", new NativeFun("values", 1, args =>
         {
             if (args[0] is not Set self)
                 throw new ValueError("invalid argument");

@@ -6,7 +6,7 @@ namespace Un.Data
     {
         public Object() : base("obj") { }
 
-        public override Obj Init(List args)
+        public override Obj Init(Collections.Tuple args)
         {
             return this;
         }

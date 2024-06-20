@@ -4,7 +4,7 @@ public class Queue : Ref<Queue<Obj>>
 {
     public Queue() : base("queue", []) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Tuple args)
     {
         Value.Clear();
 

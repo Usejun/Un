@@ -10,7 +10,7 @@ public class JObj : Ref<JToken>
 
     public JObj(JToken value) : base("json", value) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args.Count == 0)
             Value = new JObject();
@@ -71,86 +71,29 @@ public class JObj : Ref<JToken>
 
     public override Obj SetItem(List args)
     {
-        if (args[0] is Int i)
-        {
-            Value[(int)i.Value] = args[1] switch
-            {
-                Int i1 => i1.Value,
-                Float f1 => f1.Value,
-                Bool b1 => b1.Value,
-                Date d1 => d1.Value,
-                Str s1 => s1.Value,
-                RStr rs1 => $"{rs1.Value}",
-                JObj j1 => j1.Value,
-                _ => null,
-            };
+        object key = args[0] is Int i ? i.Value : args[0] is Str s ? s.Value : throw new IndexError();
+        var value = args[1];
 
-            if (args[1] is List list)
-            {
-                var ja = new JArray();
+        if (value is List list)
+            Value[key] = new JArray(list.Select(Transform));
+        else Value[key] = Transform(value);
 
-                foreach (var obj in list)
-                {
-                    ja.Add(obj switch
-                    {
-                        Int i1 => i1.Value,
-                        Float f1 => f1.Value,
-                        Bool b1 => b1.Value,
-                        Date d1 => d1.Value,
-                        Str s1 => s1.Value,
-                        RStr rs1 => $"{rs1.Value}",
-                        JObj j1 => j1.Value,
-                        _ => throw new ValueError("invalid argument"),
-                    });
-                }
-
-                Value[(int)i.Value] = ja;
-            }
-
-            return this;
-        }
-        else if (args[0] is Str s)
-        {
-            Value[s.Value] = args[1] switch
-            {
-                Int i1 => i1.Value,
-                Float f1 => f1.Value,
-                Bool b1 => b1.Value,
-                Date d1 => d1.Value,
-                Str s1 => s1.Value,
-                RStr rs1 => $"{rs1.Value}",
-                JObj j1 => j1.Value,
-                _ => null,
-            };
-
-            if (args[1] is List list)
-            {
-                var ja = new JArray();
-
-                foreach (var obj in list)
-                {
-                    ja.Add(obj switch
-                    {
-                        Int i1 => i1.Value,
-                        Float f1 => f1.Value,
-                        Bool b1 => b1.Value,
-                        Date d1 => d1.Value,
-                        Str s1 => s1.Value,
-                        RStr rs1 => $"{rs1.Value}",
-                        JObj j1 => j1.Value,
-                        _ => throw new ValueError("invalid argument"),
-                    });
-                }
-
-                Value[s.Value] = ja;
-            }
-
-            return this;
-        }
-        else throw new IndexError();
+        return this;
     }
 
     public override Obj Clone() => new JObj() { Value = Value };
+
+    private JToken? Transform(Obj obj) => obj switch
+    {
+        Int i => i.Value,
+        Float f => f.Value,
+        Bool b => b.Value,
+        Date d => d.Value,
+        Str s => s.Value,
+        RStr rs => $"{rs.Value}",
+        JObj j => j.Value,
+        _ => null,
+    };
 
     private static JObject Parse(Dict dict)
     {

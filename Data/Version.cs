@@ -6,7 +6,7 @@ public class Version : Ref<System.Version>
 
     public Version(System.Version Value) : base("version", Value) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         Value = null;
         return this;

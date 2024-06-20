@@ -20,7 +20,7 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
         }          
     }
 
-    public override Obj Init(List args)
+    public override Obj Init(Tuple args)
     {
         Value.Clear();
 

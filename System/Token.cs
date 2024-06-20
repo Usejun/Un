@@ -85,7 +85,7 @@ public class Token
 
         Indexer, Slicer,
         Property, Method,
-        Function,
+        Function, Arguments,
 
         LParen,
         LBrace, RBrace,
@@ -103,7 +103,8 @@ public class Token
 
         Variable,
 
-        Integer, Float, String, Boolean, List, Dictionary, Lambda,
+        Integer, Float, String, Boolean, 
+        List, Dictionary, Lambda, Tuple,
 
         Async, Await
     }
@@ -256,4 +257,19 @@ public class Token
         '\'' or '"' or '`' => true,
         _ => false 
     };
+
+
+    public static int IndexOf(List<Token> tokens, Func<Token, bool> codition, int start = 0)
+    {
+        for (int i = start; i < tokens.Count; i++)
+            if (codition(tokens[i])) return i;
+        return -1;
+    }
+
+    public static int IndexOf(List<Token> tokens, Type type, int start = 0)
+    {
+        for (int i = start; i < tokens.Count; i++)
+            if (tokens[i].type == type) return i;
+        return -1;
+    }
 }

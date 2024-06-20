@@ -12,7 +12,7 @@ public class Reader : Ref<StreamReader>
 
     public Reader(Reader reader) : base("reader", new(reader.Value.BaseStream, Process.Unicode)) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args.Count != 1) throw new ClassError("initialize error");
         else if (args[0] is Stream st) Value = new(st.Value);

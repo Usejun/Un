@@ -2,9 +2,9 @@
 
 public class Stack : Ref<Stack<Obj>>
 {
-    public Stack() : base("queue", []) { }
+    public Stack() : base("stack", []) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         Value.Clear();
 

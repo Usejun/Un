@@ -2,7 +2,7 @@
 
 public class Calculator
 {
-    public static List<Token> Postfix(List<Token> expression)
+    private static List<Token> Postfix(List<Token> expression)
     {
         Stack<Token> postfixStack = [];
         List<Token> postfix = [];
@@ -31,55 +31,66 @@ public class Calculator
         return postfix;
     }
 
-    public static Obj Calculate(List<Token> expression, Field field)
+    private static Obj Calculate(List<Token> expression, Field field)
     {
         if (expression.Count == 0) return Obj.None;
 
         Stack<Obj> calculateStack = [];
         List<Token> postfix = Postfix(expression);
 
-         for (int i = 0; i < postfix.Count; i++)
+        for (int i = 0; i < postfix.Count; i++)
          {
             Token token = postfix[i];
             
-            if (token.type == Token.Type.Variable && Process.TryGetStaticClass(token, out var staticCla))
+            if (Process.TryGetStaticClass(token, out var staticCla))
             {
                 calculateStack.Push(staticCla);
             }
-            else if ((token.type == Token.Type.Variable || token.type == Token.Type.Function) && Process.TryGetClass(token, out var cla))
+            else if (token.type == Token.Type.Function || token.type == Token.Type.Method)
             {
-                if (token.type == Token.Type.Function && calculateStack.TryPop(out var obj) && obj is List args)
-                    calculateStack.Push(cla.Clone().Init(args));
-                else
-                    calculateStack.Push(new NativeFun(token.Value, -1, cla.Init));
-            }
-            else if (token.type == Token.Type.Function)
-            {
-                if (field.Get(token.Value, out var local))
-                {
-                    if (local is Fun fun && calculateStack.TryPeek(out var a) && a is List args)
-                        local = fun.Clone().Call(calculateStack.Pop().CList());
+                var index = token.Value.IndexOf(Literals.FunctionSep);
+                var name = token.Value[..index];
+                var args = new Collections.Tuple(new Map(token.Value[(index + 1)..], field));               
+                var isCall = args.Count >= 0; 
 
-                    calculateStack.Push(local);
+                if (token.type == Token.Type.Method)
+                {
+                    Obj a = calculateStack.Pop(), b = a.Get(name);
+
+                    if (a.Get(name) is not Fun fun) throw new SyntaxError();
+
+                    calculateStack.Push(isCall ? fun.Call(new([a, ..args])) : fun);
                 }
-                else if (Process.TryGetGlobalProperty(token, out var global))
+                else if (Process.TryGetClass(name, out var cla))
                 {
-                    if (global is Fun fun && calculateStack.TryPeek(out var a) && a is List args)
-                        global = fun.Clone().Call(calculateStack.Pop().CList());
+                    calculateStack.Push(isCall ? cla.Clone().Init(args) : new NativeFun(name, -1, cla.Init));
+                }
+                else if (field.Get(name, out var local))
+                {
+                    if (local is not Fun fun) throw new SyntaxError();
 
-                    calculateStack.Push(global);
+                    calculateStack.Push(isCall ? fun.Clone().Call(args) : fun);
+                }
+                else if (Process.TryGetGlobalProperty(name, out var global))
+                {
+                    if (global is not Fun fun) throw new SyntaxError();
+
+                    calculateStack.Push(isCall ? fun.Clone().Call(args) : fun);
                 }
                 else throw new SyntaxError();
             }
             else if (Token.IsOperator(token))
             {
                 Obj a = calculateStack.Pop(), b;
+                a = a is Collections.Tuple at && at.Count == 1 ? at[0] : a;                
+
                 if (token.type == Token.Type.Indexer)
                 {
                     b = Obj.Convert(token.Value, field);
+                    b = b is Collections.Tuple bt && bt.Count == 1 ? bt[0] : b;
 
                     calculateStack.Push(a.GetItem(new List([b])));
-                }             
+                }
                 else if (token.type == Token.Type.Slicer)
                 {
                     var index = token.Value.Split(':');
@@ -92,7 +103,7 @@ public class Calculator
 
                     calculateStack.Push(b);
                 }
-                else if (token.type == Token.Type.Bang || token.type == Token.Type.Not)
+                else if (token.type == Token.Type.Not)
                 {
                     calculateStack.Push(new Bool(!a.CBool().Value));
                 }
@@ -102,35 +113,39 @@ public class Calculator
                 }
                 else if (token.type == Token.Type.In)
                 {
-                    calculateStack.Push(a.CList().Contains(calculateStack.Pop()));
+                    b = calculateStack.Pop();
+                    b = b is Collections.Tuple bt && bt.Count == 1 ? bt[0] : b;
+
+                    calculateStack.Push(a.CList().Contains(b));
                 }
                 else if (token.type == Token.Type.Is)
                 {
                     b = calculateStack.Pop();
+                    b = b is Collections.Tuple bt && bt.Count == 1 ? bt[0] : b;
 
-                    if (a is Fun fun)
-                        calculateStack.Push(new Bool(b.ClassName == fun.name));
-                    else
-                        calculateStack.Push(new Bool(b.ClassName == a.ClassName));
+                    calculateStack.Push(new Bool(b.ClassName == (a is Fun fun ? fun.Name : a.ClassName)));
                 }
                 else if (token.type == Token.Type.And)
                 {
                     b = calculateStack.Pop();
+                    b = b is Collections.Tuple bt && bt.Count == 1 ? bt[0] : b;
 
                     calculateStack.Push(b.CBool().Value ? a.CBool() : new Bool(false));
                 }
                 else if (token.type == Token.Type.Or)
                 {
                     b = calculateStack.Pop();
+                    b = b is Collections.Tuple bt && bt.Count == 1 ? bt[0] : b;
 
                     calculateStack.Push(!b.CBool().Value ? a.CBool() : new Bool(true));
                 }
                 else
                 {
                     b = calculateStack.Pop();
+                    b = b is Collections.Tuple bt && bt.Count == 1 ? bt[0] : b;
 
                     Obj c = token.type switch
-                    {
+                    {                        
                         Token.Type.Plus => b.Add(a),
                         Token.Type.Minus => b.Sub(a),
                         Token.Type.Asterisk => b.Mul(a),
@@ -148,19 +163,56 @@ public class Calculator
                         Token.Type.LessOrEqual => b.LessOrEquals(a),
                         Token.Type.GreaterThen => b.GreaterThen(a),
                         Token.Type.LessThen => b.LessThen(a),
-                        Token.Type.Method => ((Fun)b.Get(token.Value)).Call(b is Data.Object ? a.CList() : a.CList().Insert(b, 0)),
                         _ => throw new OperatorError()
                     };
 
                     calculateStack.Push(c);
                 }
             }                
-            else
-            {
-                calculateStack.Push(Obj.Convert(token.Value, field));
-            }
+            else calculateStack.Push(Obj.Convert(token.Value, field));
         }
 
         return calculateStack.TryPop(out var v) ? v : Obj.None;
     }
+
+    public static Obj On(List<Token> expression, Field field)
+    {        
+        List<Token> buffer = [];
+        Token.Type prev = Token.Type.None;
+
+        foreach (var token in expression)
+        {
+            if (token.type == Token.Type.And)
+            {
+                Obj value = Calculate(buffer, field);
+                buffer.Clear();
+
+                if (prev != Token.Type.None) 
+                    return new Bool(value.CBool().Value);
+
+                if (!value.CBool().Value) return new Bool(false);
+
+                prev = token.type;
+            }
+            else if (token.type == Token.Type.Or)
+            {
+                Obj value = Calculate(buffer, field);
+                buffer.Clear();
+
+                if (prev != Token.Type.None)
+                    return new Bool(value.CBool().Value);
+
+                if (value.CBool().Value) return new Bool(true);
+
+                prev = token.type;
+            }
+            else buffer.Add(token);
+        }
+
+        return buffer.Count != 0 ? Calculate(buffer, field) : Obj.None;
+    }
+
+    public static Obj All(string str, Field field) => On(Lexer.Lex(Tokenizer.Tokenize(str), field), field);
+
+    public static Obj All(List<Token> tokens, Field field) => On(Lexer.Lex(tokens, field), field);
 }

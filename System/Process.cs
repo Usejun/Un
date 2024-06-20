@@ -29,7 +29,7 @@ public static class Process
 
     public static void Initialize(string path)
     {
-        using StreamReader config = new(new FileStream($"D:\\User\\Un\\config.txt", FileMode.Open));
+        using StreamReader config = new(new FileStream($"D:\\User\\Un\\keywords.txt", FileMode.Open));
 
         while (!config.EndOfStream)
         {
@@ -86,7 +86,7 @@ public static class Process
     public static void Import(IPackage package)
     {
         foreach (var fun in package.Import())
-            Global.Set(fun.name, fun);
+            Global.Set(fun.Name, fun);
 
         foreach (var include in package.Include())
             Class.Set(include.ClassName, include);
@@ -124,7 +124,7 @@ public static class Process
         }
     }
 
-    public static void Test(string[] files)
+    public static void Test(string[] files, bool writeState = false)
     {
         List<string> logs = [];
 
@@ -132,7 +132,8 @@ public static class Process
         {
             try
             {
-                Console.WriteLine($"\n{file} : Start\n");
+                if (writeState) Console.WriteLine($"\n{file} : Start\n");
+                else Console.WriteLine();
                 Run(file);
             }
             catch
@@ -142,7 +143,8 @@ public static class Process
             }
             finally
             {
-                Console.WriteLine($"\n{file} : End\n");
+                if (writeState) Console.WriteLine($"\n{file} : End\n");
+                else Console.WriteLine();
             }
             logs.Add($"{file} : Succeed");
         }
@@ -200,11 +202,11 @@ public static class Process
 
     public static bool IsClass(string str) => Class.Key(str);
 
-    public static bool IsStaticClass(Token token) => StaticClass.Key(token.Value);
+    public static bool IsStaticClass(Token token) => token.type == Token.Type.Variable && StaticClass.Key(token.Value);
 
     public static bool IsStaticClass(string str) => StaticClass.Key(str);
 
-    public static bool IsPackage(Token token) => Package.Key(token.Value);
+    public static bool IsPackage(Token token) => (token.type == Token.Type.Variable || token.type == Token.Type.Function) && Package.Key(token.Value);
 
     public static bool IsPackage(string str) => Package.Key(str);
 }

@@ -27,11 +27,11 @@ public class AsyncFun : LocalFun
             args.Add(tokens[i].Value);
         }
 
-        this.name = name;
+        Name = name;
         this.code = code;
     }
 
-    public override Obj Call(List args)
+    public override Obj Call(Collections.Tuple args)
     {
         Field field = new(this.field);
 
@@ -49,7 +49,7 @@ public class AsyncFun : LocalFun
 
     public override AsyncFun Clone()
     {
-        return new(name)
+        return new(Name)
         {
             code = code,
             nesting = nesting,

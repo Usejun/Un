@@ -4,13 +4,14 @@ public class Date : Val<DateTime>
 {
     public Date() : base("date", DateTime.MinValue) { }
 
-    public Date(DateTime Value) : base("date", Value) { }
+    public Date(DateTime value) : base("date", value) { }
 
-    public Date(TimeSpan Value) : base("date", new(Value.Ticks)) { }
+    public Date(TimeSpan value) : base("date", new(value.Ticks)) { }
 
-    public Date(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0, int milliseconds = 0) : base("date", new(year, month, day, hour, minute, second, milliseconds)) { }
+    public Date(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0, int milliseconds = 0) : 
+           base("date", new(year, month, day, hour, minute, second, milliseconds)) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args[0] is Str str && DateTime.TryParse(str.Value, out var v)) 
             Value = v; 

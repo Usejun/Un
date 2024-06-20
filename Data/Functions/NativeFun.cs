@@ -1,11 +1,11 @@
 ﻿namespace Un.Data;
 
-public class NativeFun(string name, int argsLen, Func<List, Obj> func) : Fun(name)
+public class NativeFun(string name, int argsLen, Func<Collections.Tuple, Obj> func) : Fun(name)
 {
     public int argsLen = argsLen;
-    public Func<List, Obj> function = func;
+    public Func<Collections.Tuple, Obj> function = func;
 
-    public override Obj Call(List args)
+    public override Obj Call(Collections.Tuple args)
     {
         if (argsLen != -1 && args.Count != argsLen)
             throw new ValueError("arguments length is over");

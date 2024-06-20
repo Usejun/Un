@@ -12,7 +12,7 @@ public class Writer : Ref<StreamWriter>
 
     public Writer(Writer writer) : base("writer", new(writer.Value.BaseStream, Process.Unicode)) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args.Count == 1)
         {

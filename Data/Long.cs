@@ -8,7 +8,7 @@ public class Long : Val<BigInteger>
 
     public Long(BigInteger Value) : base("long", Value) { }
 
-    public override Obj Init(List args)
+    public override Obj Init(Collections.Tuple args)
     {
         if (args.Count == 0)
             Value = BigInteger.Zero;

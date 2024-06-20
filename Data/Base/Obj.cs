@@ -1,12 +1,10 @@
-﻿using System.Diagnostics;
-
-namespace Un.Data;
+﻿namespace Un.Data;
 
 public class Obj : IComparable<Obj>
 {
     public static Obj None => new();
 
-    public string ClassName { get; protected set; } = "None";
+    public string ClassName { get; protected set; } = Literals.None;
 
     public Field field = new();
 
@@ -61,7 +59,7 @@ public class Obj : IComparable<Obj>
                 Token token = tokens[0];
 
                 this.field.Set(token.Value, None);
-                this.field[token.Value] = Calculator.Calculate(tokens[(assign + 1)..], field);
+                this.field[token.Value] = Calculator.On(tokens[(assign + 1)..], field);
             }
             else if (tokens[0].type == Token.Type.Func)
             {
@@ -74,7 +72,9 @@ public class Obj : IComparable<Obj>
                 while (line < code.Length && (string.IsNullOrWhiteSpace(code[line]) || Tokenizer.IsBody(code[line], nesting)))
                     line++;
 
-                this.field.Set(tokens[1].Value, new LocalFun(tokens[1].Value, code[start..line]));
+                var name = tokens[1].Value.Split(Literals.FunctionSep)[0];
+
+                this.field.Set(name, new LocalFun(name, code[start..line]));
 
                 line--;
                 nesting--;
@@ -89,13 +89,10 @@ public class Obj : IComparable<Obj>
 
     }
 
-    public virtual Obj Init(List args)
+    public virtual Obj Init(Collections.Tuple args)
     {
-        if (field.Get("__init__", out var Value) && Value is Fun fun)
-        {
-            List argss = new([this]);
-            fun.Call(argss.Extend(args));
-        }
+        if (Fun.Invoke(this, Literals.Init, new([this, ..args]), out _ )) { }
+
         return this;
     }
 
@@ -107,120 +104,120 @@ public class Obj : IComparable<Obj>
         throw new TypeError("A property that doesn't exist.");
     }
 
-    public virtual void Set(string str, Obj Value)
+    public virtual void Set(string str, Obj value)
     {
         if (!field.Key(str))
             throw new TypeError("A property that doesn't exist.");
 
-        field[str] = Value;
+        field[str] = value;
     }
 
 
     public virtual Obj Add(Obj arg)
     {
-        if (field.Get("__add__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.Add, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot be added to each other.");
     }
 
     public virtual Obj Sub(Obj arg)
     {
-        if (field.Get("__sub__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.Sub, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot be subtracted to each other.");
     }
 
     public virtual Obj Mul(Obj arg)
     {
-        if (field.Get("__mul__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.Mul, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot be multiplied to each other.");
     }
 
     public virtual Obj Mod(Obj arg)
     {
-        if (field.Get("__mod__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.Mod, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot perform the remaining operations on each other.");
     }
 
     public virtual Obj Div(Obj arg)
     {
-        if (field.Get("__div__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.Div, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot be divided to each other.");
     }
 
     public virtual Obj IDiv(Obj arg)
     {
-        if (field.Get("__idiv__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.IDiv, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot be divided to each other.");
     }
 
     public virtual Obj Pow(Obj arg)
     {
-        if (field.Get("__pow__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.Pow, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot be raised to a power");
     }
 
     public virtual Obj LSh(Obj arg)
     {
-        if (field.Get("__lsh__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.LSh, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that can't be left-shifted");
     }
 
     public virtual Obj RSh(Obj arg)
     {
-        if (field.Get("__rsh__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.RSh, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that can't be right-shifted");
     }
 
     public virtual Obj BAnd(Obj arg)
     {
-        if (field.Get("__band__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.BAnd, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot perform bitwise AND operations");
     }
 
     public virtual Obj BOr(Obj arg)
     {
-        if (field.Get("__bor__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.BOr, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot perform bitwise OR operations");
     }
 
     public virtual Obj BXor(Obj arg)
     {
-        if (field.Get("__bxor__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.BXor, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot perform bitwise XOR operations");
     }
 
     public virtual Obj BNot()
     {
-        if (field.Get("__bnot__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this]));
+        if (Fun.Invoke(this, Literals.BNot, new(this), out var value))
+            return value;
         throw new TypeError("Types that cannot perform bitwise Not operations");
     }
 
     public virtual Obj Xor(Obj arg)
     {
-        if (field.Get("__xor__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this, arg]));
+        if (Fun.Invoke(this, Literals.Xor, new(this, arg), out var value))
+            return value;
         throw new TypeError("Types that cannot perform the boolean XOR operation.");
     }
 
 
     public virtual Bool Equals(Obj arg)
     {
-        if (arg.ClassName == "None" && ClassName == "None")
+        if (arg.ClassName == Literals.None && ClassName == Literals.None)
             return new(true);
-        if (field.Get("__eq__", out var Value) && Value is Fun fun && fun.Call(new List([this, arg])) is Bool b)
-            return b;
+        else if (Fun.Invoke(this, Literals.Eqaul, new(this, arg), out var result) && result is Bool value)
+            return value;
         throw new TypeError("Types that are not comargsble to each other.");
     }
 
@@ -228,8 +225,8 @@ public class Obj : IComparable<Obj>
 
     public virtual Bool LessThen(Obj arg)
     {
-        if (field.Get("__lt__", out var Value) && Value is Fun fun && fun.Call(new List([this, arg])) is Bool b)
-            return b;
+        if (Fun.Invoke(this, Literals.LessThen, new(this, arg), out var result) && result is Bool value)
+            return value;
         throw new TypeError("Types that are not comargsble to each other.");
     }
 
@@ -242,8 +239,8 @@ public class Obj : IComparable<Obj>
 
     public virtual Int Len()
     {
-        if (field.Get("__len__", out var Value) && Value is Fun fun && fun.Call(new List([this])) is Int i)
-            return i;
+        if (Fun.Invoke(this, Literals.Len, new(this), out var result) && result is Int value)
+            return value;
         return new(1);
     }
 
@@ -251,44 +248,44 @@ public class Obj : IComparable<Obj>
 
     public Str Type()
     {
-        if (field.Get("__type__", out var Value) && Value is Fun fun && fun.Call(new List([this])) is Str s)
-            return s;
+        if (Fun.Invoke(this, Literals.Type, new(this), out var result) && result is Str value)
+            return value;
         return new(ClassName);
     }
 
 
     public virtual Str CStr()
     {
-        if (field.Get("__str__", out var v) && v is Fun fun && fun.Call(new List([this])) is Str s)
-            return s;
+        if (Fun.Invoke(this, Literals.CStr, new(this), out var result) && result is Str value)
+            return value;
         return new(ClassName);
     }
 
     public virtual Bool CBool()
     {
-        if (field.Get("__bool__", out var v) && v is Fun fun && fun.Call(new List([this])) is Bool b)
-            return b;
+        if (Fun.Invoke(this, Literals.CBool, new(this), out var result) && result is Bool value)
+            return value;
         throw new TypeError("This type cannot cast bool.");
     }
 
     public virtual Float CFloat()
     {
-        if (field.Get("__float__", out var v) && v is Fun fun && fun.Call(new List([this])) is Float f)
-            return f;
+        if (Fun.Invoke(this, Literals.CFloat, new(this), out var result) && result is Float value)
+            return value;
         throw new TypeError("This type cannot cast float.");
     }
 
     public virtual Int CInt()
     {
-        if (field.Get("__int__", out var v) && v is Fun fun && fun.Call(new List([this])) is Int i)
-            return i;
+        if (Fun.Invoke(this, Literals.CInt, new(this), out var result) && result is Int value)
+            return value;
         throw new TypeError("This type cannot cast int.");
     }
 
     public virtual List CList()
     {
-        if (field.Get("__list__", out var v) && v is Fun fun && fun.Call(new List([this])) is List l)
-            return l;
+        if (Fun.Invoke(this, Literals.CList, new(this), out var result) && result is List value)
+            return value;
         throw new TypeError("This type cannot cast list.");
     }
 
@@ -296,23 +293,23 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Copy()
     {
-        if (field.Get("__copy__", out var Value) && Value is Fun fun && fun.Call(new List([this])) is List it)
-            return it;
+        if (Fun.Invoke(this, Literals.Copy, new(this), out var value))
+            return value;
         return this;
     }
 
 
     public virtual Obj GetItem(List args)
     {
-        if (field.Get("__getitem__", out var Value) && Value is Fun fun)
-            return fun.Call(args.ExtendInsert(this, 0));
+        if (Fun.Invoke(this, Literals.GetItem, new([this, ..args]), out var value))
+            return value;
         throw new IndexError("It is not Indexable type");
     }
 
     public virtual Obj SetItem(List args)
     {
-        if (field.Get("__setitem__", out var Value) && Value is Fun fun)
-            return fun.Call(args.ExtendInsert(this, 0));
+        if (Fun.Invoke(this, Literals.SetItem, new([this, .. args]), out var value))
+            return value;
         throw new IndexError("It is not Indexable type");
     }
 
@@ -321,8 +318,9 @@ public class Obj : IComparable<Obj>
         if (args[0] is not Int start || args[1] is not Int end)
             throw new SyntaxError();
 
-        long s = start.Value < 0 ? Len().Value + start.Value + 1 : start.Value;
-        long e = end.Value < 0 ? Len().Value + end.Value + 1 : end.Value;
+        long len = Len().Value;
+        long s = start.Value < 0 ? len + start.Value + 1 : start.Value;
+        long e = end.Value < 0 ? len + end.Value + 1 : end.Value;
 
         if (s > e)
             throw new SyntaxError();
@@ -341,15 +339,15 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Entry()
     {
-        if (field.Get("__entry__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this]));
+        if (Fun.Invoke(this, Literals.Entry, new(this), out var value))
+            return value;
         throw new FileError("Types with undefined entry functions");
     }
 
     public virtual Obj Exit()
     {
-        if (field.Get("__exit__", out var Value) && Value is Fun fun)
-            return fun.Call(new List([this]));
+        if (Fun.Invoke(this, Literals.Exit, new(this), out var value))
+            return value;
         throw new FileError("Types with undefined exit functions");
     }
 
@@ -376,24 +374,33 @@ public class Obj : IComparable<Obj>
     public static Obj Convert(string str, Field field)
     {
         if (string.IsNullOrEmpty(str)) return None;
-        if (field.Get(str, out var Value)) return Value;
+        if (field.Get(str, out var value)) return value;
         if (Process.TryGetStaticClass(str, out var staticCla)) return staticCla;
-        if (Process.TryGetGlobalProperty(str, out var property)) return property;
-        if (Str.IsDoubleStr(str)) return new Str(str.Trim('\"'));
-        if (Str.IsSingleStr(str)) return new Str(str.Trim('\''));
-        if (Str.IsFStr(str)) return Str.FStr(str.Trim('`'), field);
-        if (List.IsList(str)) return new List(str, field);
+        if (Process.TryGetGlobalProperty(str, out var property)) return property;        
+        if (List.IsList(str)) return new List(new Map(str, field));
+        if (Collections.Tuple.IsTuple(str)) return new Collections.Tuple(new Map(str, field));
         if (Dict.IsDict(str)) return new Dict(str, field);
-        if (Collections.Set.IsSet(str)) return new Set(str, field);
-        if (Bool.IsBool(str)) return new Bool(str == "true");
-        if (str == "None") return None;
+        if (Collections.Set.IsSet(str)) return new Set(str, field);        
+        if (Str.IsFStr(str)) return Str.FStr(str.Trim(Literals.Grave), field);
+
+        return Literal(str);
+    }
+
+    public static Obj Literal(string str)
+    {
+        if (IsNone(str)) return None;
+        if (Bool.IsBool(str)) return new Bool(str == Literals.True);
         if (long.TryParse(str, out var l)) return new Int(l);
         if (int.TryParse(str, out var i)) return new Int(i);
         if (double.TryParse(str, out var d)) return new Float(d);
         if (Lambda.IsLambda(str)) return new Lambda(str);
+        if (Str.IsDoubleStr(str)) return new Str(str.Trim(Literals.Double));
+        if (Str.IsSingleStr(str)) return new Str(str.Trim(Literals.Single));
 
         throw new SyntaxError();
     }
 
-    public static bool IsNone(Obj obj) => obj.ClassName == "None";
+    public static bool IsNone(Obj obj) => obj.ClassName == Literals.None;
+
+    public static bool IsNone(string str) => str == Literals.None;
 }

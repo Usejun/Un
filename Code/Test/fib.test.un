@@ -9,11 +9,9 @@ fn fib(k)
 		dp[k] = fib(k - 1) + fib(k - 2)
 	return dp[k]
 
-breakpoint()
 t = timer()
 n = 32
 dp = [0] * (n + 1)
-breakpoint()
 t.run()
 fib(n)
 writeln(dp)

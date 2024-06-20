@@ -4,16 +4,16 @@ public class Time : Obj, IPackage, IStatic
 {
     public string Name => "time";
 
-    Obj Sleep(List args)
+    Obj Sleep(Collections.Tuple args)
     {
         if (args[0] is Int i)
             Thread.Sleep((int)i.Value);
         return None;
     }
 
-    Date Now(List args) => new(DateTime.Now);
+    Date Now(Collections.Tuple args) => new(DateTime.Now);
 
-    Date Today(List args) => new(DateTime.Today);
+    Date Today(Collections.Tuple args) => new(DateTime.Today);
 
     public IEnumerable<Fun> Import() =>
     [

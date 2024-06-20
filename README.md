@@ -17,12 +17,14 @@ C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한
 	<li>list : 다양한 자료형이 반복적으로 있는 구조
 	<li>dict : 사전, (키:값) 구조
 	<li>set : 집합
+	<li>obj : 객체
+	<li>reader : stream을 읽기
+	<li>writer : stream을 쓰기
 </ul>
 
 ## 함수
 
 **fn [Function Name] ([Parameter Names ... ])** 형식으로 함수를 만들 수 있다. 다수의 매개변수를 입력하려면 ',' 를 사용해 구분해준다. 
-
 
 ```
 fn my_function(arg)
@@ -163,7 +165,7 @@ class point
 
 ## using
 
-**using [name] = [Value]** 의 꼴로 사용되며, Value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.
+**using [name] = [value]** 의 꼴로 사용되며, value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.
 
 ## enum
 
@@ -177,8 +179,21 @@ enum rank
 
 ## slice
 
-**listable[start:end]** 꼴로 사용되며, 인덱싱이 구현된 자료형이라면 슬라이스를 사용할 수 있다. 
+**iterable[start:end]** 꼴로 사용되며, 인덱싱이 구현된 자료형이라면 슬라이스를 사용할 수 있다. 
+
 ```
 l = [1, 2, 3, 4, 5]
 write(l[0:3]) # [1, 2, 3]
+```
+
+## async 
+
+함수의 앞에 붙는 키워드로 비동기 함수를 만들 수 있다.
+
+```
+data = []
+
+async fn api(url)
+	data += https.get(url);
+
 ```

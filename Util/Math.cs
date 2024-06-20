@@ -4,7 +4,7 @@ public class Math : Obj, IPackage, IStatic
 {
     public string Name => "math";
 
-    Obj Pow(List args)
+    Obj Pow(Collections.Tuple args)
     {
         if (args[1] is not Int i) throw new ValueError("invalid argument");
 
@@ -17,7 +17,7 @@ public class Math : Obj, IPackage, IStatic
         return p.Mul(p);
     }
 
-    Int Gcd(List args)
+    Int Gcd(Collections.Tuple args)
     {
         long Gcd(long a, long b) => b == 0 ? a : Gcd(b, a % b);
 
@@ -26,7 +26,7 @@ public class Math : Obj, IPackage, IStatic
         return new Int(Gcd(a.Value, b.Value));
     }
 
-    Int Permutation(List args)
+    Int Permutation(Collections.Tuple args)
     {
         if (args[1] is not Int n || args[2] is not Int k)
             throw new ValueError("invalid argument");
@@ -42,7 +42,7 @@ public class Math : Obj, IPackage, IStatic
         return new(sum);
     }
 
-    Int Combination(List args)
+    Int Combination(Collections.Tuple args)
     {
         if (args[1] is not Int n || args[2] is not Int k)
             throw new ValueError("invalid argument");
@@ -58,7 +58,7 @@ public class Math : Obj, IPackage, IStatic
         return new(sum);
     }
 
-    Int Factorial(List args)
+    Int Factorial(Collections.Tuple args)
     {
         if (args[1] is not Int n)
             throw new ValueError("invalid argument");

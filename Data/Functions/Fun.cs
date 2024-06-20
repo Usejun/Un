@@ -2,17 +2,17 @@
 
 public abstract class Fun(string name) : Obj("func")
 {
-    public string name = name;
+    public string Name { get; protected set; } = name;
 
-    public abstract Obj Call(List args);
+    public abstract Obj Call(Collections.Tuple args);
 
-    public override Str CStr() => new(name);
+    public override Str CStr() => new(Name);
 
     public override abstract Fun Clone();
 
-    public override int GetHashCode() => name.GetHashCode();
+    public override int GetHashCode() => Name.GetHashCode();
 
-    public static bool Invoke(Obj obj, List args, out Obj result)
+    public static bool Invoke(Obj obj, Collections.Tuple args, out Obj result)
     {
         if (obj is Fun function)
         {
@@ -24,7 +24,15 @@ public abstract class Fun(string name) : Obj("func")
         return false;
     }
 
-    public static bool Invoke(Obj obj, string name, List args, out Obj result)
+    public static Obj Invoke(Obj obj, Collections.Tuple args)
+    {
+        if (obj is Fun function)
+            return function.Call(args);
+
+        return None;
+    }
+
+    public static bool Invoke(Obj obj, string name, Collections.Tuple args, out Obj result)
     {
         if (obj.field.Key(name) && obj.Get(name) is Fun function)
         {
@@ -34,5 +42,12 @@ public abstract class Fun(string name) : Obj("func")
 
         result = None;
         return false;
+    }
+
+    public static Obj Invoke(Obj obj, string name, Collections.Tuple args)
+    {
+        if (obj.field.Key(name) && obj.Get(name) is Fun function)
+            return function.Call(args);
+        return None;
     }
 }

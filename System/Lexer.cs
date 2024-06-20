@@ -4,7 +4,7 @@ public static class Lexer
 {
     public static List<Token> Lex(List<Token> tokens, Field field)
     {
-         List<Token> analyzedTokens = [];
+        List<Token> analyzedTokens = [];
 
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -28,34 +28,27 @@ public static class Lexer
                     analyzedTokens[^1].type == Token.Type.Indexer ||
                     analyzedTokens[^1].type == Token.Type.Property))
                 {
-                    int colon = -1;
-
-                    for (int k = i; k < j; k++)
-                        if (tokens[k].type == Token.Type.Colon)
-                            colon = k;
+                    int colon = Token.IndexOf(tokens, Token.Type.Colon, i);
 
                     if (colon > 0)
                     {
-                        Obj start = i + 1 == colon ? new Int() : Calculator.Calculate(Lex(tokens[(i + 1)..colon], field), field);
-                        Obj end = colon + 1 == j ? new Int(-1) : Calculator.Calculate(Lex(tokens[(colon + 1)..j], field), field);
+                        Obj start = i + 1 == colon ? new Int() : Calculator.All(tokens[(i + 1)..colon], field);
+                        Obj end = colon + 1 == j ? new Int(-1) : Calculator.All(tokens[(colon + 1)..j], field);
 
                         if (start is not Int || end is not Int) throw new SyntaxError();
 
                         analyzedTokens.Add(new Token($"{start.CStr().Value}:{end.CStr().Value}", Token.Type.Slicer));
-                    } 
+                    }
                     else
                     {
-                        Obj index = Calculator.Calculate(Lex(tokens[(i + 1)..j], field), field);
+                        Obj index = Calculator.All(tokens[(i + 1)..j], field);
 
-                        if (index is Str)
-                            analyzedTokens.Add(new Token($"\"{index.CStr().Value}\"", Token.Type.Indexer));
-                        else
-                            analyzedTokens.Add(new Token(index.CStr().Value, Token.Type.Indexer));
+                        analyzedTokens.Add(new Token(index is Str ? $"\"{index.CStr().Value}\"" : index.CStr().Value, Token.Type.Indexer));
                     }
                 }
                 else
                 {
-                    string Value = "[";
+                    string value = "[";
                     depth = 1;
 
                     j = i + 1;
@@ -67,12 +60,13 @@ public static class Lexer
                         if (tokens[j].type == Token.Type.RBrack)
                             depth--;
                         if (depth <= 0) break;
-                        Value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].Value} " : tokens[j++].Value;
+
+                        value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].Value} " : tokens[j++].Value;
                     }
 
-                    Value += "]";
+                    value += "]";
 
-                    analyzedTokens.Add(new(Value, Token.Type.List));
+                    analyzedTokens.Add(new(value, Token.Type.List));
                 }
 
                 i = j;
@@ -84,6 +78,7 @@ public static class Lexer
 
                 analyzedTokens.Add(new(tokens[i + 1].Value, Token.Type.Property));
                 i++;
+
                 if (tokens.Count > i + 1 && tokens[i + 1].type == Token.Type.LParen)
                     analyzedTokens[^1].type = Token.Type.Method;
             }
@@ -94,7 +89,7 @@ public static class Lexer
                 string code = "";
 
                 while (analyzedTokens[^1].type == Token.Type.Variable)
-                {                       
+                {
                     arg += analyzedTokens[^1].Value;
                     analyzedTokens.RemoveAt(analyzedTokens.Count - 1);
 
@@ -153,20 +148,15 @@ public static class Lexer
             }
             else if (tokens[i].type == Token.Type.LParen)
             {
-                if (analyzedTokens.Count == 0 ||
-                   (analyzedTokens[^1].type != Token.Type.Variable &&
-                    analyzedTokens[^1].type != Token.Type.Function && 
-                    analyzedTokens[^1].type != Token.Type.Method &&
-                    analyzedTokens[^1].type != Token.Type.Class))
+                if (analyzedTokens.Count == 0 || !IsCallable(analyzedTokens[^1].type))
                 {
                     analyzedTokens.Add(tokens[i]);
                     continue;
                 }
 
-                if (analyzedTokens[^1].type == Token.Type.Class || analyzedTokens[^1].type == Token.Type.Variable)
-                    analyzedTokens[^1].type = Token.Type.Function;
+                analyzedTokens[^1].type = analyzedTokens[^1].type == Token.Type.Method ? Token.Type.Method : Token.Type.Function;
 
-                string Value = "[";
+                string value = "(";
                 int j = i + 1, depth = 1;
 
                 while (j < tokens.Count)
@@ -176,12 +166,14 @@ public static class Lexer
                     if (tokens[j].type == Token.Type.RParen)
                         depth--;
                     if (depth <= 0) break;
-                    Value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].Value} " : tokens[j++].Value;
+                    value += Token.IsOperator(tokens[j]) ? $" {tokens[j++].Value} " : tokens[j++].Value;
                 }
 
-                Value += "]";
+                value += ")";
 
-                analyzedTokens.Add(new(Value, Token.Type.List));
+                analyzedTokens[^1].Value += $"|{value}";
+
+                //analyzedTokens.Add(new Token(value, Token.Type.Tuple));
 
                 i = j;
             }
@@ -214,4 +206,10 @@ public static class Lexer
 
         return analyzedTokens;
     }
+
+    private static bool IsCallable(Token.Type type) => type switch
+    {
+        Token.Type.Variable or Token.Type.Function or Token.Type.Method or Token.Type.Class => true,
+        _ => false
+    };
 }
