@@ -6,8 +6,9 @@ public class Time : Obj, IPackage, IStatic
 
     Obj Sleep(Collections.Tuple args)
     {
-        if (args[0] is Int i)
-            Thread.Sleep((int)i.Value);
+        if (args[0] is not Int i)
+           throw new ValueError("invalid argument")
+        Thread.Sleep((int)i.Value);
         return None;
     }
 
