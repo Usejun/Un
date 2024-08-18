@@ -18,7 +18,7 @@
 			self.count += 1
 
 	fn pop(self)
-		assert(!self, "queue is empty")
+		assert(!self, "stack is empty")
 
 		item = self.arr[self.count - 1]
 		self.count -= 1
