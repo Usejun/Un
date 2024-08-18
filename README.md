@@ -75,13 +75,13 @@ else
 
 ## 반복문
 
-**for [Variable] in [Listator]** 과 **while (Bool)** 의 형식이나 
+**for [Variable] in [Iterable]** 과 **while (Bool)** 의 형식이나 
 **for [Initialization], [Condition], [Increment]** 를 사용한다.
 
 ### for
 
-in 키워드 후에는 **반드시 List 형식의 값**이 와야한다.
-List 내부를 순회를 끝내면 반복문이 끝난다.
+in 키워드 후에는 **Iterable한 값**이 와야한다.
+Iterable의 순회가 끝내면 반복문이 끝난다.
 
 ```
 for i in range(1, 100)
