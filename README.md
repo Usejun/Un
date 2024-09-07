@@ -18,8 +18,6 @@ C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한
 	<li>dict : 사전, (키:값) 구조
 	<li>set : 집합
 	<li>obj : 객체
-	<li>reader : stream을 읽기
-	<li>writer : stream을 쓰기
 </ul>
 
 ## 함수
