@@ -38,7 +38,7 @@ fn my_function(arg)
 	<li> readln : 한 줄을 읽어 Str로 반환
 	<li> type : 인수로 받은 값의 자료형을 반환
 	<li> func : 구현된 모든 함수를 List로 반환
-	<li> len : List나 Str의 길이를 반환	
+	<li> len : 인수로 받은 값의 __len__ 함수의 반환값을 반환
 	<li> range : [start, length] 형식의 인자를 받아 list를 반환
 	<li> hash : 인자로 받은 값의 hash 값 반환
 	<li> open : 파일을 스트림으로 열고 그 스트림을 반환
@@ -117,7 +117,7 @@ class point
     y = 0
 
     fn print(self)
-		writeln(self.x + " : " + self.y)
+        writeln(self.x + " : " + self.y)
 ```
 
 클래스의 예약 함수를 통해 여러 연산 기능을 추가할 수 있다.
