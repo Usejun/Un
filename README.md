@@ -171,8 +171,7 @@ class point
 
 ```
 enum rank
-	bronze, sliver
-	gold, diamond
+    	bronze, sliver, gold, diamond
 ```
 
 ## slice
