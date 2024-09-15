@@ -152,7 +152,7 @@ class point
 	<li> __bxor__ : bitwise XOR 연산
 	<li> __bnot__ : bitwise NOT 연산
 	<li> __lsh__ : bit left-shift 연산
-	<li> __lsh__ : bit right-shift 연산
+	<li> __rsh__ : bit right-shift 연산
 	<li> __entry__ : using 입장
 	<li> __exit__ : using 탈출
 </ul>
