@@ -2,11 +2,13 @@
 {
     public class Field 
     {
-        public static Field Null = new();
+        public readonly static Field Null = new();
 
         public int Count => field.Count;
         public string[] Keys => [..field.Keys];
         public Obj[] Values => [..field.Values];
+
+        private readonly Dictionary<string, Obj> field = [];
 
         public Field() { }
 
@@ -15,7 +17,11 @@
             Copy(other);
         }
 
-        private readonly Dictionary<string, Obj> field = [];
+        public Field(params (string key, Obj value)[] pairs)
+        {
+            foreach (var (key, value) in pairs)
+                Set(key, value);            
+        }
 
         public bool Get(string name, out Obj value) => field.TryGetValue(name, out value!);
 
@@ -23,6 +29,12 @@
         {
             if (!field.TryAdd(name, value))
                 field[name] = value;
+        }
+
+        public void Add(Field field)
+        {
+            foreach ((var key, var value) in field.field)
+                Set(key, value);            
         }
 
         public void Remove(string name)
@@ -36,8 +48,8 @@
 
         public void Copy(Field other)
         {
-            foreach ((var key, var Value) in other.field)
-                Set(key, Value);
+            foreach (var (key, value) in other.field)
+                Set(key, value.Clone());
         }
 
         public void Clear() => field.Clear();   
@@ -46,6 +58,17 @@
         {
             get => field[name];
             set => field[name] = value;
-        }      
+        }
+
+        public static Field Self(Obj obj)
+        {
+            Field field = new();
+
+            field.Set(Literals.Self, obj);
+            if (obj.Super != null)
+                field.Set(Literals.Super, obj.Super);
+
+            return field;
+        }
     }
 }

@@ -15,9 +15,9 @@ public class Stream : Ref<System.IO.Stream>
 
     public override void Init()
     {                
-        field.Set("close", new NativeFun("close", 1, args =>
+        field.Set("close", new NativeFun("close", 0, (args, field) =>
         {
-            if (args[0] is not Stream self)
+            if (field[Literals.Self] is not Stream self)
                 throw new ValueError("invalid argument");
 
             self.Value.Close();

@@ -4,16 +4,16 @@ class timer
 	start_time = 0
 	end_time = 0
 
-	fn run(self)
+	fn run()
 		self.start_time = time.now()
 
-	fn stop(self)
+	fn stop()
 		self.end_time = time.now()
 
-	fn time(self)
+	fn time()
 		return self.end_time - self.start_time
 
-	fn __str__(self)
+	fn __str__()
 		times = self.time()
 		text = ""
 		n = times.hour()

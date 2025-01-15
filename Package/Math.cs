@@ -1,10 +1,10 @@
-﻿namespace Un.Util;
+﻿namespace Un.Package;
 
 public class Math : Obj, IPackage, IStatic
 {
     public string Name => "math";
 
-    Obj Pow(Collections.Tuple args)
+    Obj Pow(Collections.Tuple args, Field field)
     {
         if (args[1] is not Int i) throw new ValueError("invalid argument");
 
@@ -12,12 +12,12 @@ public class Math : Obj, IPackage, IStatic
 
         if (count == 0) return new Int(0);
         if (count == 1) return args[1];
-        if (count % 2 == 1) return args[0].Mul(Pow(new List([args[1], new Int(count - 1)])));
-        var p = Pow(new List([args[1], new Int(count / 2)]));
-        return p.Mul(p);
+        if (count % 2 == 1) return args[0].Mul(Pow(new Collections.Tuple(args[1], new Int(count - 1)), field), field);
+        var p = Pow(new Collections.Tuple(args[1], new Int(count / 2)), field);
+        return p.Mul(p, field);
     }
 
-    Int Gcd(Collections.Tuple args)
+    Int Gcd(Collections.Tuple args, Field field)
     {
         long Gcd(long a, long b) => b == 0 ? a : Gcd(b, a % b);
 
@@ -26,7 +26,7 @@ public class Math : Obj, IPackage, IStatic
         return new Int(Gcd(a.Value, b.Value));
     }
 
-    Int Permutation(Collections.Tuple args)
+    Int Permutation(Collections.Tuple args, Field field)
     {
         if (args[1] is not Int n || args[2] is not Int k)
             throw new ValueError("invalid argument");
@@ -42,7 +42,7 @@ public class Math : Obj, IPackage, IStatic
         return new(sum);
     }
 
-    Int Combination(Collections.Tuple args)
+    Int Combination(Collections.Tuple args, Field field)
     {
         if (args[1] is not Int n || args[2] is not Int k)
             throw new ValueError("invalid argument");
@@ -50,7 +50,7 @@ public class Math : Obj, IPackage, IStatic
         if (n.Value < k.Value) return new(0);
         if (n.Value == k.Value || k.Value == 0) return new(1);
 
-        long sum = Permutation(args).CInt().Value;
+        long sum = Permutation(args, field).CInt().Value;
 
         for (long i = 2; i <= k.Value; i++)
             sum /= i;
@@ -58,7 +58,7 @@ public class Math : Obj, IPackage, IStatic
         return new(sum);
     }
 
-    Int Factorial(Collections.Tuple args)
+    Int Factorial(Collections.Tuple args, Field field)
     {
         if (args[1] is not Int n)
             throw new ValueError("invalid argument");

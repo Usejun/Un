@@ -1,98 +1,180 @@
 # Un
-파이썬 스타일의 스크립트 언어
-<br>
 
-## 방식
-C#으로 작성된 프로그램을 통해 Un으로 작성된 스크립트를 한 줄씩 읽어 코드를 해석해 동작시킨다.
-<br>
+파이썬 스타일의 인터프리터 언어
+
+## 동작 방식
+
+C#으로 작성된 프로그램을 통해서 ".un"의 확장자를 가진 파일을 읽으며 동작된다.
 
 # 구조
+기본적으로 un은 동적 타이핑을 지원하고, 변수를 선언 할 때에는 **\[name1, name2, ...] = \[value1, value2, ...]** 의 형태를 따른다.
 
 ## 기본 자료형
-<ul>
-	<li>int : 부호가 있는 64bit 정수형
-	<li>float : 부호가 있는 64bit 부동 실수형
-	<li>str : 문자열
-	<li>bool : Boolean 	
-	<li>list : 다양한 자료형이 반복적으로 있는 구조
-	<li>dict : 사전, (키:값) 구조
-	<li>set : 집합
-	<li>obj : 객체
-</ul>
+### int
+부호가 있는 64bit 정수형 자료형이다.
+
+```un
+a = 3048275133
+b = 0b11011010
+c = 0o1274213
+d = 0xff38ab
+f = -39493
+````
+### float
+부호가 있는 64bit 부동 실수형 자료형이다.
+
+```un
+a = 1937.393
+b = float("inf")
+c = -2004.22
+````
+
+### str
+문자열 자료형이다.
+문자열은 """와 "'"을 사용하며, 보간 문자열을 사용할 때에는 "\`"을 사용한다.
+
+```un
+a = "hello world!"
+b = 'my name is "lee"'
+c = `{a} {b}`
+````
+
+### bool
+Boolean 자료형이다.
+
+```un
+a = true
+b = false
+````
+
+### date
+날짜 자료형이다.
+
+```un
+a = date("2024.1.1")
+```
+
+### tuple
+불변 형태로 다양한 자료형을 담을 수 있다.
+
+```un
+a = (1, 2, 3)
+```
+
+### list
+다양한 자료형이 연속적으로 있는 자료형
+
+```un
+a = [1, 4.3, "3", true, []]
+````
+#### methods
+1. add
+2. insert
+3. extend
+4. extend_insert
+5. remove
+6. remove_at
+8. index_of
+9. contains
+10. clone
+11. sort
+12. reverse
+13. order
+14. binary_search
+15. lower_bound
+16. upper_bound
+17. hpush
+18. hpop
+19. pop
+20. filter
+21. map
+
+### dict
+(키:값)의 형태로 접근하는 자료형
+
+```un
+a = {1:"one", 5:234, "hello":true}
+````
+
+### set
+다양한 자료형을 담을 수 있는 집합 형태의 자료형
+
+```un
+a = { 1, 2, 5.2, "hogo", ...}
+````
 
 ## 함수
+**fn \[function name](parameters)**의 형태로 만들 수 있다. 여러 개의 매개변수를 입력 받으려면 각 매개변수를 ","로 구분 지어준다.
 
-**fn [Function Name] ([Parameter Names ... ])** 형식으로 함수를 만들 수 있다. 다수의 매개변수를 입력하려면 ',' 를 사용해 구분해준다. 
-
-```
-fn my_function(arg)
-    writeln(arg)
-    return 2
-```
-
+```un
+fn double(a)
+    return 2 * a
+    
+fn multiple(a, b)
+    return a * b
+````
 
 ### 기본 함수
-<ul>
-	<li> write : 줄바꿈 없는 출력
-	<li> writeln : 줄바꿈 있는 출력
-	<li> readln : 한 줄을 읽어 Str로 반환
-	<li> type : 인수로 받은 값의 자료형을 반환
-	<li> func : 구현된 모든 함수를 List로 반환
-	<li> len : 인수로 받은 값의 __len__ 함수의 반환값을 반환
-	<li> range : [start, length] 형식의 인자를 받아 list를 반환
-	<li> hash : 인자로 받은 값의 hash 값 반환
-	<li> open : 파일을 스트림으로 열고 그 스트림을 반환
-	<li> sum : 인자로 받은 값들을 앞에서부터 더하기 연산 후 반환
-	<li> max : 인자로 받은 값들을 비교해서 가장 큰 값을 반환
-	<li> min : 인자로 받은 값들을 비고해서 가장 작은 값을 반환
-	<li> abs : 숫자 형식을 받아 절댓값으로 변환 후 반환
-	<li> pow : [number, power] 형식을 받아 number를 power번 곱한 값을 반환
-	<li> ceil : 숫자 형식에 버림 후 반환
-	<li> floor : 숫자 형식에 올림 후 반환
-	<li> round : [number, digit] or [number]의 형식으로 받아 특정 자리수로 반올림 후 반환, 자리수가 없다면 자연수 값만 반환
-	<li> sqrt : 숫자 형식을 받아 제곱근 결과를 반환
-	<li> exit : 프로그램 종료
-	<li> assert : [condition, message] 형식으로 조건이 true라면 예외와 함께 메세지가 출력
-</ul>
+1. write
+2. writeln
+3. clear
+4. readln
+5. type
+6. method
+7. field
+8. prop
+9. package
+10. len
+11. range
+12. hash
+13. open
+14. sum
+15. max
+16. min
+17. abs
+18. pow
+19. ceil
+20. floor
+21. round
+22. sqrt
+23. sin
+24. cos
+25. tan
+26. bin
+27. oct
+28. hex
+29. breakpoint
+31. exit
+32. assert
 
 ## 조건문
+**if, elif, else**의 키워드를 사용하고, 키워드 다음으로는 **bool** 형을 반환하는 식이 따라와야한다.
 
-if, elif, else의 키워드를 사용하고, 키워드 다음으로는 **Bool**형을 반환하는 식이 따라와야한다.
-<br>
+```un
+n = int(readln())
 
-```
-n = int(readln(0))
-
-if (n < 10)
-    writeln("10보다 작음")
-elif (n < 100)
-    writeln "10보단 크지만 100보단 작음"
+if n < 10
+    ...
+elif n < 100
+    ...
 else
-    writeln ("100보다" + "큼")
-```
+    ...
+````
 
 ## 반복문
-
-**for [Variable] in [Iterable]** 과 **while (Bool)** 의 형식이나 
-**for [Initialization], [Condition], [Increment]** 를 사용한다.
+**for \[variable] in \[iterable]** 과 **while (bool)** 의 형식을 사용한다.
 
 ### for
-
-in 키워드 후에는 **Iterable한 값**이 와야한다.
-Iterable의 순회가 끝내면 반복문이 끝난다.
+in 키워드 후에는 **iterable한 값**이 와야한다. iterable의 순회가 끝내면 반복문이 끝난다.
 
 ```
 for i in range(1, 100)
     writeln(i)
-
-for i = 0, i < 10, i += 1
-	writeln(i)
 ```
 
-### while 
+### while
 
-while 키워드 후에는 **반드시 Bool 형식의 값**이 와야한다.
-조건이 부합하면 while문 내부로 들어간다. 그렇지 않을 경우에는 while문을 탈출한다.
+while 키워드 후에는 **반드시 bool 형식의 값**이 와야한다. 조건식이 부합하면 while문 내부로 들어간다. 그렇지 않을 경우에는 while문을 탈출한다.
 
 ```
 fib = [0] * 21
@@ -101,96 +183,136 @@ fib[1] = 1
 i = 2
 while (i < 20)
     fib[i] = fib[i - 1] + fib[i - 2]
-    i = i + 1
+    i += 1
 writeln(fib)
-```
+````
 
 ## 클래스
+class 키워드 후에 클래스의 이름을 지어준다. 클래스는 필드와 메서드를 가지고 있다. 메서드의 첫 번째 인자는 자기 자신을 받는다.
 
-class 키워드 후에 클래스의 이름을 지어준다.
-클래스는 필드와 메서드를 가지고 있다.
-메서드의 첫 번째 인자는 자기 자신을 받는다.
-
-```
+```un
 class point
     x = 0
     y = 0
 
-    fn print(self)
-        writeln(self.x + " : " + self.y)
+    fn print()
+        writeln(`{this.x} : {this.y}`)
+
+p = point()
+p.x = 10
+p.y = -10
+p.print()
 ```
 
 클래스의 예약 함수를 통해 여러 연산 기능을 추가할 수 있다.
 
-### 예약 함수
-<ul>
-	<li> __init__ : 클래스 생성자
-	<li> __add__ : 덧셈
-	<li> __sub__ : 뺄셈
-	<li> __mul__ : 곱셉
-	<li> __div__ : 나눗셈
-	<li> __idiv__ : 정수 나눗셈
-	<li> __mod__ : 나머지
-	<li> __pow__ : 거듭 제곱
-	<li> __eq__ : 같음 비교
-	<li> __lt__ : 미만
-	<li> __len__ : len()
-	<li> __type__ : type()
-	<li> __hash__ : hash()
-	<li> __str__ : str로의 형변환
-	<li> __int__ : int로의 형변환
-	<li> __float__ : float로의 형변환
-	<li> __bool__ : bool로의 형변환
-	<li> __list__ : list로의 형변환
-	<li> __getitem__ : get by index
-	<li> __setitem__ : set by index
-	<li> __and__ : AND 연산
-	<li> __or__ : OR 연산
-	<li> __xor__ : XOR 연산
-	<li> __band__ : bitwise AND 연산
-	<li> __bor__ : bitwise OR 연산
-	<li> __bxor__ : bitwise XOR 연산
-	<li> __bnot__ : bitwise NOT 연산
-	<li> __lsh__ : bit left-shift 연산
-	<li> __rsh__ : bit right-shift 연산
-	<li> __entry__ : using 입장
-	<li> __exit__ : using 탈출
-</ul>
+### 오버로딩 함수
 
-## import 
+- \_\_init__ : 클래스 생성자
+- \_\_add__ : 덧셈
+- \_\_sub__ : 뺄셈
+- \_\_mul__ : 곱셉
+- \_\_div__ : 나눗셈
+- \_\_idiv__ : 정수 나눗셈 
+- \_\_mod__ : 나머지
+- \_\_pow__ : 거듭 제곱
+- \_\_eq__ : 같음 비교
+- \_\_lt__ : 미만
+- \_\_len__ : len()
+- \_\_type__ : type()
+- \_\_hash__ : hash()
+- \_\_str__ : str로의 형변환
+- \_\_int__ : int로의 형변환
+- \_\_float__ : float로의 형변환
+- \_\_bool__ : bool로의 형변환
+- \_\_list__ : list로의 형변환
+- \_\_getitem__ : get by index
+- \_\_setitem__ : set by index
+- \_\_and__ : AND 연산
+- \_\_or__ : OR 연산
+- \_\_xor__ : XOR 연산
+- \_\_band__ : bitwise AND 연산
+- \_\_bor__ : bitwise OR 연산
+- \_\_bxor__ : bitwise XOR 연산
+- \_\_bnot__ : bitwise NOT 연산
+- \_\_lsh__ : bit left-shift 연산
+- \_\_rsh__ : bit right-shift 연산
+- \_\_entry__ : using 입장
+- \_\_exit__ : using 탈출
 
-**import [Package name, ...]** 의 꼴로 사용되며, 다른 코드나, 패키지를 불러오기 위한 구문이다.
+## lambda
+**\[name] = \[parameters] => \[code]**의 꼴로 사용되며, 함수와 동일한 기능을 한다.
+
+```un
+f = i => i * i
+````
+
+## import
+**import \[package name, ...]** 의 꼴로 사용되며, 다른 코드나, 패키지를 불러오기 위한 구문이다.
+
+as 키워드를 사용해서 하나의 네임스페이스를 만들 수 있다.
+
+```un
+import math
+import parallel as pa
+````
 
 ## using
+**using \[name] = \[value]** 의 꼴로 사용되며, value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.
 
-**using [name] = [value]** 의 꼴로 사용되며, value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.
+```un
+using file = open(file_name)
+````
 
 ## enum
+**enum \[name]** 의 꼴로 사용되며, 열거형을 만들 수 있다. 모든 값들은 콤마로 구분된다.
 
-**enum [name]** 의 꼴로 사용되며, 열거형을 만들 수 있다. 모든 값들은 콤마로 구분된다.
-
-```
+```un
 enum rank
     bronze, sliver, gold, diamond
 ```
 
 ## slice
+**iterable\[start:end]** 꼴로 사용되며, 인덱싱이 구현된 자료형이라면 슬라이스를 사용할 수 있다.
 
-**iterable[start:end]** 꼴로 사용되며, 인덱싱이 구현된 자료형이라면 슬라이스를 사용할 수 있다. 
-
-```
+```un
 l = [1, 2, 3, 4, 5]
 write(l[0:3]) # [1, 2, 3]
 ```
 
-## async 
-
+## async
 함수의 앞에 붙는 키워드로 비동기 함수를 만들 수 있다.
 
-```
-data = []
-
+```un
 async fn api(url)
-	data += https.get(url);
-
+	return https.get(url);
 ```
+
+
+## await
+비동기 함수가 완료 될 때까지 기다린다.
+
+```un
+data = await api(url)
+````
+
+## del
+변수를 삭제한다.
+
+```un
+a = 123
+write(a)
+
+del a
+
+write(a) # error
+````
+
+## 보간 문자열
+보간 문자열은 문자열 내부에 변수를 넣을 수 있는 문자열로, 백틱으로 감싼 문자열 내부의 중괄호 안의 값을 문자열로 바뀐다.
+
+```un
+name = "usejun"
+age = 20
+s = `i am {name}, my age is {age}`
+````

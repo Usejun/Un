@@ -9,9 +9,9 @@ public abstract class Val<T>(string type, T value) : Obj(type)
 
     public override List CList() => new([Clone()]);
 
-    public override Bool Equals(Obj obj) => new(obj is Val<T> v && Value.CompareTo(v.Value) == 0);
+    public override Bool Eq(Obj obj, Field field) => new(obj is Val<T> v && Value.CompareTo(v.Value) == 0);
 
-    public override Bool LessThen(Obj obj) => new(obj is Val<T> v && Value.CompareTo(v.Value) < 0);
+    public override Bool Lt(Obj obj, Field field) => new(obj is Val<T> v && Value.CompareTo(v.Value) < 0);
 
     public override int GetHashCode() => Value.GetHashCode();
 }

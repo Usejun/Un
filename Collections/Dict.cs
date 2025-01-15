@@ -20,7 +20,7 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
         }          
     }
 
-    public override Obj Init(Tuple args)
+    public override Obj Init(Tuple args, Field field)
     {
         Value.Clear();
 
@@ -29,64 +29,64 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
     public override void Init()
     {
-        field.Set("add", new NativeFun("add", -1, args =>
+        field.Set("add", new NativeFun("add", -1, (args, field) =>
         {
-            if (args[0] is not Dict self)
+            if (field[Literals.Self] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            self.Value.Add(args[1], args[2]);
+            self.Value.Add(args[0], args[1]);
 
             return self;
         }));
-        field.Set("remove", new NativeFun("remove", 2, args =>
+        field.Set("remove", new NativeFun("remove", 1, (args, field) =>
         {
-            if (args[0] is not Dict self)
+            if (field[Literals.Self] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.Value.Remove(args[1]));
+            return new Bool(self.Value.Remove(args[0]));
         }));
-        field.Set("contains_key", new NativeFun("contains_key", 2, args =>
+        field.Set("contains_key", new NativeFun("contains_key", 1, (args, field) =>
         {
-            if (args[0] is not Dict self)
+            if (field[Literals.Self] is not Dict self)
+                throw new ValueError("invalid argument");
+            
+            return new Bool(self.Value.ContainsKey(args[0]));
+        }));
+        field.Set("contains_value", new NativeFun("contains_value", 1, (args, field) =>
+        {
+            if (field[Literals.Self] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.Value.ContainsKey(args[1]));
+            return new Bool(self.Value.ContainsValue(args[0]));
         }));
-        field.Set("contains_value", new NativeFun("contains_value", 2, args =>
+        field.Set("clear", new NativeFun("clear", 0, (args, field) =>
         {
-            if (args[0] is not Dict self)
-                throw new ValueError("invalid argument");
-
-            return new Bool(self.Value.ContainsValue(args[1]));
-        }));
-        field.Set("clear", new NativeFun("clear", 1, args =>
-        {
-            if (args[0] is not Dict self)
+            if (field[Literals.Self] is not Dict self)
                 throw new ValueError("invalid argument");
 
             self.Value.Clear();
 
             return None;
         }));
-        field.Set("keys", new NativeFun("keys", 1, args =>
+        field.Set("keys", new NativeFun("keys", 0, (args, field) =>
         {
-            if (args[0] is not Dict self)
+            if (field[Literals.Self] is not Dict self)
                 throw new ValueError("invalid argument");
 
-            return new List([.. self.Value.Keys]);
+            return new List([..self.Value.Keys]);
         }));
-        field.Set("values", new NativeFun("values", 1, args =>
+        field.Set("values", new NativeFun("values", 0, (args, field) =>
         {
-            if (args[0] is not Dict self)
+            if (field[Literals.Self] is not Dict self)
                 throw new ValueError("invalid argument");
 
             return new List([.. self.Value.Values]);
         }));           
     }
 
-    public override Obj GetItem(List args) => Value[args[0]];
+    public override Obj GetItem(Tuple args, Field field) => Value[args[0]];
 
-    public override Obj SetItem(List args) => Value[args[0]] = args[1];
+    public override Obj SetItem(Tuple args, Field field) => Value[args[0]] = args[1];
 
     public override Int Len() => new(Value.Count);
 

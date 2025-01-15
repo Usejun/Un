@@ -1,9 +1,12 @@
-﻿fn t()
-	write(true)
-	return true
+﻿fn fib1(n)
+	if n < 2
+		return 1
+	return memo(fib1, n-1)+memo(fib1, n-2)
 
-fn f()
-	write(false)
-	return false
+fn fib2(n)
+	if n < 2
+		return 1
+	return fib2(n-1)+fib2(n-2)
 
-write(t() or f())
+for i in range(0, 100)
+	writeln(`{i} : {memo(fib2, i)}`)

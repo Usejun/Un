@@ -1,4 +1,6 @@
-﻿namespace Un.Data;
+﻿using Un.Interpreter;
+
+namespace Un.Data;
 
 public class AsyncFun : LocalFun
 {
@@ -8,38 +10,77 @@ public class AsyncFun : LocalFun
     {
         int tab = 0, white = 0;
 
-        for (int i = 0; i < code[0].Length; i++)
-            if (code[0][i] == '\t') tab++;
+        foreach (char c in code[0])
+        {
+            if (c == '\t') tab++;
+            else if (c == ' ') white++;
             else break;
-
-        for (int i = 0; i < code[0].Length; i++)
-            if (code[0][i] == ' ') white++;
-            else break;
+        }
 
         nesting = Math.Max(tab, white / 4) + 1;
 
         var tokens = Tokenizer.Tokenize(code[0]);
+        bool isDefault = false;
+        int i = 4;
 
-        for (int i = 4; i < tokens.Count; i++)
+        while (i < tokens.Count)
         {
-            if (tokens[i].type == Token.Type.RParen) break;
-            if (tokens[i].type == Token.Type.Comma) continue;
-            args.Add(tokens[i].Value);
+            var token = tokens[i];
+
+            if (token.type == Token.Type.RParen) break;
+            else if (token.type == Token.Type.Comma)
+            {
+                i++;
+                continue;
+            }
+            else if (token.type == Token.Type.Asterisk)
+            {
+                isDefault = true;
+                IsDynamic = true;
+                args.Add(tokens[i + 1].Value);
+                i++;
+            }
+            else if (!IsDynamic && tokens[i + 1].type == Token.Type.Assign)
+            {
+                isDefault = true;
+                args.Add(token.Value);
+
+                int j = i + 2, depth = 0;
+                List<Token> buffer = [];
+
+                while (j < tokens.Count)
+                {
+                    if (depth == 0 && (tokens[j].type == Token.Type.Comma || tokens[j].type == Token.Type.RParen)) break;
+                    if (tokens[j].type == Token.Type.LParen || tokens[j].type == Token.Type.LBrack) ++depth;
+                    if (tokens[j].type == Token.Type.RParen || tokens[j].type == Token.Type.RBrack) --depth;
+                    buffer.Add(tokens[j++]);
+                }
+
+                field.Set(token.Value, Convert(Token.String(buffer), new()));
+                i = j;
+            }
+            else if (!isDefault && !IsDynamic)
+            {
+                Length++;
+                args.Add(token.Value);
+            }
+            else throw new SyntaxError("invalid argrements");
+            i++;
         }
 
         Name = name;
         this.code = code;
     }
 
-    public override Obj Call(Collections.Tuple args)
+    public override Obj Call(Collections.Tuple args, Field field)
     {
-        Field field = new(this.field);
+        Field local = new(this.field);
 
         for (int i = 0; i < this.args.Count; i++)
-            field.Set(this.args[i], args[i]);
+            local.Set(this.args[i], args[i]);
 
         return new Task(new Task<Obj>(() => {
-            Parser sub = new(code, new(field), line:1, nesting: nesting);
+            Parser sub = new(code, new(local), line:1, nesting: nesting);
 
             while (sub.TryInterpret()) { };
 

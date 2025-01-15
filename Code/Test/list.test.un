@@ -38,21 +38,26 @@ writeln(len(l))
 writeln("더하기 연산 : 77")
 l += 77
 writeln(l)
+
 writeln("더하기 연산 : 2.75")
 l += 2.75
 writeln(l)
+
 writeln("더하기 연산 : true")
 l += true
 writeln(l)
+
 writeln("더하기 연산 : 'hello'")
 l += "hello"
 writeln(l)
 
+writeln("배열 1 add 함수 : 1")
 l.add(1)
-writeln("배열 1 add 함수 : 1")
-l2 = l.clone()
+writeln(l)
+
 writeln("clone 함수 => 배열 2")
-writeln("배열 1 add 함수 : 1")
+l2 = l.clone()
+writeln("배열 2 add 함수 : 2")
 l.add(2)
 
 writeln("배열 1")

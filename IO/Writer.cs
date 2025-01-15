@@ -12,7 +12,7 @@ public class Writer : Ref<StreamWriter>
 
     public Writer(Writer writer) : base("writer", new(writer.Value.BaseStream, Process.Unicode)) { }
 
-    public override Obj Init(Collections.Tuple args)
+    public override Obj Init(Collections.Tuple args, Field field)
     {
         if (args.Count == 1)
         {
@@ -35,94 +35,94 @@ public class Writer : Ref<StreamWriter>
 
     public override void Init()
     {          
-        field.Set("auto_flush", new NativeFun("auto_flush", 2, args =>
+        field.Set("auto_flush", new NativeFun("auto_flush", 1, (args, field) =>
         {
-            if (args[0] is not Writer self || args[1] is not Bool cond)
+            if (field[Literals.Self] is not Writer self || args[0] is not Bool cond)
                 throw new ValueError("invalid argument");
 
             self.Value.AutoFlush = cond.Value;
 
             return None;
         }));
-        field.Set("write", new NativeFun("write", -1, args =>
+        field.Set("write", new NativeFun("write", -1, (args, field) =>
         {
-            if (args[0] is not Writer self)
+            if (field[Literals.Self] is not Writer self)
                 throw new ValueError("invalid argument");
 
-            for (int i = 1; i < args.Count; i++)
+            for (int i = 0; i < args.Count; i++)
                 self.Value.Write(args[i].CStr().Value);                
 
             return None;
         }));
-        field.Set("write_async", new AsyncNativeFun<Obj>("write_async", -1, args =>
+        field.Set("write_async", new AsyncNativeFun<Obj>("write_async", -1, (args, field) =>
         {
-            if (args[0] is not Writer self)
+            if (field[Literals.Self] is not Writer self)
                 throw new ValueError("invalid argument");
 
-            for (int i = 1; i < args.Count; i++)
+            for (int i = 0; i < args.Count; i++)
                 self.Value.Write(args[i].CStr().Value);
 
             return None;
         }));
-        field.Set("writeln", new NativeFun("writeln", -1, args =>
+        field.Set("writeln", new NativeFun("writeln", -1, (args, field) =>
         {
-            if (args[0] is not Writer self)
+            if (field[Literals.Self] is not Writer self)
                 throw new ValueError("invalid argument");
 
-            for (int i = 1; i < args.Count; i++)
-                self.Value.Write(args[i].CStr().Value);
-            self.Value.WriteLine();
-
-            return None;
-        }));
-        field.Set("writeln_async", new AsyncNativeFun<Obj>("writeln_async", -1, args =>
-        {
-            if (args[0] is not Writer self)
-                throw new ValueError("invalid argument");
-
-            for (int i = 1; i < args.Count; i++)
+            for (int i = 0; i < args.Count; i++)
                 self.Value.Write(args[i].CStr().Value);
             self.Value.WriteLine();
 
             return None;
         }));
-        field.Set("flush", new NativeFun("flush", -1, args =>
+        field.Set("writeln_async", new AsyncNativeFun<Obj>("writeln_async", -1, (args, field) =>
         {
-            if (args[0] is not Writer self)
+            if (field[Literals.Self] is not Writer self)
+                throw new ValueError("invalid argument");
+
+            for (int i = 0; i < args.Count; i++)
+                self.Value.Write(args[i].CStr().Value);
+            self.Value.WriteLine();
+
+            return None;
+        }));
+        field.Set("flush", new NativeFun("flush", 0, (args, field) =>
+        {
+            if (field[Literals.Self] is not Writer self)
                 throw new ValueError("invalid argument");
 
             self.Value.Flush();
 
             return None;
         }));
-        field.Set("flush_async", new AsyncNativeFun<Obj>("flush_async", -1, args =>
+        field.Set("flush_async", new AsyncNativeFun<Obj>("flush_async", 0, (args, field) =>
         {
-            if (args[0] is not Writer self)
+            if (field[Literals.Self] is not Writer self)
                 throw new ValueError("invalid argument");
 
             self.Value.Flush();
 
             return None;
         }));
-        field.Set("close", new NativeFun("close", 1, args =>
+        field.Set("close", new NativeFun("close", 0, (args, field) =>
         {
-            if (args[0] is not Writer self)
+            if (field[Literals.Self] is not Writer self)
                 throw new ValueError("invalid argument");
 
             self.Value.Close();
             return None;
         }));
-        field.Set("dispose", new NativeFun("dispose", 1, args =>
+        field.Set("dispose", new NativeFun("dispose", 0, (args, field) =>
         {
-            if (args[0] is not Writer self)
+            if (field[Literals.Self] is not Writer self)
                 throw new ValueError("invalid argument");
 
             self.Value.Dispose();
             return None;
         }));
-        field.Set("dispose_async", new AsyncNativeFun<Obj>("dispose_async", 1, args =>
+        field.Set("dispose_async", new AsyncNativeFun<Obj>("dispose_async", 0, (args, field) =>
         {
-            if (args[0] is not Writer self)
+            if (field[Literals.Self] is not Writer self)
                 throw new ValueError("invalid argument");
 
             self.Value.Dispose();

@@ -2,11 +2,14 @@
 
 public class Bool : Val<bool>
 {
+    public static readonly Bool True = new(true);
+    public static readonly Bool False = new(false);
+
     public Bool() : base("bool", false) { }
 
     public Bool(bool value) : base("bool", value) { }
 
-    public override Obj Init(Collections.Tuple args)
+    public override Obj Init(Collections.Tuple args, Field field)
     {
         if (args.Count == 0)
             Value = false;
@@ -18,13 +21,11 @@ public class Bool : Val<bool>
         return this;
     }
 
-    public override Obj Add(Obj arg)
+    public override Obj Add(Obj arg, Field field)
     {
-        if (arg is Str) return CStr().Add(arg);
-        return base.Add(arg);
+        if (arg is Str) return CStr().Add(arg, field);
+        return base.Add(arg, field);
     }   
-
-    public override Obj Xor(Obj arg) => new Bool(Value ^ arg.CBool().Value);
 
     public override Str CStr() => new(Value ? Literals.True : Literals.False);
 
@@ -32,7 +33,7 @@ public class Bool : Val<bool>
 
     public override Obj Clone() => new Bool(Value);
 
-    public override Obj Copy() => new Bool(Value);
+    public override Obj Copy() => new Bool(Value);  
 
     public static bool IsBool(string str) => str == Literals.True || str == Literals.False;
 }

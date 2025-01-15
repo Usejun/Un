@@ -1,4 +1,4 @@
-﻿namespace Un;
+﻿namespace Un.Interpreter;
 
 public class Parser(string[] code, Field field, int index = 0, int line = 0, int nesting = 0)
 {
@@ -46,19 +46,22 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         if (analyzedTokens.Count == 0) return;
         else if (analyzedTokens[0].type == Token.Type.Using)
         {
+            if (assign < 0)
+                throw new SyntaxError();
+
             Usings.Add(analyzedTokens[1].Value);
-            Parse(analyzedTokens[1..]);
+            
 
             Field[analyzedTokens[1].Value].Entry();
         }
         else if (analyzedTokens[0].type == Token.Type.Await)
         {
-            if (Token.IsAssigns(analyzedTokens[2]))
+            if (Token.IsAssigns(analyzedTokens[2].type))
             {
                 var name = analyzedTokens[1].Value;
                 var value = Calculator.On(analyzedTokens[3..], Field);
 
-                if (!Fun.Invoke(value, "run", [value], out var result))
+                if (!Fun.Invoke(value, Literals.Run, new(value), new(), out var result))
                     throw new ValueError($"{name} is not task");
 
                 Field.Set(name, result);
@@ -67,14 +70,74 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
             {
                 var value = Calculator.On(analyzedTokens[1..], Field);
 
-                if (!Fun.Invoke(value, "run", [value], out var result))
+                if (!Fun.Invoke(value, Literals.Run, new(value), new(), out var result))
                     throw new ValueError("it is not task");
             }
         }
         else if (analyzedTokens[0].type == Token.Type.Import)
         {
-            for (int i = 1; i < analyzedTokens.Count; i += 2)
-                Process.Import(analyzedTokens[i].Value);
+            if (analyzedTokens.Count == 4 && analyzedTokens[2].type == Token.Type.As)
+                Process.Import(analyzedTokens[1].Value, analyzedTokens[3].Value);
+            else            
+                for (int i = 1; i < analyzedTokens.Count; i += 2)
+                    Process.Import(analyzedTokens[i].Value);
+            
+        }
+        else if (analyzedTokens[0].type == Token.Type.Try)
+        {
+            Obj error;
+            Parser parser;
+
+            try
+            {
+                parser = new(GetBody(), Field, Index, 0, Nesting) { Usings = Usings };
+
+                while (parser.TryInterpret()) ;
+
+                error = parser.ReturnValue;
+            }
+            catch (Exception e)
+            {
+                List<Token> tokens = Tokenizer.Tokenize(Code[Line + 1]);
+                if (tokens.Count > 0 && tokens[0].type == Token.Type.Catch)
+                {
+                    Line++;
+                    if (tokens.Count == 2)
+                        Field.Set(tokens[1].Value, new Error(e));
+
+                    parser = new(GetBody(), Field, Index, 0, Nesting) { Usings = Usings };
+
+                    while (parser.TryInterpret()) ;
+
+                    error = parser.ReturnValue;
+
+                    if (tokens.Count == 2)
+                        Field.Remove(tokens[1].Value);
+                }                
+            }
+            finally
+            {
+                if (Code.Length > Line + 1)
+                {
+                    List<Token> tokens = Tokenizer.Tokenize(Code[Line + 1]);
+                    if (tokens.Count > 0 && tokens[0].type == Token.Type.Fin)
+                    {
+                        Line++;
+                        parser = new(GetBody(), Field, Index, 0, Nesting) { Usings = Usings };
+
+                        while (parser.TryInterpret()) ;
+
+                        error = parser.ReturnValue;
+                    }
+                }
+            }
+        }
+        else if (analyzedTokens[0].type == Token.Type.Throw)
+        {
+            Obj obj = Calculator.On(analyzedTokens[1..], Field);
+            if (obj is not Error error)
+                throw new ValueError("throw keyword is used only error");
+            throw error.Value;
         }
         else if (analyzedTokens[0].type == Token.Type.Class)
         {
@@ -92,19 +155,59 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         else if (analyzedTokens[0].type == Token.Type.Func)
         {
             var token = analyzedTokens[1].Value;
-            var name = token.Split(Literals.FunctionSep)[0];
+            var name = token.Split(Literals.LParen)[0];
 
             Process.Field.Set(name, new LocalFun(name, GetBody(includeHeader: true)));
         }
         else if (analyzedTokens[0].type == Token.Type.Async)
         {
-            var name = analyzedTokens[2].Value;
+            var token = analyzedTokens[2].Value;
+            var name = token.Split(Literals.LParen)[0];
 
             Process.Field.Set(name, new AsyncFun(name, GetBody(includeHeader: true)));
         }
         else if (analyzedTokens[0].type == Token.Type.Return)
         {
             ReturnValue = analyzedTokens.Count == 1 ? Obj.None : Calculator.On(analyzedTokens[1..], Field);
+        }
+        else if (analyzedTokens[0].type == Token.Type.Del)
+        {
+            Obj obj = Obj.None;
+            obj = analyzedTokens[1].type switch
+            {
+                Token.Type.Function or Token.Type.Method => Fun.Invoke(obj, analyzedTokens[1].Value.Split('(')[0], new(analyzedTokens[1].Value.Split('(')[1], Field), Field),
+                _ => Obj.Convert(analyzedTokens[1].Value, Field),
+            };
+
+            for (int i = 2; i < analyzedTokens.Count - 1; i++)
+            {
+                obj = analyzedTokens[i].type switch
+                {
+                    Token.Type.Property => obj.Get(analyzedTokens[i].Value),
+                    Token.Type.Indexer => obj.GetItem(new(Obj.Convert(analyzedTokens[i].Value, field)), Field),
+                    Token.Type.Method => Fun.Invoke(obj, analyzedTokens[i].Value.Split('(')[0], new(analyzedTokens[i].Value.Split('(')[1], Field), Field),
+                    _ => throw new SyntaxError(),
+                };
+            }
+
+            switch (analyzedTokens[^1].type)
+            {
+                case Token.Type.Property:
+                    obj.field.Remove(analyzedTokens[^1].Value);
+                    break;
+                case Token.Type.Indexer:
+                    Obj index = Obj.Convert(analyzedTokens[^1].Value, Field);
+                    if (obj is List list && index is Int i)
+                        list.RemoveAt(i);
+                    else if (obj is Dict dict)
+                        dict.Value.Remove(index);
+                    break;
+                case Token.Type.Variable:
+                    Field.Remove(analyzedTokens[^1].Value);
+                    break;
+                default:                    
+                    break;
+            }
         }
         else if (analyzedTokens[0].type == Token.Type.Break)
         {
@@ -116,7 +219,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         }
         else if (Token.IsControl(analyzedTokens[0].Value))
         {
-            Bool condition = analyzedTokens[0].type == Token.Type.Else ? new(true) : Calculator.On(analyzedTokens[1..], Field).CBool();
+            Bool condition = analyzedTokens[0].type == Token.Type.Else ? Bool.True : Calculator.On(analyzedTokens[1..], Field).CBool();
 
             if (condition.Value)
             {
@@ -164,7 +267,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                 {
                     obj = Calculator.On(analyzedTokens[3..], Field);
 
-                    if (obj.CList() is not List list)                  
+                    if (obj.CList() is not List list)
                         throw new ValueError("it is not iterable");
 
                     string var = analyzedTokens[1].Value;
@@ -183,12 +286,12 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
 
                             while (Line < Code.Length && IsBody() && TryInterpret()) { }
 
-                            if (ReturnValue?.ClassName == "break")
+                            if (ReturnValue?.ClassName == Literals.Break)
                             {
                                 ReturnValue = null;
                                 break;
                             }
-                            if (ReturnValue?.ClassName == "continue")
+                            if (ReturnValue?.ClassName == Literals.Continue)
                                 ReturnValue = null;
                         }
                     }
@@ -203,53 +306,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
 
                     Line--;
                     Nesting--;
-                }
-                else if (analyzedTokens[2].type == Token.Type.Assign)
-                {
-                    int comma = Token.IndexOf(analyzedTokens, Token.Type.Comma, 0);
-                    string var = analyzedTokens[1].Value;
-
-                    if (Field.Get(var, out prev)) Field[var] = Obj.None;
-                    else Field.Set(var, Obj.None);
-
-                    Field[var] = Calculator.On(analyzedTokens[3..comma], Field);
-
-                    List<Token> condition = analyzedTokens[(comma + 1)..Token.IndexOf(analyzedTokens, Token.Type.Comma, comma + 1)];
-                    comma = Token.IndexOf(analyzedTokens, Token.Type.Comma, comma + 1);
-                    List<Token> expression = analyzedTokens[(comma + 1)..];
-
-                    Nesting++;
-
-                    while (Calculator.On(condition, Field) is Bool b && b.Value)
-                    {
-                        Line = loop + 1;
-
-                        while (Line < Code.Length && IsBody() && TryInterpret()) ;
-
-                        if (ReturnValue?.ClassName == "break")
-                        {
-                            ReturnValue = null;
-                            break;
-                        }
-                        if (ReturnValue?.ClassName == "continue")
-                            ReturnValue = null;
-
-                        Parse(expression);
-                    }
-
-                    Line = loop + 1;
-
-                    SkipBody();
-
-                    if (prev == Obj.None)
-                        Field.Remove(var);
-                    else
-                        Field[var] = prev is null ? Obj.None : prev;
-
-                    Line--;
-                    Nesting--;
-
-                }
+                }                
                 else throw new SyntaxError();
             }
             else if (analyzedTokens[0].type == Token.Type.While)
@@ -285,45 +342,20 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         }
         else if (assign != -1)
         {
-            int i = assign + 1 , j, count = analyzedTokens[..i].Count(token => token.type == Token.Type.Comma) + 1;
-            Obj v;
-            List values = [];            
-
-            while ((j = Token.IndexOf(analyzedTokens, Token.Type.Comma, i)) != -1)
-            {
-                values.Append(Calculator.On(analyzedTokens[i..j], Field));
-                i = j + 1;
-            }
-
-            v = Calculator.On(analyzedTokens[i..], Field);
-            if (v is Map)
-            {
-                if (count == 1) values.Add(v);
-                else if (count == values.Count) values.Extend(v);
-                else throw new SyntaxError();
-            }
-            else if (v is Collections.Tuple)
-            {
-                if (count == 1) values.Add(v);
-                else if (count == values.Count) values.Extend(v);
-                else throw new SyntaxError();
-            }
-            else if (count != values.Count + 1) throw new SyntaxError();
-            else values.Append(v);
-
-            i = 0;
+            int i = 0;
+            var values = new Collections.Tuple($"({Token.String(analyzedTokens[2..])})", Field);
 
             foreach (var value in values)
             {
-                Obj var = Obj.None;
+                Obj var = Obj.None;                
 
                 while (i < assign)
                 {
                     var token = analyzedTokens[i];
 
-                    if (analyzedTokens[i + 1].type == Token.Type.Comma || Token.IsAssigns(analyzedTokens[i + 1]))
+                    if (IsEnd())
                     {
-                        if (Token.IsLiteral(analyzedTokens[i])) throw new SyntaxError();
+                        if (Token.IsLiteral(analyzedTokens[i].type)) throw new SyntaxError();
 
                         if (Obj.IsNone(var))
                         {
@@ -337,7 +369,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                         {
                             Obj index = Obj.Convert(token.Value, Field);
 
-                            var.SetItem(new([index, Assign(var.GetItem(new([index])), value, analyzedTokens[assign].type).Copy()]));
+                            var.SetItem(new(index, Assign(var.GetItem(new(index), Field.Null), value, analyzedTokens[assign].type).Copy()), Field.Null);
                         }
                         else if (token.type == Token.Type.Property)
                         {
@@ -363,15 +395,20 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                         else
                         {
                             if (token.type == Token.Type.Indexer)
-                                var = var.GetItem(new List([Obj.Convert(token.Value, Field)]));
+                                var = var.GetItem(new(Obj.Convert(token.Value, Field)), Field.Null);
                             else if (token.type == Token.Type.Property)
                                 var = var.Get(token.Value);
                             else throw new SyntaxError("unreachable");
                         }
                     }
+
                     i++;
                 }
-            }                             
+
+                i = Token.IndexOf(analyzedTokens, Token.Type.Comma, i) + 1;
+            }
+
+            bool IsEnd() => analyzedTokens[i + 1].type == Token.Type.Comma || analyzedTokens[i + 1].type == Token.Type.Colon || Token.IsAssigns(analyzedTokens[i + 1].type);
         }
         else if (analyzedTokens[0].type == Token.Type.Variable)
         {
@@ -383,7 +420,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                 if (analyzedTokens[next].type == Token.Type.Indexer)
                 {
                     Obj index = Obj.Convert(analyzedTokens[next].Value, Field);
-                    var = var.GetItem(new List([index]));
+                    var = var.GetItem(new(index), field);
                 }
                 else if (analyzedTokens[next].type == Token.Type.Property)
                 {
@@ -393,11 +430,11 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                 }
                 else if (analyzedTokens[next].type == Token.Type.Method)
                 {
-                    var index = analyzedTokens[next].Value.IndexOf(Literals.FunctionSep);
-                    var name = analyzedTokens[next].Value[..index];
-                    var args = new Collections.Tuple(new Map(analyzedTokens[next].Value[(index + 1)..], field));
+                    var index = analyzedTokens[next].Value.IndexOf(Literals.LParen);
+                    var name = analyzedTokens[next].Value[..index]; 
+                    var args = new Collections.Tuple(analyzedTokens[next].Value[index..], field);
 
-                    if (Fun.Invoke(var, name, var is Data.Object ? new(args.Value) : new([var, .. args]), out var result))
+                    if (Fun.Method(var, name, args, Field.Self(var), out var result))
                         var = result;
                     else throw new SyntaxError();
                 }
@@ -412,23 +449,6 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         }
         else throw new SyntaxError("unreachable");
     }
-
-    private Obj Assign(Obj a, Obj b, Token.Type type) => type switch
-    {
-        Token.Type.PlusAssign => a.Add(b),
-        Token.Type.MinusAssign => a.Sub(b),
-        Token.Type.AsteriskAssign => a.Mul(b),
-        Token.Type.SlashAssign => a.Div(b),
-        Token.Type.DoubleSlashAssign => a.IDiv(b),
-        Token.Type.PercentAssign => a.Mod(b),
-        Token.Type.DoubleAsteriskAssign => a.Pow(b),
-        Token.Type.BOrAssign => a.BOr(b),
-        Token.Type.BAndAssign => a.BAnd(b),
-        Token.Type.BXorAssign => a.BXor(b),
-        Token.Type.LeftShiftAssign => a.LSh(b),
-        Token.Type.RightShiftAssign => a.RSh(b),
-        _ => b
-    };
 
     private string[] GetBody(bool includeHeader = false)
     {
@@ -446,6 +466,12 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
         Nesting--;
         Line--;
         return [.. buffer];
+    }
+
+    private void SkipBody()
+    {
+        while (Line < Code.Length && IsBody())
+            Line++;
     }
 
     private bool IsBody()
@@ -481,22 +507,33 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
 
             List<Token> tokens = Tokenizer.Tokenize(Code[Line]);
 
-            if (tokens.Count > 0 && !Token.IsControl(tokens[0]))
+            if (tokens.Count > 0 && !Token.IsControl(tokens[0].type))
                 break;
 
             Nesting++;
             Line++;
 
-            while (Line < Code.Length && IsBody())
-                Line++;
+            SkipBody();
 
             Nesting--;
         }
     }
 
-    private void SkipBody()
+    private static Obj Assign(Obj a, Obj b, Token.Type type) => type switch
     {
-        while (Line < Code.Length && IsBody())
-            Line++;
-    }
+        Token.Type.PlusAssign => a.Add(b, Field.Null),
+        Token.Type.MinusAssign => a.Sub(b, Field.Null),
+        Token.Type.AsteriskAssign => a.Mul(b, Field.Null),
+        Token.Type.SlashAssign => a.Div(b, Field.Null),
+        Token.Type.DoubleSlashAssign => a.IDiv(b, Field.Null),
+        Token.Type.PercentAssign => a.Mod(b, Field.Null),
+        Token.Type.DoubleAsteriskAssign => a.Pow(b, Field.Null),
+        Token.Type.BOrAssign => a.BOr(b, Field.Null),
+        Token.Type.BAndAssign => a.BAnd(b, Field.Null),
+        Token.Type.BXorAssign => a.BXor(b, Field.Null),
+        Token.Type.LeftShiftAssign => a.LSh(b, Field.Null),
+        Token.Type.RightShiftAssign => a.RSh(b, Field.Null),
+        _ => b
+    };
+
 }

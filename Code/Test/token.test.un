@@ -2,11 +2,11 @@
 	t_type = none
 	value = ""
 
-	fn __init__(self, t_type, value)
+	fn __init__(t_type, value)
 		self.t_type = t_type
 		self.value = value
 
-	fn __str__(self)
+	fn __str__()
 		return `({self.t_type}, {self.value})`
 
 enum token_type

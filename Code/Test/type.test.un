@@ -51,8 +51,8 @@ writeln(str(b))
 writeln(type(str(b)))
 writeln()
 
-# 이터레이터
-writeln("이터레이터")
+# 리스트
+writeln("리스트")
 writeln(it1)
 writeln(it2)
 writeln(type(it1))

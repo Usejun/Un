@@ -4,15 +4,15 @@ Process.Initialize("D:\\User\\Un\\Code");
 
 string[] testcase = [
     "test.un",
-    "Test\\enum.test.un",
-    "Test\\token.test.un",
     "Test\\fib.test.un",
-    "Test\\list.test.un",
-    "Test\\dict.test.un",
-    "Test\\set.test.un",
-    "Test\\class.test.un",
+    "Test\\token.test.un",
     "Test\\type.test.un",
+    "Test\\class.test.un",
+    "Test\\set.test.un",
+    "Test\\dict.test.un",
+    "Test\\list.test.un",
     "Test\\math.test.un",
+    "Test\\enum.test.un",
     //"Test\\func.test.un",
 ];
 

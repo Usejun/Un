@@ -2,11 +2,17 @@
 
 public class Int : Val<long>
 {
+    public static Int Zero => new(0);
+
+    public static Int One => new(1);
+
+    public static Int MinusOne => new(-1);
+
     public Int() : base("int", 0) { }
 
     public Int(long value) : base("int", value) { }
 
-    public override Obj Init(Collections.Tuple args)
+    public override Obj Init(Collections.Tuple args, Field field)
     {
         if (args.Count == 0)
             Value = 0;
@@ -18,57 +24,64 @@ public class Int : Val<long>
         return this;
     }
 
-    public override Obj Add(Obj arg)
+    public override Obj Add(Obj arg, Field field)
     {
         if (arg is Int i) return new Int(Value + i.Value);
         if (arg is Float f) return new Float(Value + f.Value);
-        if (arg is Str) return CStr().Add(arg);
+        if (arg is Str) return CStr().Add(arg, field);
 
-        return base.Add(arg);
+        return base.Add(arg, field);
     }
 
-    public override Obj Sub(Obj arg)
+    public override Obj Sub(Obj arg, Field field)
     {
         if (arg is Int i) return new Int(Value - i.Value);
         if (arg is Float f) return new Float(Value - f.Value);
 
-        return base.Sub(arg);
+        return base.Sub(arg, field);
     }
 
-    public override Obj Mul(Obj arg)
+    public override Obj Mul(Obj arg, Field field)
     {
         if (arg is Int i) return new Int(Value * i.Value);
         if (arg is Float f) return new Float(Value * f.Value);
-        if (arg is Matrix m) return m.Mul(this);
 
-        return base.Mul(arg);
+        return base.Mul(arg, field);
     }
 
-    public override Obj Div(Obj arg)
+    public override Obj Div(Obj arg, Field field)
     {
         if (arg is Int i) return new Float((double)Value / i.Value);
         if (arg is Float f) return new Float(Value / f.Value);
 
-        return base.Div(arg);
+        return base.Div(arg, field);
     }
 
-    public override Obj IDiv(Obj arg)
+    public override Obj IDiv(Obj arg, Field field)
     {
-        if (arg is Int i) return new Int(Value / i.Value);
-        if (arg is Float f) return new Int(Value / (long)f.Value);
+        if (arg is Int i)
+        {
+            if (i.Value == 0) throw new DivideByZeroError();
+            return new Int(Value / i.Value);
+        }
+        if (arg is Float f)
+        {
+            if ((long)f.Value == 0) throw new DivideByZeroError();
+            return new Int(Value / (long)f.Value);
+        }
 
-        return base.IDiv(arg);
+        return base.IDiv(arg, field);
     }
 
-    public override Obj Mod(Obj arg)
+    public override Obj Mod(Obj arg, Field field)
     {
         if (arg is Int i) return new Float((double)Value % i.Value);
         if (arg is Float f) return new Float(Value % f.Value);
 
-        return base.Mod(arg);
+        return base.Mod(arg, field);
     }
 
-    public override Obj Pow(Obj arg)
+    public override Obj Pow(Obj arg, Field field)
     {
         if (arg is Int i)
         {
@@ -77,58 +90,58 @@ public class Int : Val<long>
         }
         if (arg is Float f) return new Float(Math.Pow(Value, f.Value));
 
-        return base.Pow(arg);
+        return base.Pow(arg, field);
     }
 
-    public override Obj BAnd(Obj arg)
+    public override Obj BAnd(Obj arg, Field field)
     {
         if (arg is Int i) return new Int(Value & i.Value);
 
-        return base.BAnd(arg);
+        return base.BAnd(arg, field);
     }
 
-    public override Obj BOr(Obj arg)
+    public override Obj BOr(Obj arg, Field field)
     {
         if (arg is Int i) return new Int(Value | i.Value);
 
-        return base.BOr(arg);
+        return base.BOr(arg, field);
     }
 
-    public override Obj BXor(Obj arg)
+    public override Obj BXor(Obj arg, Field field)
     {
         if (arg is Int i) return new Int(Value ^ i.Value);
 
-        return base.BXor(arg);
+        return base.BXor(arg, field);
     }
 
     public override Obj BNot() => new Int(~Value);
 
-    public override Obj LSh(Obj arg)
+    public override Obj LSh(Obj arg, Field field)
     {
         if (arg is Int i) return new Int(Value << (int)i.Value);
 
-        return base.LSh(arg);
+        return base.LSh(arg, field);
     }
 
-    public override Obj RSh(Obj arg)
+    public override Obj RSh(Obj arg, Field field)
     {
         if (arg is Int i) return new Int(Value >> (int)i.Value);
 
-        return base.RSh(arg);
+        return base.RSh(arg, field);
     }
 
-    public override Obj Xor(Obj arg) => new Bool(CBool().Value ^ arg.CBool().Value);
-
-    public override Bool Equals(Obj arg)
+    public override Bool Eq(Obj arg, Field field)
     {
         if (arg is Float f) return new(Value == f.Value);
-        return base.Equals(arg);
+
+        return base.Eq(arg, field);
     }
 
-    public override Bool LessThen(Obj arg)
+    public override Bool Lt(Obj arg, Field field)
     {
         if (arg is Float f) return new(Value < f.Value);
-        return base.LessThen(arg);
+
+        return base.Lt(arg, field);
     }
 
     public override Int CInt() => new(Value);

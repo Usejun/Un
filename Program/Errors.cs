@@ -2,13 +2,13 @@
 
 namespace Un;
 
-public abstract class Error(string message) : Exception(message)
+public abstract class BaseError(string message) : Exception(message)
 {
     public override string ToString()
     {
         StringBuilder result = new();
 
-        Process.TryGetGlobalProperty("__name__", out var v);
+        Process.TryGetGlobalProperty(Literals.Name, out var v);
 
         result.AppendLine();
         result.AppendLine($"   File <{v.CStr().Value}>, line [{Process.Line + 1}]");
@@ -20,39 +20,39 @@ public abstract class Error(string message) : Exception(message)
     }
 }
 
-public class AssertError : Error
+public class AssertError : BaseError
 {
     public AssertError() : base("assert exception") { }
     public AssertError(string message) : base(message) { }
 }
 
-public class IndexError : Error
+public class IndexError : BaseError
 {
     public IndexError() : base("invalid index") { }
     public IndexError(string message) : base(message) { }
 }
 
-public class KeyError : Error
+public class KeyError : BaseError
 {
     public KeyError() : base("invalid key") { }
     public KeyError(string message) : base(message) { }
 }
 
-public class ValueError : Error
+public class ValueError : BaseError
 {
-    public ValueError() : base("invalid Value") { }
+    public ValueError() : base("invalid value") { }
     public ValueError(string message) : base(message) { }
 }
 
-public class ClassError : Error
+public class ClassError : BaseError
 {
     public ClassError() : base("invalid class") { }
     public ClassError(string message) : base(message) { }
 }
 
-public class NoneError : Error
+public class NoneError : BaseError
 {
-    public NoneError() : base("invalid None") { }
+    public NoneError() : base("invalid none") { }
     public NoneError(string message) : base(message) { }
 
     public static void IsNull(object obj)
@@ -66,26 +66,38 @@ public class NoneError : Error
     }
 }
 
-public class FileError : Error
+public class FileError : BaseError
 {
     public FileError() : base("invalid file") { }
     public FileError(string message) : base(message) { }
 }
 
-public class TypeError : Error
+public class TypeError : BaseError
 {
     public TypeError() : base("invalid type") { }
     public TypeError(string message) : base(message) { }
 }
 
-public class SyntaxError : Error
+public class SyntaxError : BaseError
 {
     public SyntaxError() : base("invalid syntax") { }
     public SyntaxError(string message) : base(message) { }
 }
 
-public class OperatorError : Error
+public class OperatorError : BaseError
 {
     public OperatorError() : base("invalid operator") { }
     public OperatorError(string message) : base(message) { }
+}
+
+public class ArgumentError : BaseError
+{ 
+    public ArgumentError() : base("invalid argumennt") { }
+    public ArgumentError(string message) : base(message) { }
+}
+
+public class DivideByZeroError : BaseError
+{
+    public DivideByZeroError() : base("divide by zero") { }
+    public DivideByZeroError(string message) : base(message) { }
 }

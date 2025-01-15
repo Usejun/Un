@@ -5,3 +5,4 @@ s1.add(1)
 
 writeln(type(s1))
 writeln(type(s2))
+writeln(s1, s2)

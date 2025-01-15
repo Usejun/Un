@@ -1,40 +1,71 @@
-﻿namespace Un.Util;
+﻿using Un.Interpreter;
+
+namespace Un.Package;
 
 public class Std : Obj, IPackage
 {
     public string Name => "std";
 
-    Obj Write(Collections.Tuple args)
+    private Dictionary<string, Dictionary<int, Obj>> memo = new(); 
+
+    Obj Write(Collections.Tuple args, Field field)
     {
         foreach (var p in args)
             Console.Write(p.CStr().Value + " ");
         return None;
     }
 
-    Obj Writeln(Collections.Tuple args)
+    Obj Writeln(Collections.Tuple args, Field field)
     {
-        Write(args);
+        Write(args, field);
         Console.Write('\n');
         return None;
     }
 
-    Obj Clear(Collections.Tuple args)
+    Obj Clear(Collections.Tuple args, Field field)
     {
         Console.Clear();
         return None;
     }
 
-    Str Readln(Collections.Tuple args) => new(Console.ReadLine()!);
+    Str Readln(Collections.Tuple args, Field field) => new(Console.ReadLine()!);
 
-    Str Type(Collections.Tuple args) => args[0].Type();
+    Str Type(Collections.Tuple args, Field field) => args[0].Type();
 
-    List Method(Collections.Tuple args)
+    List Array(Collections.Tuple args, Field field)
+    {      
+        if (args.Count < 2 || args[1] is not Int length) throw new ValueError("invalid arguments");
+
+        List list = [];
+
+        if (args.Count == 2)
+        {
+            for (int i = 0; i < length.Value; i++)
+                list.Append(args[0]);         
+        }
+        else
+        {
+            List args2 = args.CList();
+            args2.RemoveAt(new Int(2));
+            for (int i = 0; i < length.Value; i++)
+                list.Append(Array(args2.AsTuple(), field));
+        }
+
+        return list;
+    }
+
+    List Method(Collections.Tuple args, Field field)
     {
         List<string> methods = [];
 
-        if (args[0] is Fun f)
+        if (args.Count == 0)
         {
-            foreach (var i in f.Call([]).field.Keys)                
+            foreach (var i in Process.Field.Keys)
+                if (Process.Field[i] is Fun) methods.Add(i);
+        }
+        else if (args[0] is Fun f)
+        {
+            foreach (var i in f.Call([], new()).field.Keys)
                 if (field[i] is Fun) methods.Add(i);
         }
         else if (args[0] is Obj o)
@@ -42,22 +73,23 @@ public class Std : Obj, IPackage
             foreach (var i in o.field.Keys)
                 if (o.field[i] is Fun) methods.Add(i);
         }
-        else
-        {
-            foreach (var i in Process.Field.Keys)
-                if (field[i] is Fun) methods.Add(i);
-        }
+        else throw new SyntaxError();
 
         return new List(methods);
     }
 
-    List Prop(Collections.Tuple args)
+    List Prop(Collections.Tuple args, Field field)
     {
         List<string> prop = [];
 
-        if (args[0] is Fun f)
+        if (args.Count == 0)
         {
-            foreach (var i in f.Call([]).field.Keys)
+            foreach (var i in Process.Field.Keys)
+                if (Process.Field[i] is not Fun) prop.Add(i);
+        }
+        else if (args[0] is Fun f)
+        {
+            foreach (var i in f.Call([], new()).field.Keys)
                 if (field[i] is not Fun) prop.Add(i);
         }
         else if (args[0] is Obj o)
@@ -65,16 +97,12 @@ public class Std : Obj, IPackage
             foreach (var i in o.field.Keys)
                 if (o.field[i] is not Fun) prop.Add(i);
         }
-        else
-        {
-            foreach (var i in Process.Field.Keys)
-                if (field[i] is not Fun) prop.Add(i);
-        }
+        else throw new SyntaxError();
 
         return new List(prop);
     }
 
-    List Field(Collections.Tuple args)
+    List Field(Collections.Tuple args, Field field)
     {
         List fields = [];
 
@@ -82,7 +110,7 @@ public class Std : Obj, IPackage
         {
             string[] keys;
 
-            if (arg is Fun f) keys = f.Call([]).field.Keys;
+            if (arg is Fun f) keys = f.Call([], new()).field.Keys;
             else if (arg is Obj o) keys = o.field.Keys;
             else throw new ValueError();
 
@@ -92,9 +120,9 @@ public class Std : Obj, IPackage
         return args.Count == 0 ? new(Process.Field.Keys) : fields;
     }
 
-    List Package(Collections.Tuple args) => new(Process.Package.Keys);        
+    List Package(Collections.Tuple args, Field field) => new(Process.Package.Keys);        
 
-    List Range(Collections.Tuple args)
+    List Range(Collections.Tuple args, Field field)
     {
         if (args[0] is not Int start)
             throw new ValueError("invalid argument");
@@ -110,11 +138,11 @@ public class Std : Obj, IPackage
         return new List(objs);
     }
 
-    Int Len(Collections.Tuple args) => args[0].Len();
+    Int Len(Collections.Tuple args, Field field) => args[0].Len();
 
-    Int Hash(Collections.Tuple args) => args[0].Hash();
+    Int Hash(Collections.Tuple args, Field field) => args[0].Hash();
 
-    IO.Stream Open(Collections.Tuple args) 
+    IO.Stream Open(Collections.Tuple args, Field field) 
     {
         if (args[0] is Str s) return new(File.Open(s.Value, FileMode.Open));
         if (args[0] is HttpsResponse hr) return new(hr.Value.Content.ReadAsStreamAsync().Result);
@@ -122,46 +150,46 @@ public class Std : Obj, IPackage
         throw new FileError("File types you can't open");
     }
 
-    Obj Sum(Collections.Tuple args)
+    Obj Sum(Collections.Tuple args, Field field)
     {
-        if (args[0] is List list) return Sum(new(list.Value));
+        if (args[0] is List list) return Sum(new(list.Value), field);
 
         Obj sum = args[0];
         for (int i = 1; i < args.Count; i++)
-            sum = sum.Add(args[i]);
+            sum = sum.Add(args[i], field);
         return sum;
     }
 
-    Obj Max(Collections.Tuple args)
+    Obj Max(Collections.Tuple args, Field field)
     {
-        if (args[0] is List list) return Max(new(list.Value));
+        if (args[0] is List list) return Max(new(list.Value), field);
 
         Obj max = args[0];
         for (int i = 1; i < args.Count; i++)
-            if (max.LessThen(args[i]).Value)
+            if (max.Lt(args[i], field).Value)
                 max = args[i];
         return max;
     }
 
-    Obj Min(Collections.Tuple args)
+    Obj Min(Collections.Tuple args, Field field)
     {
-        if (args[0] is List list) return Min(new(list.Value));
+        if (args[0] is List list) return Min(new(list.Value), field);
 
         Obj min = args[0];
         for (int i = 1; i < args.Count; i++)
-            if (min.GreaterThen(args[i]).Value)
+            if (min.Gt(args[i], field).Value)
                 min = args[i];
         return min;
     }
 
-    Obj Abs(Collections.Tuple args)
+    Obj Abs(Collections.Tuple args, Field field)
     {
         if (args[0] is Int i) return new Int(System.Math.Abs(i.Value));
         if (args[0] is Float f) return new Float(System.Math.Abs(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Obj Pow(Collections.Tuple args)
+    Obj Pow(Collections.Tuple args, Field field)
     {
         if (args[1] is not Int i) throw new ValueError("invalid argument");
 
@@ -169,26 +197,26 @@ public class Std : Obj, IPackage
 
         if (count == 0) return new Int(0);
         if (count == 1) return args[0];
-        if (count % 2 == 1) return args[0].Mul(Pow(new List([args[0], new Int(count - 1)])));
-        var p = Pow(new List([args[0], new Int(count / 2)]));
-        return p.Mul(p);
+        if (count % 2 == 1) return args[0].Mul(Pow(new Collections.Tuple(args[0], new Int(count - 1)), Un.Field.Null), Un.Field.Null);
+        var p = Pow(new Collections.Tuple(args[0], new Int(count / 2)), Un.Field.Null);
+        return p.Mul(p, Un.Field.Null);
     }
 
-    Obj Ceil(Collections.Tuple args)
+    Obj Ceil(Collections.Tuple args, Field field)
     {
         if (args[0] is Int i) return new Int((long)System.Math.Ceiling((decimal)i.Value));
         if (args[0] is Float f) return new Float(System.Math.Ceiling(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Obj Floor(Collections.Tuple args)
+    Obj Floor(Collections.Tuple args, Field field)
     {
         if (args[0] is Int i) return new Int((long)System.Math.Floor((decimal)i.Value));
         if (args[0] is Float f) return new Float(System.Math.Floor(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Obj Round(Collections.Tuple args)
+    Obj Round(Collections.Tuple args, Field field)
     {
         if (args.Count > 2) throw new ValueError("invalid argument");
 
@@ -205,65 +233,101 @@ public class Std : Obj, IPackage
         else return new Int((long)System.Math.Round(v));
     }
 
-    Float Sqrt(Collections.Tuple args) 
+    Float Sqrt(Collections.Tuple args, Field field) 
     {
         if (args[0] is Int i) return new Float(System.Math.Sqrt(i.Value));
         if (args[0] is Float f) return new Float(System.Math.Sqrt(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Float Sin(Collections.Tuple args)
+    Float Sin(Collections.Tuple args, Field field)
     {
         if (args[0] is Int i) return new Float(System.Math.Sin(i.Value));
         if (args[0] is Float f) return new Float(System.Math.Sin(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Float Cos(Collections.Tuple args)
+    Float Cos(Collections.Tuple args, Field field)
     {
         if (args[0] is Int i) return new Float(System.Math.Cos(i.Value));
         if (args[0] is Float f) return new Float(System.Math.Cos(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Float Tan(Collections.Tuple args)
+    Float Tan(Collections.Tuple args, Field field)
     {
         if (args[0] is Int i) return new Float(System.Math.Tan(i.Value));
         if (args[0] is Float f) return new Float(System.Math.Tan(f.Value));
         throw new ValueError("invalid argument");
     }
 
-    Obj Exit(Collections.Tuple args)
+    Obj Exit(Collections.Tuple args, Field field)
     {
         Environment.Exit(0);
         return None;
     }
 
-    Obj Assert(Collections.Tuple args)
+    Obj Assert(Collections.Tuple args, Field field)
     {
-        Debug.Assert(args[0].CBool().Value, args[1].CStr().Value);
+        if (args[0].CBool().Value)
+            throw new AssertError(args[1].CStr().Value);
 
         return None;
     }
 
-    Obj Breakpoint(Collections.Tuple args) => None;
+    Obj Breakpoint(Collections.Tuple args, Field field) => None;
 
-    Str Bin(Collections.Tuple args)
+    Str Bin(Collections.Tuple args, Field field)
     {
-        if (args[0] is Int i) return new("0b" + System.Convert.ToString(i.Value, 2));
+        if (args[0] is Int i) return new(Literals.Bin + System.Convert.ToString(i.Value, 2));
         throw new ValueError("invalid argument");
     }
 
-    Str Oct(Collections.Tuple args)
+    Str Oct(Collections.Tuple args, Field field)
     {
-        if (args[0] is Int i) return new("0o" + System.Convert.ToString(i.Value, 8));
+        if (args[0] is Int i) return new(Literals.Oct + System.Convert.ToString(i.Value, 8));
         throw new ValueError("invalid argument");
     }
 
-    Str Hex(Collections.Tuple args)
+    Str Hex(Collections.Tuple args, Field field)
     {
-        if (args[0] is Int i) return new("0x" + System.Convert.ToString(i.Value, 16));
+        if (args[0] is Int i) return new(Literals.Hex + System.Convert.ToString(i.Value, 16));
         throw new ValueError("invalid argument");
+    }
+
+    Obj Eval(Collections.Tuple args, Field field)
+    {
+        Field local = new();
+        local.Add(field);
+        Parser parser = new(args.Select(arg => arg.CStr().Value).ToArray(), local);
+
+        while (parser.TryInterpret()) ;
+
+        return parser.ReturnValue ?? None;
+    }
+
+    Obj Memo(Collections.Tuple args, Field field)
+    {
+        if (args[0] is not Fun fun)
+            throw new ArgumentError();
+
+        if (!memo.ContainsKey(fun.Name))
+            memo.Add(fun.Name, new());
+
+        var key = new Collections.Tuple(values: args.CList().Value[1..]);
+        var hash = key.GetHashCode();
+
+        if (!memo[fun.Name].TryGetValue(hash, out Obj result))
+        {
+            Obj value = fun.Call(key, field);
+            memo[fun.Name].Add(hash, value);
+            return value;
+        }
+        else
+        {
+            return result;
+        }
+        
     }
 
     public IEnumerable<Fun> Import() =>
@@ -273,6 +337,7 @@ public class Std : Obj, IPackage
         new NativeFun("clear", -1, Clear),
         new NativeFun("readln", 0, Readln),
         new NativeFun("type", 1, Type),
+        new NativeFun("array", -1, Array),
         new NativeFun("method", -1, Method),
         new NativeFun("field", -1, Field),
         new NativeFun("prop", -1, Prop),
@@ -299,6 +364,8 @@ public class Std : Obj, IPackage
         new NativeFun("hex", 1, Hex),
         new NativeFun("assert", 2, Assert),
         new NativeFun("breakpoint", 0, Breakpoint),
+        new NativeFun("eval", -1, Eval),
+        new NativeFun("memo", -1, Memo),
     ];
 
 }

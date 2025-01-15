@@ -43,11 +43,6 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public List() : base("list", []) { }
 
-    public List(Map map) : base("list", map.Value)
-    {
-        Count = map.Value.Length;
-    }
-
     public List(IEnumerable enumerable) : base("list", [])
     {
         foreach (var i in enumerable)
@@ -97,159 +92,196 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public override void Init()
     {
-        field.Set("add", new NativeFun("add", -1, args =>
+        field.Set("add", new NativeFun("add", -1, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            for (int i = 1; i < args.Count; i++)
+            for (int i = 0; i < args.Count; i++)
                 self.Append(args.Value[i]);                
 
             return None;
         }));
-        field.Set("insert", new NativeFun("insert", 3, args =>
+        field.Set("insert", new NativeFun("insert", 2, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
-            if (args[2] is not Int i)
+            if (args[1] is not Int i)
                 throw new ValueError("invalid argument");
 
-            self.Insert(args[1], (int)i.Value);
+            self.Insert(args[0], (int)i.Value);
 
             return None;
         }));
-        field.Set("extend", new NativeFun("extend", -1, args =>
+        field.Set("extend", new NativeFun("extend", -1, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            for (int i = 1; i < args.Count; i++)
+            for (int i = 0; i < args.Count; i++)
                 foreach (var item in args[i].CList())
                     self.Append(item);
 
             return None;
         }));
-        field.Set("extend_insert", new NativeFun("extend_insert", 3, args =>
+        field.Set("extend_insert", new NativeFun("extend_insert", 2, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
-            if (args[2] is not Int i)
+            if (args[1] is not Int i)
                 throw new ValueError("invalid argument");
 
-            self.ExtendInsert(args[1], (int)i.Value);
+            self.ExtendInsert(args[0], (int)i.Value);
 
             return None; 
         }));
-        field.Set("remove", new NativeFun("remove", 2, args =>
+        field.Set("remove", new NativeFun("remove", 1, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            if (args[1] is Obj obj) return self.Remove(obj);
+            if (args[0] is Obj obj) return self.Remove(obj);
             throw new ValueError("invalid argument");
         }));
-        field.Set("remove_at", new NativeFun("remove_at", 2, args =>
+        field.Set("remove_at", new NativeFun("remove_at", 1, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            if (args[1] is Int i) return self.RemoveAt(i);
+            if (args[0] is Int i) return self.RemoveAt(i);
             throw new ValueError("invalid argument");
         }));
-        field.Set("index_of", new NativeFun("index_of", 2, args =>
+        field.Set("index_of", new NativeFun("index_of", 1, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            if (args[1] is Obj obj) return self.IndexOf(obj);
+            if (args[0] is Obj obj) return self.IndexOf(obj);
             throw new ValueError("invalid argument");
         }));
-        field.Set("contains", new NativeFun("contains", 2, args =>
+        field.Set("contains", new NativeFun("contains", 1, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            if (args[1] is Obj obj) return self.Contains(obj);
+            if (args[0] is Obj obj) return self.Contains(obj);
             throw new ValueError("invalid argument");
         }));
-        field.Set("clone", new NativeFun("clone", 1, args =>
+        field.Set("clone", new NativeFun("clone", 0, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
             return self.Clone();
         }));
-        field.Set("sort", new NativeFun("sort", 1, args =>
+        field.Set("sort", new NativeFun("sort", 0, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
             self.Sort();
             return None;
         }));
-        field.Set("reverse", new NativeFun("reverse", 1, args =>
+        field.Set("reverse", new NativeFun("reverse", 0, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
             self.Reverse();
             return None;
         }));
-        field.Set("order", new NativeFun("order", 2, args =>
+        field.Set("order", new NativeFun("order", 0, (args, field) =>
         {
-            if (args[0] is not List self || args[1] is not Fun f)
+            if (field[Literals.Self] is not List self || args[0] is not Fun f)
                 throw new ValueError("invalid argument");
 
             self.Order(f);
             return None;
         }));
-        field.Set("binary_search", new NativeFun("binary_search", 2, args =>
+        field.Set("pop", new NativeFun("pop", -1, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            return self.BinarySearch(args[1]);
+            switch (args.Count)
+            {
+                case 0:
+                    return self.Pop(new Int(self.Count - 1));
+                case 1:
+                    if (args[0] is Int index)
+                        return self.Pop(index);
+                    throw new ValueError("invalid argument");
+                default:
+                    throw new ValueError("invalid argument");
+            }
         }));
-        field.Set("lower_bound", new NativeFun("lower_bound", 2, args =>
+        field.Set("hpush", new NativeFun("hpush", 1, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            return self.LowerBound(args[1]);
+            self.HPush(args[0]);
+            return None;
         }));
-        field.Set("upper_bound", new NativeFun("upper_bound", 2, args =>
+        field.Set("hpop", new NativeFun("hpop", 0, (args, field) =>
         {
-            if (args[0] is not List self)
+            if (field[Literals.Self] is not List self)
                 throw new ValueError("invalid argument");
 
-            return self.UpperBound(args[1]);
+            return self.HPop();
+        }));
+        field.Set("binary_search", new NativeFun("binary_search", 1, (args, field) =>
+        {
+            if (field[Literals.Self] is not List self)
+                throw new ValueError("invalid argument");
+
+            return self.BinarySearch(args[0]);
+        }));
+        field.Set("lower_bound", new NativeFun("lower_bound", 1, (args, field) =>
+        {
+            if (field[Literals.Self] is not List self)
+                throw new ValueError("invalid argument");
+
+            return self.LowerBound(args[0]);
+        }));
+        field.Set("upper_bound", new NativeFun("upper_bound", 1, (args, field) =>
+        {
+            if (field[Literals.Self] is not List self)
+                throw new ValueError("invalid argument");
+
+            return self.UpperBound(args[0]);
         }));
     }
 
-    public override Obj Init(Collections.Tuple args)
+    public override Obj Init(Tuple args, Field field)
     {
         if (args.Count == 0)
         {
             Value = [];
         }
-        else if (args[0] is Fun fun && args[1] is List list)
-        {
-            Value = [];
-
-            for (int i = 0; i < list.Count; i++)
-                Append(fun.Call([list[i]]));                                
-        }
-        else
+        else if (args.Count == 1)
         {
             var cList = args[0].CList();
             Value = cList.Value;
             Count = cList.Count;
         }
+        else if (args.Count == 2 && args[0] is Fun fun && args[1] is List list)
+        {
+            Value = [];
+
+            for (int i = 0; i < list.Count; i++)
+                Append(fun.Call(new(list[i]), new()));                                
+        }        
+        else
+        {
+            Value = args.Value;
+            Count = args.Count;
+        }
 
         return this;
     }
 
-    public override Obj Add(Obj arg)
+    public override Obj Add(Obj arg, Field field)
     {
         if (arg is List l) Extend(l);
         else Append(arg);
@@ -257,7 +289,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         return this;
     }
 
-    public override Obj Sub(Obj arg)
+    public override Obj Sub(Obj arg, Field field)
     {
         if (arg is List args)
         {
@@ -269,7 +301,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         return this;
     }
 
-    public override Obj Mul(Obj arg)
+    public override Obj Mul(Obj arg, Field field)
     {
         if (arg is Int pow)
         {
@@ -283,28 +315,48 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
             return new List(objs);
         }
 
-        return base.Mul(arg);
+        return base.Mul(arg, field);
     }
 
     public override Int Len() => new(Count);
 
-    public override Bool LessThen(Obj arg)
+    public override Bool Eq(Obj arg, Field field)
     {
-        if (arg is List i) return new(Count.CompareTo(i.Count) < 0);
-        return base.LessThen(arg);
+        if (arg is List list)
+        {
+            if (list.Count != Count) return Bool.False;
+
+            for (int i = 0; i < Count; i++)
+                if (list[i] != this[i])
+                    return Bool.False;
+
+            return Bool.True;
+        }
+        return base.Eq(arg, field);
     }
 
-    public override Bool Equals(Obj arg)
+    public override Bool Lt(Obj arg, Field field)
     {
-        if (arg is List i) return new(Count.CompareTo(i.Count) == 0);
-        return base.Equals(arg);
+        if (arg is List list)
+        {
+            if (list.Count != Count) return new(list.Count > Count);
+
+            for (int i = 0; i < Count; i++)
+                if (list[i].Lt(this[i], field).Value)
+                    return Bool.False;
+
+            return Bool.True;
+        }
+        return base.Lt(arg, field);
     }
+
+
 
     public override List CList() => this;
 
     public override Str CStr() => new($"[{string.Join(", ", Value.Take(Count).Select(o => o.CStr().Value))}]");
 
-    public override Obj GetItem(List args)
+    public override Obj GetItem(Tuple args, Field field)
     {
         if (args[0] is not Int i) throw new IndexError("out of range");
 
@@ -315,7 +367,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         return Value[index];
     }
 
-    public override Obj SetItem(List args)
+    public override Obj SetItem(Tuple args, Field field)
     {
         if (args[0] is not Int i || OutOfRange((int)i.Value)) throw new IndexError("out of range");
 
@@ -330,21 +382,22 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Obj Clone() => new List()
     {
-        Value = Value,
+        Value = Value[..],
         Count = Count
     };
 
     public override Obj Copy() => this;
 
 
-
     public List Extend(Obj obj)
     {
         if (IsFull)
             Resize();
-
-        foreach (var item in obj.CList())
-            Append(item);
+        if (obj is not List)
+            Append(obj);
+        else
+            foreach (var item in obj.CList())
+                Append(item);
 
         return this;
     }
@@ -422,13 +475,16 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
     public Bool Remove(Obj obj)
     {
         for (int i = 0; i < Count; i++)
-            if (Value[i].Equals(obj).Value)
+            if (Value[i].Eq(obj, Field.Null).Value)
                 return RemoveAt(new(i));
         return new(false);
     }
 
     public Bool RemoveAt(Int index)
     {
+        if (OutOfRange(index.Value))
+            throw new IndexError("out of range");
+
         for (int i = (int)index.Value; i < Count - 1; i++)
             Value[i] = Value[i + 1];
         Count--;
@@ -438,7 +494,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
     public Int IndexOf(Obj obj)
     {
         for (int i = 0; i < Count; i++)
-            if (Value[i].Equals(obj).Value)
+            if (Value[i].Eq(obj, Field.Null).Value)
                 return new(i);
         return new(-1);
     }
@@ -452,7 +508,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public void Order(Fun fun)
     {
-        Array.Sort(Value, 0, Count, Comparer<Obj>.Create((i, j) => fun.Call([i]).CompareTo(fun.Call([j]))));
+        Array.Sort(Value, 0, Count, Comparer<Obj>.Create((i, j) => fun.Call(new(i), new()).CompareTo(fun.Call(new(j), new()))));
     }
 
     public void Reverse()
@@ -468,7 +524,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         while (r > l)
         {
             m = (l + r) / 2;
-            if (Value[m].LessThen(obj).Value) l = m + 1;
+            if (Value[m].Lt(obj, Field.Null).Value) l = m + 1;
             else r = m;
         }
         return new(r);
@@ -480,12 +536,89 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         while (r > l)
         {
             m = (l + r) / 2;
-            if (Value[m].LessOrEquals(obj).Value) l = m + 1;
+            if (Value[m].Loe(obj, Field.Null).Value) l = m + 1;
             else r = m;
         }
         return new(r);
     }
 
+    public void HPush(Obj obj)
+    {
+        int child = Count;
+        Append(obj);
+
+        while (child != 0)
+        {
+            int parent = (child - 1) / 2;
+
+            if (parent < child)
+                parent = child;
+
+            child = parent;
+        }
+    } 
+
+    public Obj HPop()
+    {
+        if (Count == 0)
+            throw new ValueError("list is empty");
+
+        Obj value = this[0];
+        this[0] = this[^1];
+        Count--;
+
+        int parent = 0;
+
+        while (Count / 2 > parent)
+        {
+            int index = parent, left = 2 * parent + 1, right = 2 * parent + 2;
+
+            if (right < Count && index < right)
+                index = right;
+            if (left < Count && index < left)
+                index = left;
+
+            (parent, index) = (index, parent);
+
+            if (parent == index) break;
+
+            parent = index;
+        }
+
+        return value;
+    }
+
+    public Obj Pop(Int index)
+    {
+        Obj value = this[index];
+        RemoveAt(index);
+        return value;
+    }
+
+    public override int GetHashCode()
+    {
+        int hash = 123456789;
+
+        foreach (var item in this)
+        {
+            hash <<= 5;
+            hash |= item.GetHashCode();
+            hash += item.GetHashCode();
+            hash = Math.Abs(hash);
+        }
+
+        return hash;
+    }
+
+    public Tuple AsTuple()
+    {
+        Obj[] objs = new Obj[Count];
+
+        for (int i = 0; i < Count; i++)
+            objs[i] = this[i];
+
+        return new(objs);
+    }
 
     void Resize()
     {
@@ -498,6 +631,8 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
     }
 
     bool OutOfRange(int index) => index < 0 || index >= Count;
+
+    bool OutOfRange(long index) => index < 0 || index >= Count;
 
 
     public IEnumerator<Obj> GetEnumerator() => new Enumerator(this);

@@ -24,12 +24,12 @@ public class Enu : Obj
         }
     }
 
-    public override Obj Init(Collections.Tuple args)
+    public override Obj Init(Collections.Tuple args, Field field)
     {
         if (args[0] is Int i) return new EnuElm($"{number[(int)i.Value].Value}", (int)i.Value);
         if (args[0] is Str s) return field[s.Value];
 
-        return base.Init(args);
+        return base.Init(args, field);
     }
 
     public override Obj Clone() => this;
