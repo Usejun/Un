@@ -230,9 +230,6 @@ p.print()
 - \_\_list__ : list로의 형변환
 - \_\_getitem__ : get by index
 - \_\_setitem__ : set by index
-- \_\_and__ : AND 연산
-- \_\_or__ : OR 연산
-- \_\_xor__ : XOR 연산
 - \_\_band__ : bitwise AND 연산
 - \_\_bor__ : bitwise OR 연산
 - \_\_bxor__ : bitwise XOR 연산
@@ -243,10 +240,10 @@ p.print()
 - \_\_exit__ : using 탈출
 
 ## lambda
-**\[name] = \[parameters] => \[code]**의 꼴로 사용되며, 함수와 동일한 기능을 한다.
+**\([parameters]) => \[code]** 의 꼴로 사용되며, 함수와 동일한 기능을 한다.
 
 ```un
-f = i => i * i
+f = (i) => i * i
 ````
 
 ## import
