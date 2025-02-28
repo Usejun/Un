@@ -9,6 +9,12 @@ C#으로 작성된 프로그램을 통해서 ".un"의 확장자를 가진 파일
 # 구조
 기본적으로 un은 동적 타이핑을 지원하고, 변수를 선언 할 때에는 **\[name1, name2, ...] = \[value1, value2, ...]** 의 형태를 따른다.
 
+```un
+a = 1
+a, b, c = 1, 2, 3
+a = (1, 2, 3)
+```
+
 ## 기본 자료형
 ### int
 부호가 있는 64bit 정수형 자료형이다.
@@ -178,7 +184,7 @@ for i in range(1, 100)
 while 키워드 후에는 **반드시 bool 형식의 값**이 와야한다. 조건식이 부합하면 while문 내부로 들어간다. 그렇지 않을 경우에는 while문을 탈출한다.
 
 ```
-fib = [0] * 21
+fib = array(0, 21)
 fib[0] = 1
 fib[1] = 1
 i = 2
@@ -315,3 +321,15 @@ name = "usejun"
 age = 20
 s = `i am {name}, my age is {age}`
 ````
+## 타입 힌트
+각 변수의 타입이나 함수의 반환값, 함수의 인자의 타입을 명시적으로 알려줄 수 있으며, 타입의 강제성은 없다.
+
+```un
+a = 1
+b: int = 1
+c: str = 2
+d: my_custom_class = my_custom_class()
+
+fn multiply(a: int, b: int) -> int
+    return a * b 
+```
