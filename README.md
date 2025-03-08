@@ -141,11 +141,6 @@ for i in range(1, 100)
 ### while
 조건이 `true`인 동안 실행된다.
 
-<<<<<<< HEAD
-while 키워드 후에는 **반드시 bool 형식의 값**이 와야한다. 조건식이 부합하면 while문 내부로 들어간다. 그렇지 않을 경우에는 while문을 탈출한다.
-
-```
-=======
 ```un
 >>>>>>> c4ba701 (v1.0.1)
 fib = array(0, 21)
@@ -309,6 +304,4 @@ d: my_custom_class = my_custom_class()
 
 fn multiply(a: int, b: int) -> int
     return a * b 
-=======
->>>>>>> c4ba701 (v1.0.1)
 ```
