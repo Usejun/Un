@@ -4,98 +4,82 @@ public class Float : Val<double>
 {
     public Float() : base("float", 0) { }
 
+    public Float(string value) : base("float", double.Parse(value)) { }
+
     public Float(double value) : base("float", value) { }
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        if (args.Count == 0)
-            Value = 0;
-        else if (args.Count == 1)
-            Value = args[0].CFloat().Value;
-        else
-            throw new ClassError("initialize error");
+        field.Merge(args, [("value", Int.Zero)], 0);
+        Value = field["value"].CFloat().Value;
 
         return this;
     }
 
-    public override Obj Add(Obj arg, Field field)
+    public override Obj Add(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Float(Value + i.Value);
-        if (arg is Float f) return new Float(Value + f.Value);
-        if (arg is Str) return CStr().Add(arg, field);
+        Int i => new Float(Value + i.Value),
+        Float f => new Float(Value + f.Value),
+        Str => CStr().Add(arg, field),
+        _ => base.Add(arg, field),
+    };
 
-        return base.Add(arg, field);
-    }
-
-    public override Obj Sub(Obj arg, Field field)
+    public override Obj Sub(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Float(Value - i.Value);
-        if (arg is Float f) return new Float(Value - f.Value);
+        Int i => new Float(Value - i.Value),
+        Float f => new Float(Value - f.Value),
+        _ => base.Sub(arg, field),
+    };
 
-        return base.Sub(arg, field);
-    }
-
-    public override Obj Mul(Obj arg, Field field)
+    public override Obj Mul(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Float(Value * i.Value);
-        if (arg is Float f) return new Float(Value * f.Value);
+        Int i => new Float(Value * i.Value),
+        Float f => new Float(Value * f.Value),
+        _ => base.Mul(arg, field),
+    };
 
-        return base.Mul(arg, field);
-    }
-
-    public override Obj Div(Obj arg, Field field)
+    public override Obj Div(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Float(Value / i.Value);
-        if (arg is Float f) return new Float(Value / f.Value);
+        Int i => new Float(Value / i.Value),
+        Float f => new Float(Value / f.Value),
+        _ => base.Div(arg, field),
+    };
 
-        return base.Div(arg, field);
-    }
-
-    public override Obj IDiv(Obj arg, Field field)
+    public override Obj IDiv(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i)
-        {
-            if (i.Value == 0) throw new DivideByZeroError();
-            return new Int((long)(Value / i.Value));
-        }
-        if (arg is Float f)
-        {
-            if ((long)f.Value == 0) throw new DivideByZeroError();
-            return new Int((long)(Value / (long)f.Value));
-        }
+        Int i => i.Value == 0 ? throw new DivideByZeroError() : new Int((long)(Value / i.Value)),
+        Float f => f.Value == 0 ? throw new DivideByZeroError() : new Int((long)(Value / f.Value)),
+        _ => base.IDiv(arg, field),
+    };
 
-
-        return base.IDiv(arg, field);
-    }
-
-    public override Obj Mod(Obj arg, Field field)
+    public override Obj Mod(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Float(Value % i.Value);
-        if (arg is Float f) return new Float(Value % f.Value);
+        Int i => new Float(Value % i.Value),
+        Float f => new Float(Value % f.Value),
+        _ => base.Mod(arg, field),
+    };
 
-        return base.Mod(arg, field);
-    }
 
-    public override Obj Pow(Obj arg, Field field)
+    public override Obj Pow(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Float(Math.Pow(Value, i.Value));
-        if (arg is Float f) return new Float(Math.Pow(Value, f.Value));
+        Int i => new Float(Math.Pow(Value, i.Value)),
+        Float f => new Float(Math.Pow(Value, f.Value)),
+        _ => base.Pow(arg, field),
+    };
 
-        return base.Pow(arg, field);
-    }
-
-    public override Bool Eq(Obj arg, Field field)
+    public override Bool Eq(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new(Value == i.Value);
+        Int i => new(Value == i.Value),
+        Float f => new(Value == f.Value),
+        _ => base.Eq(arg, field),
+    };
 
-        return base.Eq(arg, field);
-    }
-
-    public override Bool Lt(Obj arg, Field field)
+    public override Bool Lt(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new(Value < i.Value);
-        return base.Lt(arg, field);
-    }
+        Int i => new(Value < i.Value),
+        Float f => new(Value < f.Value),
+        _ => base.Eq(arg, field),
+    };
 
     public override Int CInt() => new((long)Value);
 

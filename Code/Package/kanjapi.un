@@ -1,6 +1,0 @@
-﻿import https
-
-URL = "https://kanjiapi.dev/v1/kanji/"
-
-async fn get_kanji(kanji)
-	return https.get(URL + kanji)

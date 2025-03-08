@@ -4,32 +4,35 @@ public class Math : Obj, IPackage, IStatic
 {
     public string Name => "math";
 
-    Obj Pow(Collections.Tuple args, Field field)
+    Obj Pow(Field field)
     {
-        if (args[1] is not Int i) throw new ValueError("invalid argument");
+        if (!field["y"].As<Int>(out var y)) 
+            throw new ValueError("x^y, y must be an int");
 
-        int count = (int)i.Value;
+        var x = field["x"];
+        int count = y.Value > int.MaxValue ? throw new ArgumentError("y must be less than 2^32.") : (int)y.Value;
 
         if (count == 0) return new Int(0);
-        if (count == 1) return args[1];
-        if (count % 2 == 1) return args[0].Mul(Pow(new Collections.Tuple(args[1], new Int(count - 1)), field), field);
-        var p = Pow(new Collections.Tuple(args[1], new Int(count / 2)), field);
-        return p.Mul(p, field);
+        if (count == 1) return x;
+        if (count % 2 == 1) return x.Mul(Pow(new Collections.Tuple(x, new Int(count - 1)), Field.Null), Field.Null);
+        var p = Pow(new Collections.Tuple(x, new Int(count / 2)), Un.Field.Null);
+        return p.Mul(p, Field.Null);
     }
 
-    Int Gcd(Collections.Tuple args, Field field)
+
+    Int Gcd(Field field)
     {
         long Gcd(long a, long b) => b == 0 ? a : Gcd(b, a % b);
 
-        if (args[1] is not Int a || args[2] is not Int b)
-            throw new ValueError("invalid argument");
+        if (!field["a"].As<Int>(out var a) || !field["b"].As<Int>(out var b))
+            throw new ValueError("argument only accept integers");
         return new Int(Gcd(a.Value, b.Value));
     }
 
-    Int Permutation(Collections.Tuple args, Field field)
+    Int Permutation(Field field)
     {
-        if (args[1] is not Int n || args[2] is not Int k)
-            throw new ValueError("invalid argument");
+        if (!field["n"].As<Int>(out var n) || !field["k"].As<Int>(out var k))
+            throw new ValueError("argument only accept integers");
 
         if (n.Value < k.Value) return new(0);
         if (n.Value == k.Value || k.Value == 0) return new(1);
@@ -42,15 +45,15 @@ public class Math : Obj, IPackage, IStatic
         return new(sum);
     }
 
-    Int Combination(Collections.Tuple args, Field field)
+    Int Combination(Field field)
     {
-        if (args[1] is not Int n || args[2] is not Int k)
-            throw new ValueError("invalid argument");
+        if (!field["n"].As<Int>(out var n) || !field["k"].As<Int>(out var k))
+            throw new ValueError("argument only accept integers");
 
         if (n.Value < k.Value) return new(0);
         if (n.Value == k.Value || k.Value == 0) return new(1);
 
-        long sum = Permutation(args, field).CInt().Value;
+        long sum = Permutation(field).CInt().Value;
 
         for (long i = 2; i <= k.Value; i++)
             sum /= i;
@@ -58,10 +61,10 @@ public class Math : Obj, IPackage, IStatic
         return new(sum);
     }
 
-    Int Factorial(Collections.Tuple args, Field field)
+    Int Factorial(Field field)
     {
-        if (args[1] is not Int n)
-            throw new ValueError("invalid argument");
+        if (!field["n"].As<Int>(out var n))
+            throw new ValueError("value must be an integer");
 
         if (n.Value > 20)
             throw new ValueError("overflow");
@@ -79,10 +82,10 @@ public class Math : Obj, IPackage, IStatic
         Math math = new();
         math.field.Set("pi", new Float(3.14159265));
         math.field.Set("e", new Float(2.718281828));
-        math.field.Set("gcd", new NativeFun("gcd", 3, Gcd));
-        math.field.Set("permutation", new NativeFun("permutation", 3, Permutation));
-        math.field.Set("combination", new NativeFun("combination", 3, Combination));
-        math.field.Set("factorial", new NativeFun("factorial", 2, Factorial));
+        math.field.Set("gcd", new NativeFun("gcd", 2, Gcd, [("a", null!), ("b", null!)]));
+        math.field.Set("permutation", new NativeFun("permutation", 2, Permutation, [("n", null!), ("k", null!)]));
+        math.field.Set("combination", new NativeFun("combination", 2, Combination, [("n", null!), ("k", null!)]));
+        math.field.Set("factorial", new NativeFun("factorial", 1, Factorial, [("n", null!)]));
         return math;
     }
 }

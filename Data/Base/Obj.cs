@@ -17,14 +17,12 @@ public class Obj : IComparable<Obj>
     public Obj(string className)
     {
         ClassName = className;
-
-        Init();
     }
 
     public Obj(string className, Field field)
-    {
+    {        
         ClassName = className;
-        Super = Process.Class[ClassName].Super;
+        Super = Process.TryGetClass(className, out var original) ? original.Super : null;
 
         this.field.Copy(field);
     }
@@ -33,7 +31,7 @@ public class Obj : IComparable<Obj>
     {
         List<Token> tokens = Lexer.Lex(Tokenizer.Tokenize(code[0]), field);
 
-        ClassName = tokens[1].Value;
+        ClassName = tokens[1].value.ToString();
 
         if (tokens.Count == 4 && tokens[2].type == Token.Type.Colon)
         {
@@ -60,22 +58,19 @@ public class Obj : IComparable<Obj>
             if (tokens.Count == 0)
                 continue;
 
-            for (int i = 0; comment == tokens.Count && i < tokens.Count; i++)
-                if (tokens[i].type == Token.Type.Comment)
-                    comment = i;
+            int indexOfComment = Token.IndexOf(tokens, Token.Type.Comment);
+            comment = indexOfComment > 0 ? indexOfComment : comment;
 
             tokens = tokens[..comment];
 
-            for (int i = 0; assign == -1 && i < tokens.Count; i++)
-                if (tokens[i].type == Token.Type.Assign)
-                    assign = i;
+            assign = Token.IndexOf(tokens, Token.Type.Assign);
 
             if (assign > 0)
             {
                 Token token = tokens[0];
 
-                this.field.Set(token.Value, None);
-                this.field[token.Value] = Calculator.On(tokens[(assign + 1)..], field);
+                this.field.Set(token.value, None);
+                this.field[token.value] = Calculator.On(tokens[(assign + 1)..], field);
             }
             else if (tokens[0].type == Token.Type.Func)
             {
@@ -84,13 +79,12 @@ public class Obj : IComparable<Obj>
                 nesting++;
                 line++;
 
-
                 while (line < code.Length && (string.IsNullOrWhiteSpace(code[line]) || Tokenizer.IsBody(code[line], nesting)))
                     line++;
 
-                var name = tokens[1].Value.Split('(')[0];
+                var name = tokens[1].value.Split(Literals.CLParen, 1)[0];
 
-                this.field.Set(name, new LocalFun(name, code[start..line]));
+                this.field.Set(name, new LocalFun(name.ToString(), code[start..line]));
 
                 line--;
                 nesting--;
@@ -107,17 +101,20 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Init(Collections.Tuple args, Field field)
     {
-        if (Fun.Method(this, Literals.Init, args, Field.Self(this), out _)) { }
+        if (Fun.Method(this, Literals.Init, args, new(), out _)) { }
         else Super?.Init(args, field);
             
         return this;
     }
 
+    public Obj Get(StringBuffer sb) => Get(sb.ToString());
 
     public virtual Obj Get(string str)
     {
         if (field.Get(str, out var property))
             return property;
+        if (Process.Class[ClassName].field.Get(str, out var orginal))
+            return orginal;
         if (Super != null)
             return Super.Get(str);
         throw new TypeError("A property that doesn't exist.");
@@ -136,7 +133,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Add(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.Add, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Add, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.Add(arg, field);
@@ -145,7 +142,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Sub(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.Sub, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Sub, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.Sub(arg, field);
@@ -154,7 +151,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Mul(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.Mul, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Mul, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.Mul(arg, field);
@@ -163,7 +160,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Mod(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.Mod, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Mod, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.Mod(arg, field);
@@ -172,7 +169,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Div(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.Div, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Div, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.Div(arg, field);
@@ -181,7 +178,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj IDiv(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.IDiv, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.IDiv, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.IDiv(arg, field);
@@ -190,7 +187,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Pow(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.Pow, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Pow, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.Pow(arg, field);
@@ -199,7 +196,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj LSh(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.LSh, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.LSh, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.LSh(arg, field);
@@ -208,7 +205,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj RSh(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.RSh, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.RSh, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.RSh(arg, field);
@@ -217,7 +214,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj BAnd(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.BAnd, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.BAnd, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.BAnd(arg, field);
@@ -226,7 +223,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj BOr(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.BOr, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.BOr, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.BOr(arg, field);
@@ -235,7 +232,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj BXor(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.BXor, new(arg), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.BXor, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.BXor(arg, field);
@@ -244,7 +241,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj BNot()
     {
-        if (Fun.Method(this, Literals.BNot, [], Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.BNot, [], new(), out var value))
             return value;
         if (Super != null)
             return Super.BNot();
@@ -253,7 +250,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj At(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.At, new(), Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.At, new(arg), new(), out var value))
             return value;
         if (Super != null)
             return Super.At(arg, field);
@@ -265,7 +262,7 @@ public class Obj : IComparable<Obj>
     {
         if (arg.ClassName == Literals.None && ClassName == Literals.None)
             return new(true);
-        else if (Fun.Method(this, Literals.Eq, new(), Field.Self(this), out var result) && result is Bool value)
+        else if (Fun.Method(this, Literals.Eq, new(arg), new(), out var result) && result is Bool value)
             return value;
         if (Super != null)
             return Super.Eq(arg, field);
@@ -276,7 +273,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Bool Lt(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.Lt, new(), Field.Self(this), out var result) && result is Bool value)
+        if (Fun.Method(this, Literals.Lt, new(arg), new(), out var result) && result is Bool value)
             return value;
         if (Super != null)
             return Super.Lt(arg, field);
@@ -292,7 +289,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Int Len()
     {
-        if (Fun.Method(this, Literals.Len, new(), Field.Self(this), out var result) && result is Int value)
+        if (Fun.Method(this, Literals.Len, new(), new(), out var result) && result is Int value)
             return value;
         if (Super != null)
             return Super.Len();
@@ -303,7 +300,7 @@ public class Obj : IComparable<Obj>
 
     public Str Type()
     {
-        if (Fun.Method(this, Literals.Type, new(), Field.Self(this), out var result) && result is Str value)
+        if (Fun.Method(this, Literals.Type, new(), new(), out var result) && result is Str value)
             return value;
         if (Super != null)
             return Super.Type();
@@ -313,7 +310,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Str CStr()
     {
-        if (Fun.Method(this, Literals.CStr, Collections.Tuple.Empty, Field.Self(this), out var result) && result is Str value)
+        if (Fun.Method(this, Literals.CStr, Collections.Tuple.Empty, new(), out var result) && result is Str value)
             return value;
         if (Super != null)
             return Super.CStr();
@@ -322,7 +319,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Bool CBool()
     {
-        if (Fun.Method(this, Literals.CBool, [], Field.Self(this), out var result) && result is Bool value)
+        if (Fun.Method(this, Literals.CBool, [], new(), out var result) && result is Bool value)
             return value;
         if (Super != null)
             return Super.CBool();
@@ -331,7 +328,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Float CFloat()
     {
-        if (Fun.Method(this, Literals.CFloat, [], Field.Self(this), out var result) && result is Float value)
+        if (Fun.Method(this, Literals.CFloat, [], new(), out var result) && result is Float value)
             return value;
         if (Super != null)
             return Super.CFloat();
@@ -340,7 +337,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Int CInt()
     {
-        if (Fun.Method(this, Literals.CInt, [], Field.Self(this), out var result) && result is Int value)
+        if (Fun.Method(this, Literals.CInt, [], new(), out var result) && result is Int value)
             return value;
         if (Super != null)
             return Super.CInt();
@@ -349,7 +346,7 @@ public class Obj : IComparable<Obj>
 
     public virtual List CList()
     {
-        if (Fun.Method(this, Literals.CList, [], Field.Self(this), out var result) && result is List value)
+        if (Fun.Method(this, Literals.CList, [], new(), out var result) && result is List value)
             return value;
         if (Super != null)
             return Super.CList();
@@ -360,7 +357,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Copy()
     {
-        if (Fun.Method(this, Literals.Copy, [], Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Copy, [], new(), out var value))
             return value;
         if (Super != null)
             return Super.Copy();
@@ -368,27 +365,28 @@ public class Obj : IComparable<Obj>
     }
 
 
-    public virtual Obj GetItem(Collections.Tuple args, Field field)
+    public virtual Obj GetItem(Obj arg, Field field)
     {
-        if (Fun.Method(this, Literals.GetItem, args, Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.GetItem, new(arg), new(), out var value))
             return value;
         if (Super != null)
-            return Super.GetItem(args, field);
+            return Super.GetItem(arg, field);
         throw new IndexError("It is not Indexable type");
     }
 
-    public virtual Obj SetItem(Collections.Tuple args, Field field)
+    public virtual Obj SetItem(Obj arg, Obj index, Field field)
     {
-        if (Fun.Method(this, Literals.SetItem, args, Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.SetItem, new(arg, index), new(), out var value))
             return value;
         if (Super != null)
-            return Super.SetItem(args, field);
+            return Super.SetItem(arg, index, field);
         throw new IndexError("It is not Indexable type");
     }
 
-    public virtual Obj Slice(Collections.Tuple args, Field field)
+    public virtual Obj Slice(Obj a, Obj b, Field field)
     {
-        if (args[0] is not Int start || args[1] is not Int end)
+        if (!a.As<Int>(out var start) || 
+            !b.As<Int>(out var end))
             throw new SyntaxError();
 
         long len = Len().Value;
@@ -402,7 +400,7 @@ public class Obj : IComparable<Obj>
 
         while (s < e)
         {
-            sliced.Append(GetItem(new(new Int(s)), Field.Null));
+            sliced.Append(GetItem(new Int(s), Field.Null));
             s++;
         }
 
@@ -412,22 +410,23 @@ public class Obj : IComparable<Obj>
 
     public virtual Obj Entry()
     {
-        if (Fun.Method(this, Literals.Entry, [], Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Entry, [], new(), out var value))
             return value;
         if (Super != null)
             return Super.Entry();
-        throw new FileError("Types with undefined entry functions");
+        throw new FileError("This type is with undefined entry functions");
     }
 
     public virtual Obj Exit()
     {
-        if (Fun.Method(this, Literals.Exit, [], Field.Self(this), out var value))
+        if (Fun.Method(this, Literals.Exit, [], new(), out var value))
             return value;
         if (Super != null)
             return Super.Exit();
-        throw new FileError("Types with undefined exit functions");
+        throw new FileError("This type is with undefined exit functions");
     }
-    
+
+    public bool HasProperty(StringBuffer sb) => HasProperty(sb.ToString());
 
     public bool HasProperty(string key)
     {
@@ -444,6 +443,18 @@ public class Obj : IComparable<Obj>
             return true;
         if (Super != null)
             return Super.Is(name);
+        return false;
+    }
+
+    public bool As<T>(out T value)
+        where T : Obj
+    {
+        if (this is T t)
+        {
+            value = t;
+            return true;
+        }
+        value = null!;
         return false;
     }
 
@@ -464,9 +475,9 @@ public class Obj : IComparable<Obj>
         throw new TypeError("Types that are not comparable to each other.");
     }
 
+    public static Obj Parse(StringBuffer sb, Field field) => Parse(sb.ToString(), field);
 
-
-    public static Obj Convert(string str, Field field)
+    public static Obj Parse(string str, Field field)
     {
         if (string.IsNullOrEmpty(str)) throw new SyntaxError();
 

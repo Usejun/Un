@@ -6,19 +6,18 @@ public class EnuElm(string type, int Value) : Val<int>(type ?? "enu_elm", Value)
 
     public override Int CInt() => new(Value);
 
-    public override Bool Eq(Obj arg, Field field)
+    public override Bool Eq(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new(Value == i.Value);
-        if (arg is EnuElm e && ClassName == e.ClassName) return new(Value == e.Value);
-        
-        return base.Eq(arg, field);
-    }
+        Int i => new(Value == i.Value),
+        EnuElm e => ClassName == e.ClassName ? new(Value == e.Value) : base.Eq(e, field),
+        _ => base.Eq(arg, field),
+    };
 
-    public override Bool Lt(Obj arg, Field field)
+
+    public override Bool Lt(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new(Value < i.Value);
-        if (arg is EnuElm e && ClassName == e.ClassName) return new(Value < e.Value);
-
-        return base.Lt(arg, field);
-    }
+        Int i => new(Value < i.Value),
+        EnuElm e => ClassName == e.ClassName ? new(Value < e.Value) : base.Eq(e, field),
+        _ => base.Eq(arg, field),
+    };
 }

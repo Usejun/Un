@@ -4,6 +4,21 @@ public class Token
 {
     public static Token None => new(Literals.None, Type.None);
 
+    public static readonly Dictionary<char, char> Escape = new()
+    {
+        { Literals.n, Literals.NewLine },
+        { Literals.b, Literals.Backspace },
+        { Literals.Double, Literals.EDouble },
+        { Literals.r, Literals.CarriageReturn },
+        { Literals.t, Literals.Tab },
+        { Literals.a, Literals.Bell },
+        { Literals.f, Literals.FormFeed },
+        { Literals.v, Literals.VerticalTab },
+        { Literals.CZero, Literals.NullChar },
+        { Literals.Escape, Literals.Escape },
+        { Literals.Single, Literals.Single },
+    };
+
     public readonly static Dictionary<string, Type> Types = new() 
     {
         { Literals.Assign, Type.Assign },
@@ -221,36 +236,46 @@ public class Token
         Del,
 
         Try, Catch, Fin, Throw,
+
+        Positional, Default, Dynamic
     }
 
     public Type type;
-    public string Value;
+    public StringBuffer value;
 
     public Token(char c)
     {
-        Value = $"{c}";
-        type = GetType(Value);
+        value = new StringBuffer().Append(c);
+        type = GetType(value);
     }
 
     public Token(string s)
     {
-        Value = s;
+        value = new(s);
         type = GetType(s);
     }
 
     public Token(Obj obj)
     {
-        Value = obj.CStr().Value;
+        value = new(obj.CStr().Value);
         type = GetType(obj);
     }
 
     public Token(string s, Type type)
     {
-        Value = s;
+        value = new(s);
         this.type = type;
     }
 
-    public override string ToString() => $"{type} : {Value}";
+    public Token(StringBuffer sb, Type type) 
+    {
+        value = new(sb);
+        this.type = type;
+    }
+
+    public override string ToString() => $"{type} : {value}";
+
+    public static Type GetType(StringBuffer sb) => GetType(sb.ToString());
 
     public static Type GetType(char chr) => GetType($"{chr}");
 
@@ -362,6 +387,18 @@ public class Token
     };
 
 
+    public static bool IsNumber(Type type) => type switch
+    {   
+        Type.Integer or Type.Float => true,
+        _ => false
+    };
+
+    public static bool IsMember(Type type) => type switch
+    {   
+        Type.Method or Type.Property => true,
+        _ => false
+    };
+
 
     public static bool IsString(char chr) => chr switch
     {
@@ -369,20 +406,7 @@ public class Token
         _ => false 
     };
 
-    public static string String(List<Token> tokens)
-    {
-        var s = "";
-
-        foreach (var token in tokens)
-            s += token.type switch
-            {
-                Type.Method => Literals.Dot + token.Value,
-                Type.Property => Literals.Dot + token.Value,
-                Type.And or Type.Or or Type.Xor => $" {token.Value} ",
-                _ => token.Value
-            };
-        return s;
-    }
+    public static bool IsDigit(char chr) => char.IsDigit(chr) || chr == Literals.CUnderbar;
 
     public static bool IsBinaryDigit(char chr) => chr >= Literals.CZero && chr - Literals.CZero < 2;
 
@@ -390,9 +414,9 @@ public class Token
 
     public static bool IsHexDigit(char chr) => chr switch
     {
-        >= '0' and <= '9' => true,
-        >= 'a' and <= 'f' => true,
-        >= 'A' and <= 'F' => true,
+        >= Literals.CZero and <= Literals.CNine => true,
+        >= Literals.a and <= Literals.f => true,
+        >= Literals.A and <= Literals.F => true,
         _ => false
     };
 
@@ -435,4 +459,21 @@ public class Token
             if (tokens[i].type == type) return i;
         return -1;
     }
+
+    public static StringBuffer String(List<Token> tokens)
+    {
+        StringBuffer s = new();
+
+        foreach (var token in tokens)
+        {
+            if (IsMember(token.type))
+                s.Append(Literals.CDot).Append(token.value);
+            else if (IsConditional(token.type))
+                s.Append(Literals.Space).Append(token.value).Append(Literals.Space);
+            else 
+            s.Append(token.value);
+        }
+        return s;
+    }
+
 }

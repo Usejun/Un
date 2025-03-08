@@ -2,5 +2,5 @@
 
 public interface IStatic
 {
-    Obj Static();
+    Obj Static() => Obj.None;
 }

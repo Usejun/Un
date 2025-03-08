@@ -10,138 +10,141 @@ public class Long : Val<BigInteger>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        if (args.Count == 0)
-            Value = BigInteger.Zero;
-        else if (args.Count == 1)
+        field.Merge(args, [("value", null!)], 1);
+
+        var value = field["value"];
+
+        Value = value switch
         {
-            if (args[0] is Str s) Value = BigInteger.Parse(s.Value);
-            else if (args[0] is Int i) Value = i.Value;
-            else if (args[0] is Float f) Value = (long)f.Value;
-            else throw new ClassError("initialize error");
-        }
-        else
-            throw new ClassError("initialize error");
+            Str s => Value = BigInteger.Parse(s.Value),
+            Int i => Value = i.Value,
+            Float f => Value = (long)f.Value,
+            Long l => Value = l.Value,
+            _ => throw new ClassError()
+        };
 
         return this;
     }
 
-    public override Obj Add(Obj arg, Field field)
+    public override Obj Add(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value + i.Value);
-        if (arg is Long l) return new Long(Value + l.Value);
-        if (arg is Str) return CStr().Add(arg, field);
+        Int i => new Long(Value + i.Value),
+        Long l => new Long(Value + l.Value),
+        Float f => new Long(Value + (long)f.Value),
+        Str s => new Str(Value + s.Value),
+        _ => base.Add(arg, field),
+    };
 
-        return base.Add(arg, field);
-    }
-
-    public override Obj Sub(Obj arg, Field field)
+    public override Obj Sub(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value - i.Value);
-        if (arg is Long l) return new Long(Value - l.Value);
+        Int i => new Long(Value - i.Value),
+        Long l => new Long(Value - l.Value),
+        Float f => new Long(Value - (long)f.Value),
+        _ => base.Sub(arg, field),
+    };
 
-        return base.Sub(arg, field);
-    }
-
-    public override Obj Mul(Obj arg, Field field)
+    public override Obj Mul(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value * i.Value);
-        if (arg is Long l) return new Long(Value * l.Value);
+        Int i => new Long(Value * i.Value),
+        Long l => new Long(Value * l.Value),
+        Float f => new Long(Value * (long)f.Value),
+        _ => base.Mul(arg, field),
+    };
 
-        return base.Mul(arg, field);
-    }
-
-    public override Obj Div(Obj arg, Field field)
+    public override Obj Div(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value / i.Value);
-        if (arg is Long l) return new Long(Value / l.Value);
+        Int i => new Long(Value / i.Value),
+        Long l => new Long(Value / l.Value),
+        Float f => new Long(Value / (long)f.Value),
+        _ => base.Div(arg, field),
+    };
 
-        return base.Div(arg, field);
-    }
-
-    public override Obj IDiv(Obj arg, Field field)
+    public override Obj IDiv(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value / i.Value);
-        if (arg is Long l) return new Long(Value / l.Value);
+        Int i => new Long(Value / i.Value),
+        Long l => new Long(Value / l.Value),
+        Float f => new Long(Value / (long)f.Value),
+        _ => base.IDiv(arg, field),
+    };
 
-        return base.IDiv(arg, field);
-    }
-
-    public override Obj Mod(Obj arg, Field field)
+    public override Obj Mod(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value % i.Value);
-        if (arg is Long l) return new Long(Value % l.Value);
+        Int i => new Long(Value & i.Value),
+        Long l => new Long(Value & l.Value),
+        Float f => new Long(Value & (long)f.Value),
+        _ => base.Mod(arg, field),
+    };
 
-        return base.Mod(arg, field);
-    }
-
-    public override Obj Pow(Obj arg, Field field)
+    public override Obj Pow(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(BigInteger.Pow(Value, (int)i.Value));
-        if (arg is Long l) return new Long(BigInteger.Pow(Value, (int)l.Value));
+        Int i => new Long(BigInteger.Pow(Value, (int)i.Value)),
+        Long l => new Long(BigInteger.Pow(Value, (int)l.Value)),
+        Float f => new Long(BigInteger.Pow(Value, (int)f.Value)),
+        _ => base.Pow(arg, field),
+    };
 
-        return base.Pow(arg, field);
-    }
-
-    public override Obj BAnd(Obj arg, Field field)
+    public override Obj BAnd(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value & i.Value);
-        if (arg is Long l) return new Long(Value & l.Value);
+        Int i => new Long(Value & i.Value),
+        Long l => new Long(Value & l.Value),
+        Float f => new Long(Value & (long)f.Value),
+        _ => base.BAnd(arg, field),
+    };
 
-        return base.BAnd(arg, field);
-    }
-
-    public override Obj BOr(Obj arg, Field field)
+    public override Obj BOr(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value | i.Value);
-        if (arg is Long l) return new Long(Value | l.Value);
+        Int i => new Long(Value | i.Value),
+        Long l => new Long(Value | l.Value),
+        Float f => new Long(Value | (long)f.Value),
+        _ => base.BOr(arg, field),
+    };
 
-        return base.BOr(arg, field);
-    }
-
-    public override Obj BXor(Obj arg, Field field)
+    public override Obj BXor(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value ^ i.Value);
-        if (arg is Long l) return new Long(Value ^ l.Value);
-
-        return base.BXor(arg, field);
-    }
+        Int i => new Long(Value ^ i.Value),
+        Long l => new Long(Value ^ l.Value),
+        Float f => new Long(Value ^ (long)f.Value),
+        _ => base.BXor(arg, field),
+    };
 
     public override Obj BNot() => new Long(~Value);
 
-    public override Obj LSh(Obj arg, Field field)
+    public override Obj LSh(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value << (int)i.Value);
-        if (arg is Long l) return new Long(Value << (int)l.Value);
+        Int i => new Long(Value << (int)i.Value),
+        Long l => new Long(Value << (int)l.Value),
+        Float f => new Long(Value << (int)f.Value),
+        _ => base.LSh(arg, field),
+    };
 
-        return base.LSh(arg, field);
-    }
-
-    public override Obj RSh(Obj arg, Field field)
+    public override Obj RSh(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new Long(Value >> (int)i.Value);
-        if (arg is Long l) return new Long(Value >> (int)l.Value);
+        Int i => new Long(Value >> (int)i.Value),
+        Long l => new Long(Value >> (int)l.Value),
+        Float f => new Long(Value >> (int)f.Value),
+        _ => base.RSh(arg, field),
+    };
 
-        return base.RSh(arg, field);
-    }
-
-    public override Bool Eq(Obj arg, Field field)
+    public override Bool Eq(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new(Value == i.Value);
-        if (arg is Float f) return new(Value == (long)f.Value);
+        Int i => new Bool(Value == i.Value),
+        Long l => new Bool(Value == l.Value),
+        Float f => new Bool(Value == (long)f.Value),
+        _ => base.Eq(arg, field),
+    };
 
-        return base.Eq(arg, field);
-    }
 
-    public override Bool Lt(Obj arg, Field field)
+    public override Bool Lt(Obj arg, Field field) => arg switch
     {
-        if (arg is Int i) return new(Value < i.Value);
-        if (arg is Float f) return new(Value < (long)f.Value);
-        return base.Lt(arg, field);
-    }
+        Int i => new Bool(Value < i.Value),
+        Long l => new Bool(Value < l.Value),
+        Float f => new Bool(Value < (long)f.Value),
+        _ => base.Eq(arg, field),
+    };
 
     public override Int CInt() => new((long)Value);
 
-    public override Float CFloat() => new((long)Value);
+    public override Float CFloat() => new((double)Value);
 
     public override Bool CBool()
     {

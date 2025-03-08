@@ -1,11 +1,12 @@
 ﻿using System.Collections;
-using Un.Data;
 
 namespace Un.Collections;
 
 public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
 {
     public static Tuple Empty => [];
+
+    public string[] Names { get; protected set; }
 
     public struct Enumerator : IEnumerator<Obj>
     {
@@ -51,56 +52,79 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
         str = str[1..^1];
 
         List data = [];
+        List<string> names = [];
 
         int index = 0, depth = 0;
-        string buffer = "", name = "";
+        StringBuffer buffer = new();
+        string name = "", value;
         var isString = false;
 
         while (index < str.Length)
         {
             if (Token.IsString(str[index])) isString = !isString;
-            else if (str[index] == '[' || str[index] == '(' || str[index] == '{') ++depth;
-            else if (str[index] == ']' || str[index] == ')' || str[index] == '}') --depth;
-            else if (!isString && depth == 0 && str[index] == '=' && (str[index + 1] != '>' && (str[index + 1] != '=' && str[index - 1] != '=')))
+            else if (Up()) ++depth;
+            else if (Down()) --depth;
+            else if (IsName())
             {                
-                name = buffer.Split(':')[0];
-                buffer = "";
+                name = buffer.Split(Literals.Colon, 1)[0].ToString();
+                buffer.Clear();
                 index++;
                 continue;
             }
 
-            if (str[index] == ',' && depth == 0 && !isString)
+            if (IsNext())
             {
-                if (List.IsList(buffer)) data.Append(new List(new Tuple(buffer, field)));
-                else if (IsTuple(buffer)) data.Append(new Tuple(buffer, field));
-                else data.Append(Calculator.All(buffer, field));
+                value = buffer.ToString();
+
+                if (List.IsList(value)) 
+                    data.Append(new List(new Tuple(value, field)));
+                else if (IsTuple(value)) 
+                    data.Append(new Tuple(value, field));
+                else 
+                    data.Append(Calculator.All(value, field));
+                
+                names.Add(name);
 
                 if (!string.IsNullOrEmpty(name))
                     this.field.Set(name, data[^1]);
 
                 name = "";
-                buffer = "";
+                buffer.Clear();
             }
-            else buffer += str[index];
+            else buffer.Append(str[index]);
 
             index++;
         }
 
-        if (!string.IsNullOrWhiteSpace(buffer))
-            data.Append(Calculator.All(buffer, field));
+        value = buffer.ToString(); 
+
+        names.Add(name);
+
+        if (!string.IsNullOrWhiteSpace(value))
+            data.Append(Calculator.All(value, field));
 
         if (!string.IsNullOrEmpty(name))
             this.field.Set(name, data[^1]);
 
-        Value = new Obj[data.Count];
+        Value = [.. data];
+        Names = [.. names];
         Count = data.Count;
 
-        for (int i = 0; i < data.Count; i++)
-            Value[i] = data.Value[i];
+        bool Up() => str[index] == Literals.CLBrack || str[index] == Literals.CLParen || str[index] == Literals.CLBrace;
+
+        bool Down() => str[index] == Literals.CRBrack || str[index] == Literals.CRParen || str[index] == Literals.CRBrace;
+
+        bool IsNext() => str[index] == Literals.CComma && depth == 0 && !isString;
+
+        bool IsName() => !isString && depth == 0 && str[index] == Literals.CAssign;
+
     }
 
-    public Tuple(params Obj[] values) : base("tuple", values)
+    public Tuple(params Obj[] values) : base("tuple", new Obj[values.Length])
     {
+        for (int i = 0; i < values.Length; i++)
+            Value[i] = values[i].Clone();
+
         Count = values.Length;
     }
 
@@ -113,20 +137,12 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
         }
     }
 
-    public override Obj Get(string str)
-    {
-        if (field.Get(str, out var property))
-            return property;
-        if (Super != null)
-            return Super.Get(str);
-        throw new TypeError("A property that doesn't exist.");
-    }
-
     public override void Set(string str, Obj value) => throw new ValueError("tuple is immutable type");
 
-    public override Obj GetItem(Tuple args, Field field)
+    public override Obj GetItem(Obj arg, Field field)
     {
-        if (args[0] is not Int i) throw new IndexError("out of range");
+        if (arg.As<Int>(out var i)) 
+            throw new IndexError("out of range");
 
         int index = (int)i.Value < 0 ? Count + (int)i.Value : (int)i.Value;
 
@@ -135,10 +151,10 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
         return Value[index];
     }
 
-    public override Obj SetItem(Tuple args, Field field) => throw new ValueError("tuple is immutable type");
+    public override Obj SetItem(Obj arg, Obj index, Field field) => throw new ValueError("tuple is immutable type");
 
 
-    public override List CList() => new([.. Value]);
+    public override List CList() => new(Value);
 
     public override Str CStr() => new($"({string.Join(", ", Value.Take(Count).Select(o => o.CStr().Value))})");
 
@@ -149,7 +165,7 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Bool Eq(Obj arg, Field field)
     {
-        if (arg is Tuple tuple)
+        if (arg.As<Tuple>(out var tuple))
         {
             if (tuple.Count != Count) return Bool.False;
 
@@ -164,7 +180,7 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Bool Lt(Obj arg, Field field)
     {
-        if (arg is Tuple tuple)
+        if (arg.As<Tuple>(out var tuple))
         {
             if (tuple.Count != Count) return Bool.False;
 
@@ -206,7 +222,7 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
     private bool OutOfRange(int index) => index < 0 || index >= Count;
 
 
-    public static bool IsTuple(string str) => str[0] == '(' && str[^1] == ')';
+    public static bool IsTuple(string str) => str[0] == Literals.CLParen && str[^1] == Literals.CRParen;
 
-    public static Obj Split(Obj obj) => obj is Tuple tuple && tuple.Count == 1 ? tuple[0] : obj;
+    public static Obj Split(Obj obj) => obj.As<Tuple>(out var tuple) && tuple.Count == 1 ? tuple[0] : obj;
 }

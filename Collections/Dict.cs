@@ -6,15 +6,15 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
     public Dict(string str, Field field) : base("dict", [])
     {
-        var pairs = str[1..^1].Split(',');
+        var pairs = str[1..^1].Split(Literals.CComma);
 
         for (int i = 0; i < pairs.Length; i++)
         {
             if (string.IsNullOrEmpty(pairs[i])) continue;
 
-            var pair = pairs[i].Trim().Split(':');
-            var key = Convert(pair[0], field);
-            var value = Convert(pair[1], field);
+            var pair = pairs[i].Trim().Split(Literals.CColon);
+            var key = Parse(pair[0], field);
+            var value = Parse(pair[1], field);
 
             Value.Add(key, value);
         }          
@@ -29,64 +29,71 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
     public override void Init()
     {
-        field.Set("add", new NativeFun("add", -1, (args, field) =>
+        field.Set("add", new NativeFun("add", 2, field =>
         {
-            if (field[Literals.Self] is not Dict self)
+            if (!field[Literals.Self].As<Dict>(out var self))
                 throw new ValueError("invalid argument");
 
-            self.Value.Add(args[0], args[1]);
+            self.Value.Add(field["key"], field["value"]);
 
             return self;
-        }));
-        field.Set("remove", new NativeFun("remove", 1, (args, field) =>
+        }, [("key", null!), ("value", null!)]));
+        field.Set("remove", new NativeFun("remove", 1, field =>
         {
-            if (field[Literals.Self] is not Dict self)
+            if (!field[Literals.Self].As<Dict>(out var self))
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.Value.Remove(args[0]));
-        }));
-        field.Set("contains_key", new NativeFun("contains_key", 1, (args, field) =>
+            return new Bool(self.Value.Remove(field["key"]));
+        }, [("key", null!)]));
+        field.Set("get", new NativeFun("get", 1, field =>
         {
-            if (field[Literals.Self] is not Dict self)
+            if (!field[Literals.Self].As<Dict>(out var self))
+                throw new ValueError("invalid argument");
+
+            return self.Value.TryGetValue(field["key"], out var value) ? value : field["default"] ;
+        }, [("key", null!), ("default", None)]));
+        field.Set("contains_key", new NativeFun("contains_key", 1, field =>
+        {
+            if (!field[Literals.Self].As<Dict>(out var self))
                 throw new ValueError("invalid argument");
             
-            return new Bool(self.Value.ContainsKey(args[0]));
-        }));
-        field.Set("contains_value", new NativeFun("contains_value", 1, (args, field) =>
+            return new Bool(self.Value.ContainsKey(field["key"]));
+        }, [("key", null!)]));
+        field.Set("contains_value", new NativeFun("contains_value", 1, field =>
         {
-            if (field[Literals.Self] is not Dict self)
+            if (!field[Literals.Self].As<Dict>(out var self))
                 throw new ValueError("invalid argument");
 
-            return new Bool(self.Value.ContainsValue(args[0]));
-        }));
-        field.Set("clear", new NativeFun("clear", 0, (args, field) =>
+            return new Bool(self.Value.ContainsValue(field["value"]));
+        }, [("key", null!)]));
+        field.Set("clear", new NativeFun("clear", 0, field =>
         {
-            if (field[Literals.Self] is not Dict self)
+            if (!field[Literals.Self].As<Dict>(out var self))
                 throw new ValueError("invalid argument");
 
             self.Value.Clear();
 
             return None;
-        }));
-        field.Set("keys", new NativeFun("keys", 0, (args, field) =>
+        }, []));
+        field.Set("keys", new NativeFun("keys", 0, field =>
         {
-            if (field[Literals.Self] is not Dict self)
+            if (!field[Literals.Self].As<Dict>(out var self))
                 throw new ValueError("invalid argument");
 
             return new List([..self.Value.Keys]);
-        }));
-        field.Set("values", new NativeFun("values", 0, (args, field) =>
+        }, []));
+        field.Set("values", new NativeFun("values", 0, field =>
         {
-            if (field[Literals.Self] is not Dict self)
+            if (!field[Literals.Self].As<Dict>(out var self))
                 throw new ValueError("invalid argument");
 
             return new List([.. self.Value.Values]);
-        }));           
+        }, []));           
     }
 
-    public override Obj GetItem(Tuple args, Field field) => Value[args[0]];
+    public override Obj GetItem(Obj arg, Field field) => Value[arg];
 
-    public override Obj SetItem(Tuple args, Field field) => Value[args[0]] = args[1];
+    public override Obj SetItem(Obj arg, Obj index, Field field) => Value[index] = arg;
 
     public override Int Len() => new(Value.Count);
 
@@ -99,5 +106,5 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
 
     public override Obj Copy() => this;
 
-    public static bool IsDict(string str) => str[0] == '{' && str[^1] == '}' && (str.Length == 2 || str.Contains(':'));
+    public static bool IsDict(string str) => str[0] == Literals.CLBrace && str[^1] == Literals.CRBrace && (str.Length == 2 || str.Contains(Literals.CColon));
 }

@@ -15,14 +15,14 @@ public class Stream : Ref<System.IO.Stream>
 
     public override void Init()
     {                
-        field.Set("close", new NativeFun("close", 0, (args, field) =>
+        field.Set("close", new NativeFun("close", 0, field =>
         {
-            if (field[Literals.Self] is not Stream self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Stream>(out var self) )
+                throw new ArgumentError("invalid argument");
 
             self.Value.Close();
             return None;
-        }));
+        }, []));
     }
 
     public override Obj Clone() => new Stream(this);

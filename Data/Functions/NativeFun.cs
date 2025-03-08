@@ -1,16 +1,18 @@
 ﻿namespace Un.Data;
 
-public class NativeFun(string name, int length, Func<Collections.Tuple, Field, Obj> func) : Fun(name) 
+public class NativeFun : Fun
 {
-    public Func<Collections.Tuple, Field, Obj> function = func;
+    protected Func<Field, Obj> Function { get; set; }
 
-    public override Obj Call(Collections.Tuple args, Field field)
+    public NativeFun(string name, int length, Func<Field, Obj> func, List<(string, Obj)> args, bool isDynamic = false) : base(name)
     {
-        if (length != -1 && args.Count != length)
-            throw new ValueError("arguments length is over");
-
-        return function(args, field);
+        Args = [..args];
+        Length = length;
+        Function = func;
+        IsDynamic = isDynamic;
     }
 
-    public override NativeFun Clone() => new(name, length, function);
+    public override Obj Call(Field field) => Function(field);
+
+    public override NativeFun Clone() => new(Name, Length, Function, Args, IsDynamic);
 }

@@ -31,56 +31,63 @@ public class Str : Val<string>, IEnumerable<char>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        if (args.Count == 1)
-            Value = args[0].CStr().Value;
-        else if (args.Count == 2)
-        {
-            if (args[0] is Int count && args[1] is Str str)
-            {
-                for (long i = 0; i < count.Value; i++)
-                    Value += str.Value;
-            }
-            else throw new ClassError("init error");
-        }
-        else throw new ClassError("init error");
+        field["count"] = Int.One;
+        field.Merge(args, [("value", null!), ("count", Int.One)], 1);
+
+        var value = field["value"].CStr();
+        Value = "";
+
+        if (!field["count"].As<Int>(out var count))
+            throw new ClassError();
+
+        for (long i = 0; i < count.Value; i++)
+            Value += value.Value;
 
         return this;
     }
 
     public override void Init()
     {
-        field.Set("split", new NativeFun("split", 1, (args, field) =>
+        field.Set("split", new NativeFun("split", 1, field =>
         {
-            if (field[Literals.Self] is not Str self || args[0] is not Str sep)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Str>(out var self) || !field["sep"].As<Str>(out var sep))
+                throw new ArgumentError();
 
             return new List(self.Value.Split(sep.Value));
-        }));
-        field.Set("join", new NativeFun("join", 2, (args, field) =>
+        }, [("sep", new Str(Literals.Space))]));
+        field.Set("join", new NativeFun("join", 2, field =>
         {
-            if (field[Literals.Self] is not Str self || args[0] is not Str sep)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Str>(out var self) || 
+                !field["sep"].As<Str>(out var sep) ||
+                !field["values"].As<List>(out _) ||
+                !field["values"].As<Collections.Tuple>(out _))
+                throw new ArgumentError();
 
-            return self.Add(new Str(string.Join(sep.Value, args[1].CList().Select(i => i.CStr().Value))), field);
-        }));
-        field.Set("index_of", new NativeFun("index_of", -1, (args, field) =>
-        {
-            if (field[Literals.Self] is not Str self || args[0] is not Str str)
-                throw new ValueError("invalid argument");
+            var values = field["values"].CList();
 
-            return new Int(self.Value.IndexOf(str.Value, args.Count == 2 && args[1] is Int i ? (int)i.Value : 0));
-        }));
-        field.Set("contains", new NativeFun("contains", 1, (args, field) =>
+            return self.Add(new Str(string.Join(sep.Value, values.Select(i => i.CStr().Value))), field);
+        }, [("values", null!), ("sep", new Str(Literals.Space))]));
+        field.Set("index_of", new NativeFun("index_of", 1, field =>
         {
-            if (field[Literals.Self] is not Str self || args[0] is not Str str)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Str>(out var self) || 
+                !field["text"].As<Str>(out var text) ||
+                !field["start"].As<Int>(out var start))
+                throw new ArgumentError();
 
-            return new Bool(self.Value.Contains(str.Value));
-        }));
-        field.Set("is_number", new NativeFun("is_number", 0, (args, field) =>
+            return new Int(self.Value.IndexOf(text.Value, (int)start.Value));
+        }, [("text", null!), ("start", Int.Zero)]));
+        field.Set("contains", new NativeFun("contains", 1, field =>
         {
-            if (field[Literals.Self] is not Str self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Str>(out var self) ||
+                !field["text"].As<Str>(out var text))
+                throw new ArgumentError();
+
+            return new Bool(self.Value.Contains(text.Value));
+        }, []));
+        field.Set("is_number", new NativeFun("is_number", 0, field =>
+        {
+            if (!field[Literals.Self].As<Str>(out var self))
+                throw new ArgumentError();
 
             bool isNumber = true;
 
@@ -89,11 +96,11 @@ public class Str : Val<string>, IEnumerable<char>
 
             return new Bool(isNumber);
 
-        }));
-        field.Set("is_alphabet", new NativeFun("is_number", 0, (args, field) =>
+        }, []));
+        field.Set("is_alphabet", new NativeFun("is_number", 0, field =>
         {
-            if (field[Literals.Self] is not Str self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Str>(out var self))
+                throw new ArgumentError();
 
             bool isAlphabet = true;
 
@@ -101,31 +108,31 @@ public class Str : Val<string>, IEnumerable<char>
                 isAlphabet &= char.IsLetter(self.Value[i]);
 
             return new Bool(isAlphabet);
-        }));
-        field.Set("is_white_space", new NativeFun("is_whitespace", 0, (args, field) =>
+        }, []));
+        field.Set("is_white_space", new NativeFun("is_whitespace", 0, field =>
         {
-            if (field[Literals.Self] is not Str self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Str>(out var self))
+                throw new ArgumentError();
 
             bool isWhitespace = true;
 
-            for (int i = 0; i < self.Value.Length; i++)
+            for (int i = 0; isWhitespace && i < self.Value.Length; i++)
                 isWhitespace &= char.IsWhiteSpace(self.Value[i]);
 
             return new Bool(isWhitespace);
-        }));
+        }, []));
     }
 
     public override Obj Add(Obj arg, Field field) => new Str(Value + arg.CStr().Value);
 
     public override Int CInt()
     {
-        if (Value.Length > 2 && Value[..2] == "0b")
-            return new(System.Convert.ToInt64(Value[2..], 2));
-        else if (Value.Length > 2 && Value[..2] == "0o")
-            return new(System.Convert.ToInt64(Value[2..], 8));
-        else if (Value.Length > 2 && Value[..2] == "0x")
-            return new(System.Convert.ToInt64(Value[2..], 16));
+        if (Value.Length > 2 && Value[..2] == Literals.Bin)
+            return new(Convert.ToInt64(Value[2..], 2));
+        else if (Value.Length > 2 && Value[..2] == Literals.Oct)
+            return new(Convert.ToInt64(Value[2..], 8));
+        else if (Value.Length > 2 && Value[..2] == Literals.Hex)
+            return new(Convert.ToInt64(Value[2..], 16));
         else if (long.TryParse(Value, out var l))
             return new(l);
         return base.CInt();
@@ -133,6 +140,8 @@ public class Str : Val<string>, IEnumerable<char>
 
     public override Float CFloat()
     {
+        if (Value == Literals.Inf) 
+            return new(double.PositiveInfinity);
         if (decimal.TryParse(Value, out var d))
             return new((double)d);
         return base.CFloat();
@@ -140,8 +149,8 @@ public class Str : Val<string>, IEnumerable<char>
 
     public override Bool CBool()
     {
-        if (Value == "true") return new(true);
-        if (Value == "false") return new(false);
+        if (Value == Literals.True) return new(true);
+        if (Value == Literals.False) return new(false);
         return new(string.IsNullOrWhiteSpace(Value));
     }
 
@@ -157,10 +166,12 @@ public class Str : Val<string>, IEnumerable<char>
 
     public override Int Len() => new(Value.Length);
 
-    public override Obj GetItem(Collections.Tuple args, Field field)
+    public override Obj GetItem(Obj arg, Field field)
     {
-        if (args[0] is not Int i || OutOfRange((int)i.Value)) throw new IndexError("out of range");
-        return new Str($"{Value[(int)i.Value]}");
+        if (arg.As<Int>(out var index) || OutOfRange((int)index.Value)) 
+            throw new IndexError("out of range");
+            
+        return new Str($"{Value[(int)index.Value]}");
     }
 
     public override Obj Clone() => new Str(Value);
@@ -192,36 +203,35 @@ public class Str : Val<string>, IEnumerable<char>
 
     public static Str FStr(string str, Field field)
     {
-        StringBuilder result = new(), buffer = new();
+        StringBuffer result = new(), buffer = new();
         int index = 0;
         bool isFormat = false;
 
         while (index < str.Length)
         {
-            if (str[index] == '}')
+            if (str[index] == Literals.CRBrace)
             {
                 isFormat = false;
                 index++;
                 result.Append(Calculator.All($"{buffer}", field).CStr().Value);
                 buffer.Clear();
             }
-            else if (isFormat)
+            else if (isFormat && str[index] != Literals.Escape)
             {
-                if (str[index] == '\\')
-                {
-                    index++;
-                    buffer.Append($"\\{str[index]}");
-                    index++;
-                }
-                else buffer.Append(str[index++]);
+                buffer.Append(str[index++]);
             }
-            else if (str[index] == '\\')
+            else if (str[index] == Literals.Escape)
             {
                 index++;
-                result.Append($"\\{str[index]}");
+                if (Token.Escape.TryGetValue(str[index], out var c))
+                        throw new SyntaxError();
+
+                if (isFormat) result.Append(c);
+                else buffer.Append(c);
+
                 index++;
             }
-            else if (str[index] == '{')
+            else if (str[index] == Literals.CLBrace)
             {
                 isFormat = true;
                 index++;

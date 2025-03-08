@@ -1,6 +1,4 @@
-﻿import date
-
-d = date("2022.10.11")
+﻿d = date("2022.10.11")
 i = int("123")
 f = 123.2
 s = "hello, world!"

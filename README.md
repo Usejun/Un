@@ -4,10 +4,14 @@
 
 ## 동작 방식
 
-C#으로 작성된 프로그램을 통해서 ".un"의 확장자를 가진 파일을 읽으며 동작된다.
+C#으로 작성된 프로그램을 통해서 `.un`의 확장자를 가진 파일을 읽으며 동작된다.
 
-# 구조
-기본적으로 un은 동적 타이핑을 지원하고, 변수를 선언 할 때에는 **\[name1, name2, ...] = \[value1, value2, ...]** 의 형태를 따른다.
+## 구조
+기본적으로 Un은 동적 타이핑을 지원하며, 변수를 선언할 때에는 다음과 같은 형태를 따른다:
+
+```un
+name1, name2, ... = value1, value2, ...
+```
 
 ```un
 a = 1
@@ -16,6 +20,7 @@ a = (1, 2, 3)
 ```
 
 ## 기본 자료형
+
 ### int
 부호가 있는 64bit 정수형 자료형이다.
 
@@ -25,25 +30,27 @@ b = 0b11011010
 c = 0o1274213
 d = 0xff38ab
 f = -39493
-````
+```
+
 ### float
-부호가 있는 64bit 부동 실수형 자료형이다.
+부호가 있는 64bit 부동 소수점 자료형이다.
 
 ```un
 a = 1937.393
 b = float("inf")
 c = -2004.22
-````
+d = 3.34e2
+```
 
 ### str
 문자열 자료형이다.
-문자열은 """와 "'"을 사용하며, 보간 문자열을 사용할 때에는 "\`"을 사용한다.
+문자열은 `"` 또는 `'`을 사용하며, 보간 문자열을 사용할 때에는 **백틱**(```)을 사용한다.
 
 ```un
 a = "hello world!"
 b = 'my name is "lee"'
 c = `{a} {b}`
-````
+```
 
 ### bool
 Boolean 자료형이다.
@@ -51,7 +58,7 @@ Boolean 자료형이다.
 ```un
 a = true
 b = false
-````
+```
 
 ### date
 날짜 자료형이다.
@@ -68,47 +75,37 @@ a = (1, 2, 3)
 ```
 
 ### list
-다양한 자료형이 연속적으로 있는 자료형
+다양한 자료형이 연속적으로 있는 자료형이다.
 
 ```un
 a = [1, 4.3, "3", true, []]
-````
-#### methods
-1. add
-2. insert
-3. extend
-4. extend_insert
-5. remove
-6. remove_at
-8. index_of
-9. contains
-10. clone
-11. sort
-12. reverse
-13. order
-14. binary_search
-15. lower_bound
-16. upper_bound
-17. hpush
-18. hpop
-19. pop
+```
+
+#### 주요 메서드
+1. `add(value)`: 리스트 끝에 요소 추가
+2. `insert(index, value)`: 특정 위치에 요소 삽입
+3. `extend(iterable)`: 리스트 확장
+4. `remove(value)`: 특정 요소 삭제
+5. `pop(index)`: 특정 위치의 요소 제거 후 반환
+6. `sort()`: 리스트 정렬
+7. `reverse()`: 리스트 뒤집기
 
 ### dict
-(키:값)의 형태로 접근하는 자료형
+(키: 값)의 형태로 접근하는 자료형이다.
 
 ```un
-a = {1:"one", 5:234, "hello":true}
-````
+a = {1: "one", 5: 234, "hello": true}
+```
 
 ### set
-다양한 자료형을 담을 수 있는 집합 형태의 자료형
+집합 형태의 자료형이다.
 
 ```un
-a = { 1, 2, 5.2, "hogo", ...}
-````
+a = {1, 2, 5.2, "hogo", ...}
+```
 
 ## 함수
-**fn \[function name](parameters)** 의 형태로 만들 수 있다. 여러 개의 매개변수를 입력 받으려면 각 매개변수를 ","로 구분 지어준다.
+함수는 `fn` 키워드를 사용하여 선언한다.
 
 ```un
 fn double(a)
@@ -116,46 +113,10 @@ fn double(a)
     
 fn multiple(a, b)
     return a * b
-````
-
-### 기본 함수
-1. write
-2. writeln
-3. clear
-4. readln
-5. type
-6. method
-7. field
-8. prop
-9. package
-10. len
-11. range
-12. hash
-13. open
-14. sum
-15. max
-16. min
-17. abs
-18. pow
-19. ceil
-20. floor
-21. round
-22. sqrt
-23. sin
-24. cos
-25. tan
-26. bin
-27. oct
-28. hex
-29. breakpoint
-31. exit
-32. assert
-33. array
-34. eval
-35. memo
+```
 
 ## 조건문
-**if, elif, else**의 키워드를 사용하고, 키워드 다음으로는 **bool** 형을 반환하는 식이 따라와야한다.
+`if`, `elif`, `else` 키워드를 사용한다.
 
 ```un
 n = int(readln())
@@ -166,24 +127,27 @@ elif n < 100
     ...
 else
     ...
-````
+```
 
 ## 반복문
-**for \[variable] in \[iterable]** 과 **while (bool)** 의 형식을 사용한다.
-
 ### for
-in 키워드 후에는 **iterable한 값**이 와야한다. iterable의 순회가 끝내면 반복문이 끝난다.
+`in` 키워드를 사용하며, iterable한 값이 와야 한다.
 
-```
+```un
 for i in range(1, 100)
     writeln(i)
 ```
 
 ### while
+조건이 `true`인 동안 실행된다.
 
+<<<<<<< HEAD
 while 키워드 후에는 **반드시 bool 형식의 값**이 와야한다. 조건식이 부합하면 while문 내부로 들어간다. 그렇지 않을 경우에는 while문을 탈출한다.
 
 ```
+=======
+```un
+>>>>>>> c4ba701 (v1.0.1)
 fib = array(0, 21)
 fib[0] = 1
 fib[1] = 1
@@ -192,10 +156,11 @@ while (i < 20)
     fib[i] = fib[i - 1] + fib[i - 2]
     i += 1
 writeln(fib)
-````
+```
 
 ## 클래스
-class 키워드 후에 클래스의 이름을 지어준다. 클래스는 필드와 메서드를 가지고 있다.
+클래스는 `class` 키워드를 사용하여 정의한다.
+자기 자신은 `self` 키워드, 부모는 `super`를 사용한다.
 
 ```un
 class point
@@ -203,7 +168,7 @@ class point
     y = 0
 
     fn print()
-        writeln(`{this.x} : {this.y}`)
+        writeln(`{self.x} : {self.y}`)
 
 p = point()
 p.x = 10
@@ -211,74 +176,86 @@ p.y = -10
 p.print()
 ```
 
-클래스의 예약 함수를 통해 여러 연산 기능을 추가할 수 있다.
-
 ### 오버로딩 함수
-
-- \_\_init__ : 클래스 생성자
-- \_\_add__ : 덧셈
-- \_\_sub__ : 뺄셈
-- \_\_mul__ : 곱셉
-- \_\_div__ : 나눗셈
-- \_\_idiv__ : 정수 나눗셈 
-- \_\_mod__ : 나머지
-- \_\_pow__ : 거듭 제곱
-- \_\_at__ : @ 연산자
-- \_\_eq__ : 같음 비교
-- \_\_lt__ : 미만
-- \_\_len__ : len()
-- \_\_type__ : type()
-- \_\_hash__ : hash()
-- \_\_str__ : str로의 형변환
-- \_\_int__ : int로의 형변환
-- \_\_float__ : float로의 형변환
-- \_\_bool__ : bool로의 형변환
-- \_\_list__ : list로의 형변환
-- \_\_getitem__ : get by index
-- \_\_setitem__ : set by index
-- \_\_band__ : bitwise AND 연산
-- \_\_bor__ : bitwise OR 연산
-- \_\_bxor__ : bitwise XOR 연산
-- \_\_bnot__ : bitwise NOT 연산
-- \_\_lsh__ : bit left-shift 연산
-- \_\_rsh__ : bit right-shift 연산
-- \_\_entry__ : using 입장
-- \_\_exit__ : using 탈출
+- `__init__`: 생성자
+- `__add__`: 덧셈
+- `__sub__`: 뺄셈
+- `__mul__`: 곱셈
+- `__div__`: 나눗셈
+- `__eq__`: 비교 연산
+- `__len__`: `len()` 지원
+- `__getitem__`: 인덱싱 지원
+- `__setitem__`: 인덱스 값 변경 지원
 
 ## lambda
-**\([parameters]) => \[code]** 의 꼴로 사용되며, 함수와 동일한 기능을 한다.
+익명 함수를 생성할 때 사용한다.
 
 ```un
 f = (i) => i * i
-````
+```
 
 ## import
-**import \[package name, ...]** 의 꼴로 사용되며, 다른 코드나, 패키지를 불러오기 위한 구문이다.
-
-as 키워드를 사용해서 하나의 네임스페이스를 만들 수 있다.
+다른 코드나 패키지를 불러오기 위한 구문이다.
 
 ```un
 import math
-import parallel as pa
-````
+import thread as t
+```
+
+## 파일 입출력
+파일을 읽고 쓰는 기능을 제공한다.
+
+```un
+file = open("data.txt", "w")
+file.write("Hello, Un!")
+file.close()
+```
+
+## 병렬 처리
+멀티스레딩을 지원하며, `thread` 모듈을 활용할 수 있다.
+
+```un
+import thread
+
+fn task1(i)
+    writeln(`{i} : Running in parallel`)
+
+fn task2()
+    writeln("Running in parallel")
+
+thread.foreach([1, 2, 3, 4], task1) # 4개의 스레드에서 실행
+thread.run(10, task2) # 10개의 스레드에서 실행
+```
+
+## 예외 처리
+예외를 처리하기 위해 `try`, `catch`, `fin`를 사용할 수 있다.
+
+```un
+try
+    a = 10 / 0
+catch e
+    writeln(`Error: {e}`)
+fin
+    write("fin")
+```
 
 ## using
-**using \[name] = \[value]** 의 꼴로 사용되며, value에 들어갈 값은 반드시 entry 함수와 exit 함수가 정의되어 있어야 한다.
+자동으로 자원을 관리하는 문법이다.
 
 ```un
 using file = open(file_name)
-````
+```
 
 ## enum
-**enum \[name]** 의 꼴로 사용되며, 열거형을 만들 수 있다. 모든 값들은 콤마로 구분된다.
+열거형을 정의할 수 있다.
 
 ```un
 enum rank
-    bronze, sliver, gold, diamond
+    bronze, silver, gold, diamond
 ```
 
 ## slice
-**iterable\[start:end]** 꼴로 사용되며, 인덱싱이 구현된 자료형이라면 슬라이스를 사용할 수 있다.
+리스트 등의 자료형에서 일부를 추출할 수 있다.
 
 ```un
 l = [1, 2, 3, 4, 5]
@@ -286,20 +263,19 @@ write(l[0:3]) # [1, 2, 3]
 ```
 
 ## async
-함수의 앞에 붙는 키워드로 비동기 함수를 만들 수 있다.
+비동기 함수를 만들 때 사용한다.
 
 ```un
 async fn api(url)
-	return https.get(url);
+    return https.get(url)
 ```
 
-
 ## await
-비동기 함수가 완료 될 때까지 기다린다.
+비동기 함수가 완료될 때까지 기다린다.
 
 ```un
 data = await api(url)
-````
+```
 
 ## del
 변수를 삭제한다.
@@ -311,15 +287,16 @@ write(a)
 del a
 
 write(a) # error
-````
+```
 
 ## 보간 문자열
-보간 문자열은 문자열 내부에 변수를 넣을 수 있는 문자열로, 백틱으로 감싼 문자열 내부의 중괄호 안의 값을 문자열로 바뀐다.
+문자열 내부에 변수를 포함할 수 있다.
 
 ```un
 name = "usejun"
 age = 20
 s = `i am {name}, my age is {age}`
+<<<<<<< HEAD
 ````
 ## 타입 힌트
 각 변수의 타입이나 함수의 반환값, 함수의 인자의 타입을 명시적으로 알려줄 수 있으며, 타입의 강제성은 없다.
@@ -332,4 +309,6 @@ d: my_custom_class = my_custom_class()
 
 fn multiply(a: int, b: int) -> int
     return a * b 
+=======
+>>>>>>> c4ba701 (v1.0.1)
 ```

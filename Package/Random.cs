@@ -6,59 +6,57 @@ public class Random : Obj, IPackage, IStatic
 
     public string Name => "random";
     
-    public Obj Seed(Collections.Tuple args, Field field)
+    public Obj Seed(Field field)
     {
-        if (args[0] is not Int seed)
+        if (field["seed"].As<Int>(out var seed))
             throw new ValueError("invalid argument");
         
         random = new((int)(seed.Value % int.MaxValue));
         return None;
     }
 
-    public Int Int(Collections.Tuple args, Field field) => new(random.NextInt64());
+    public Int Int(Field field) => new(random.NextInt64());
 
-    public Float Double(Collections.Tuple args, Field field) => new(random.NextDouble());
+    public Float Double(Field field) => new(random.NextDouble());
 
-    public Obj Range(Collections.Tuple args, Field field)
+    public Obj Range(Field field)
     {
-        if (args[0] is Int a && args[1] is Int b)
+        if (field["min"].As<Int>(out var min) && field["max"].As<Int>(out var max))
         {
-            if (a.CompareTo(b) > 0)
-                (a, b) = (b, a);
+            if (min.CompareTo(max) > 0)
+                (min, max) = (max, min);
 
-            return new Int(random.NextInt64(a.Value, b.Value));
+            return new Int(random.NextInt64(min.Value, max.Value));
         }
-        if (args[0] is Float c && args[1] is Float d)
+        if (field["min"].As<Float>(out var fmin) && field["max"].As<Float>(out var fmax))
         {
-            if (c.CompareTo(d) > 0)
-                (c, d) = (d, c);
+            if (fmin.CompareTo(fmax) > 0)
+                (fmin, fmax) = (fmax, fmin);
 
-            return new Float(double.Min((d.Value - c.Value) * random.NextDouble() + c.Value, d.Value));
+            return new Float(double.Min((fmax.Value - fmin.Value) * random.NextDouble() + fmin.Value, fmax.Value));
         }
         throw new ValueError("invalid argument");
     }
 
-    public List Choice(Collections.Tuple args, Field field)
+    public List Choice(Field field)
     {
-        if (args.Count == 1 && args[0] is List || args[0] is Collections.Tuple)
+        if (!field["count"].As<Int>(out var count))
+            throw new ValueError("count is must be int");
+
+        if (field["value"].As<List>(out _) || field["value"].As<Collections.Tuple>(out _))
         {
-            List list = args.CList();
-            return new(random.GetItems(list.Value[..list.Count], 1));
-        }
-        if (args.Count == 2 && args[1] is Int count && (args[0] is List || args[0] is Collections.Tuple))
-        {
-            List list = args.CList();
+            List list = field["value"].CList();
             return new(random.GetItems(list.Value[..list.Count], (int)count.Value));
         }
-        throw new ValueError("invalid argument");
+        throw new ValueError("values cannot be chosen.");
     }
 
-    public Obj Shuffle(Collections.Tuple args, Field field)
+    public Obj Shuffle(Field field)
     {
-        if (args.Count == 1 && args[0] is List || args[0] is Collections.Tuple)
+        if (field["value"].As<List>(out _) || field["value"].As<Collections.Tuple>(out _))
         {
-            var values = args[0] is not Collections.Tuple ? args[0].CList().Value : (args[0] as Collections.Tuple).Value;
-            var len = args[0].Len().Value;
+            var values = field["value"].CList().Value;
+            var len = field["value"].Len().Value;
             var indices = Enumerable.Range(0, (int)len).ToArray();
  
             random.Shuffle(indices);
@@ -75,12 +73,12 @@ public class Random : Obj, IPackage, IStatic
     {
         Random random = new();
 
-        random.field.Set("seed", new NativeFun("seed", 2, Seed));
-        random.field.Set("choice", new NativeFun("choice", -1, Choice));
-        random.field.Set("shuffle", new NativeFun("shuffle", 2, Shuffle));
-        random.field.Set("range", new NativeFun("range", 3, Range));
-        random.field.Set("int", new NativeFun("int", 1, Int));
-        random.field.Set("double", new NativeFun("double", 1, Double));
+        random.field.Set("seed", new NativeFun("seed", 1, Seed, [("seed", null!)]));
+        random.field.Set("choice", new NativeFun("choice", 1, Choice, [("value", null!)]));
+        random.field.Set("shuffle", new NativeFun("shuffle", 1, Shuffle, [("value", null!)]));
+        random.field.Set("range", new NativeFun("range", 2, Range, [("min", null!), ("max", null!)]));
+        random.field.Set("int", new NativeFun("int", 0, Int, []));
+        random.field.Set("double", new NativeFun("double", 0, Double, []));
 
         return random;
     }

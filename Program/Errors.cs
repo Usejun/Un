@@ -1,12 +1,10 @@
-﻿using System.Text;
-
-namespace Un;
+﻿namespace Un;
 
 public abstract class BaseError(string message) : Exception(message)
 {
     public override string ToString()
     {
-        StringBuilder result = new();
+        StringBuffer result = new();
 
         Process.TryGetGlobalProperty(Literals.Name, out var v);
 
@@ -14,7 +12,12 @@ public abstract class BaseError(string message) : Exception(message)
         result.AppendLine($"   File <{v.CStr().Value}>, line [{Process.Line + 1}]");
         result.AppendLine($"      {Process.Code[Process.Line].Trim()}");
         result.AppendLine($"      {new string('^', Process.Code[Process.Line].Trim().Length)}");
-        result.Append    ($"{GetType().Name} : {Message}");
+        result.AppendLine($"{GetType().Name} : {Message}");
+        result.AppendLine();
+        result.AppendLine($"   Call Stack [{Process.CallStack.Count}]");
+
+        while (Process.CallStack.TryPop(out var info))
+            result.AppendLine($"      line [{info.Line}] : {Process.Code[info.Line].Trim()}");
 
         return result.ToString();
     }

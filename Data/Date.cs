@@ -13,125 +13,135 @@ public class Date : Val<DateTime>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        if (args[0] is Str str && DateTime.TryParse(str.Value, out var v)) 
-            Value = v; 
-        else if (args[0] is Int ticks)
-            Value = new(ticks.Value);
-        else if (args[0] is Date date)
-            Value = date.Value;
-        else
-            throw new ClassError("initialize error");
+        field.Merge(args, [("value", null!)], 1);
+        var value = field["value"];
 
+        Value = value switch
+        {
+            Str s => DateTime.Parse(s.Value),
+            Int ticks => new(ticks.Value),
+            Date d => new(d.Value.Ticks),
+            _ => throw new ClassError(),
+        };
+        
         return this;
     }
 
     public override void Init()
     {
-        field.Set("year", new NativeFun("year", 0, (args, field) =>
+        field.Set("year", new NativeFun("year", 0, field =>
         {
-            if (field[Literals.Self] is not Date self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self))
+                throw new ArgumentError();
 
             return new Int(self.Value.Year);
-        }));
-        field.Set("month", new NativeFun("month", 0, (args, field) =>
+        }, []));
+        field.Set("month", new NativeFun("month", 0, field =>
         {
-            if (field[Literals.Self] is not Date self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self))
+                throw new ArgumentError();
 
             return new Int(self.Value.Month);
-        }));
-        field.Set("day", new NativeFun("day", 0, (args, field) =>
+        }, []));
+        field.Set("day", new NativeFun("day", 0, field =>
         {
             if (field[Literals.Self]        is not Date self)
-                throw new ValueError("invalid argument");
+                throw new ArgumentError();
 
             return new Int(self.Value.Day);
-        }));
-        field.Set("hour", new NativeFun("hour", 0, (args, field) =>
+        }, []));
+        field.Set("hour", new NativeFun("hour", 0, field =>
         {
-            if (field[Literals.Self] is not Date self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self))
+                throw new ArgumentError();
 
             return new Int(self.Value.Hour);
-        }));
-        field.Set("minute", new NativeFun("minute", 0, (args, field) =>
+        }, []));
+        field.Set("minute", new NativeFun("minute", 0, field =>
         {
-            if (field[Literals.Self] is not Date self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self))
+                throw new ArgumentError();
 
             return new Int(self.Value.Minute);
-        }));
-        field.Set("second", new NativeFun("second", 0, (args, field) =>
+        }, []));
+        field.Set("second", new NativeFun("second", 0, field =>
         {
-            if (field[Literals.Self] is not Date self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self))
+                throw new ArgumentError();
 
             return new Int(self.Value.Second);
-        }));
-        field.Set("milliseconds", new NativeFun("millisecond", 0, (args, field) =>
+        }, []));
+        field.Set("milliseconds", new NativeFun("millisecond", 0, field =>
         {
-            if (field[Literals.Self] is not Date self)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self))
+                throw new ArgumentError();
 
             return new Int(self.Value.Millisecond);
-        }));
-        field.Set("add_years", new NativeFun("add_years", 1, (args, field) =>
+        }, []));
+        field.Set("add_years", new NativeFun("add_years", 1, field =>
         {
-            if (field[Literals.Self] is not Date self || args[0] is not Int i)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self) || 
+                !field["year"].As<Int>(out var i))
+                throw new ArgumentError();
 
             return new Date(Value.AddYears((int)i.Value));
-        }));
-        field.Set("add_months", new NativeFun("add_months", 1, (args, field) =>
+        }, [("year", null!)]));
+        field.Set("add_months", new NativeFun("add_months", 1, field =>
         {
-            if (field[Literals.Self] is not Date self || args[0] is not Int i)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self) || 
+                !field["month"].As<Int>(out var i))
+                throw new ArgumentError();
 
             return new Date(Value.AddMonths((int)i.Value));
-        }));
-        field.Set("add_days", new NativeFun("add_days", 1, (args, field) =>
+        }, [("month", null!)]));
+        field.Set("add_days", new NativeFun("add_days", 1, field =>
         {
-            if (field[Literals.Self] is not Date self || args[0] is not Int i)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self) ||
+                !field["day"].As<Int>(out var i))
+                throw new ArgumentError();
 
             return new Date(Value.AddDays((int)i.Value));
-        }));
-        field.Set("add_hours", new NativeFun("add_hours", 1, (args, field) =>
+        }, [("day", null!)]));
+        field.Set("add_hours", new NativeFun("add_hours", 1, field =>
         {
-            if (field[Literals.Self] is not Date self || args[0] is not Int i)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self) ||
+                !field["hour"].As<Int>(out var i))
+                throw new ArgumentError();
 
             return new Date(Value.AddHours((int)i.Value));
-        }));
-        field.Set("add_minutes", new NativeFun("add_minutes", 1, (args, field) =>
+        }, [("hour", null!)]));
+        field.Set("add_minutes", new NativeFun("add_minutes", 1, field =>
         {
-            if (field[Literals.Self] is not Date self || args[0] is not Int i)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self) ||
+                !field["minute"].As<Int>(out var i))
+                throw new ArgumentError();
 
             return new Date(Value.AddMinutes((int)i.Value));
-        }));
-        field.Set("add_seconds", new NativeFun("add_seconds", 1, (args, field) =>
+        }, [("minute", null!)]));
+        field.Set("add_seconds", new NativeFun("add_seconds", 1, field =>
         {
-            if (field[Literals.Self] is not Date self || args[0] is not Int i)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self) || 
+                !field["seconds"].As<Int>(out var i))
+                throw new ArgumentError();
 
             return new Date(Value.AddSeconds((int)i.Value));
-        }));
-        field.Set("add_milliseconds", new NativeFun("add_milliseconds", 1, (args, field) =>
+        }, [("seconds", null!)]));
+        field.Set("add_milliseconds", new NativeFun("add_milliseconds", 1, field =>
         {
-            if (field[Literals.Self] is not Date self || args[0] is not Int i)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self) ||
+                !field["milliseconds"].As<Int>(out var i))
+                throw new ArgumentError();
 
             return new Date(Value.AddMilliseconds((int)i.Value));
-        }));
-        field.Set("format", new NativeFun("format", 1, (args, field) =>
+        }, [("milliseconds", null!)]));
+        field.Set("format", new NativeFun("format", 1, field =>
         {
-            if (field[Literals.Self] is not Date self || args[0] is not Str format)
-                throw new ValueError("invalid argument");
+            if (!field[Literals.Self].As<Date>(out var self) ||
+                !field["format"].As<Str>(out var format))
+                throw new ArgumentError();
 
             return new Str(self.Value.ToString(format.Value));
-        }));
+        }, [("format", null!)]));
     }
 
     public override Obj Add(Obj arg, Field field)

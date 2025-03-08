@@ -13,102 +13,126 @@ public static class Tokenizer
             if (index >= code.Length) break;
             else if (Token.IsComment(code[index])) tokens.Add(new($"{code[index++]}", Token.Type.Comment));
             else if (Token.IsString(code[index])) tokens.Add(String(code));
-            else if (char.IsLetter(code[index]) || code[index] == '_') tokens.Add(Keyword(code));
+            else if (char.IsLetter(code[index]) || code[index] == Literals.CUnderbar) tokens.Add(Keyword(code));
             else if (char.IsDigit(code[index])) tokens.Add(Number(code));
             else if (Token.IsOperator(code[index])) tokens.Add(Operator(code));
             else if (Token.IsSymbol(code[index])) tokens.Add(new(code[index++]));
             else throw new SyntaxError();
         }
 
-        //Console.WriteLine();
-        //Console.WriteLine(string.Join("\n", tokens));
-        //Console.WriteLine();
-
         return tokens;
 
         void SkipWhitespace(string code)
         {
-            while (index < code.Length && char.IsWhiteSpace(code[index]))
+            int length = code.Length;
+            while (index < length && char.IsWhiteSpace(code[index]))
                 index++;
         }
 
         Token String(string code)
         {
-            string str = $"{code[index++]}";
+            bool closed = false;
+            StringBuffer str = new($"{code[index++]}");
 
-            while (index < code.Length)
+            while (!closed && index < code.Length)
             {
-                if (code[index] == 92)
-                {
-                    index++;
-                    str += code[index] switch
-                    {
-                        'n' => '\n',
-                        'b' => '\b',
-                        '"' => '\"',
-                        'r' => '\r',
-                        't' => '\t',
-                        'a' => '\a',
-                        'f' => '\f',
-                        'v' => '\v',
-                        '0' => '\0',
-                        (char)92 => "\\\\",
-                        (char)39 => '\'',
-                        _ => $"\\{code[index]}",
-                    };
-                    index++;
-                }
-                str += code[index++];
+                bool isEscape = false;
 
-                if (str[^1] == str[0]) break;
+                if (code[index] != Literals.Escape)
+                    str.Append(code[index++]);                
+                else if(index + 1 < code.Length && Token.Escape.TryGetValue(code[index + 1], out var c))
+                {
+                    isEscape = true;
+                    str.Append(c);         
+                    index += 2;
+                }
+                else throw new SyntaxError("invalid string syntax");       
+
+                if (!isEscape && str[^1] == str[0]) closed = true;
             }
 
-            return new(str, Token.Type.String);
+            return closed ? new(str.ToString(), Token.Type.String) : throw new SyntaxError("invalid string syntax");
         }
 
         Token Number(string code)
         {
-            string str = "";
+            StringBuffer str = new();
 
-            Take(char.IsDigit);
+            Take(Token.IsDigit);
 
-            if (OutOfRange()) return new(str, Token.Type.Integer);
+            if (OutOfRange()) return new(str.ToString(), Token.Type.Integer);
 
-            if (code[index] == '.')
+            if (code[index] == Literals.CDot)
             {
-                Take(char.IsDigit);
-                return new(str, Token.Type.Float);
-            }
-            else if (IsBinary())
-            {
-                Take(Token.IsBinaryDigit);
-                return new($"{Convert.ToInt64(str, 2)}", Token.Type.Integer);
-            }
-            else if (IsOctal())
-            {
-                Take(Token.IsOctalDigit);
-                return new($"{Convert.ToInt64(str, 8)}", Token.Type.Integer);
-            }
-            else if (IsHex())
-            {
-                Take(Token.IsHexDigit);
-                return new($"{Convert.ToInt64(str, 16)}", Token.Type.Integer);
-            }
-            else return new(str, Token.Type.Integer);
+                str.Append(code[index++]);
+                Take(Token.IsDigit);
 
-            bool IsBinary() => str == "0" && code[index] == 'b';
+                if (code.Length <= index)
+                    return new(str.ToString(), Token.Type.Float);
+                else if (code[index] == Literals.e || code[index] == Literals.E)                
+                {
+                    str.Append(code[index++]);
+                    if (code[index] == Literals.CPlus || code[index] == Literals.CMinus)
+                        str.Append(code[index++]);                
+                }
+                Take(Token.IsDigit);
 
-            bool IsOctal() => str == "0" && code[index] == 'o';
+                if (str[^1] == Literals.e || str[^1] == Literals.E)
+                    throw new SyntaxError("invalid float syntax");
 
-            bool IsHex() => str == "0" && code[index] == 'x';
+                return new(str.ToString(), Token.Type.Float);
+            }
+            else if (code[index] == Literals.e || code[index] == Literals.E)
+            {
+                str.Append(code[index++]);
+
+                if (code[index] == Literals.CPlus || code[index] == Literals.CMinus)
+                    str.Append(code[index++]);
+
+                Take(Token.IsDigit);
+
+                return new(str.ToString(), Token.Type.Float);
+            }
+            else if (str.Length == 1 && str.Equals(Literals.CZero))
+            {
+                str.Clear();
+
+                int baseNumber = code[index++] switch 
+                {
+                    Literals.b => 2,
+                    Literals.o => 8,
+                    Literals.x => 16,
+                    _ => -1
+                };
+
+                if (baseNumber == -1)
+                    throw new SyntaxError("invalid base-by-integer");
+
+                
+                Take(baseNumber switch
+                {
+                    2 => Token.IsBinaryDigit,
+                    8 => Token.IsOctalDigit,
+                    16 => Token.IsHexDigit,
+                    _ => throw new SyntaxError("invalid base-by-integer"),
+                });
+
+                return new($"{Convert.ToInt64(str.ToString(), baseNumber)}", Token.Type.Integer);
+            }
+
+            return new(str.ToString(), Token.Type.Integer);
 
             bool OutOfRange() => index >= code.Length;
 
             void Take(Func<char, bool> conditions)
             {
-                str += code[index++];
+                //str.Append(code[index++]);
                 while (!OutOfRange() && conditions(code[index]))
-                    str += code[index++];
+                {
+                    if (code[index] == Literals.CUnderbar)
+                        index++;
+                    else str.Append(code[index++]);
+                }
             }
         }
 
@@ -136,17 +160,19 @@ public static class Tokenizer
 
         Token Keyword(string code)
         {
-            string str = "";
+            StringBuffer str = new();
 
-            while (index < code.Length && (char.IsLetterOrDigit(code[index]) || code[index] == '_'))
-                str += code[index++];
+            while (index < code.Length && (char.IsLetterOrDigit(code[index]) || code[index] == Literals.CUnderbar))
+                str.Append(code[index++]);
 
-            if (Process.TryGetGlobalProperty(str, out var property) && property is Fun)
-                return new(str, Token.Type.Function);
-            if (Token.GetType(str) != Token.Type.None)
-                return new(str);
+            var keyword = str.ToString();   
 
-            return new Token(str, Token.Type.Variable);
+            if (Process.TryGetGlobalProperty(keyword, out var property) && property is Fun)
+                return new(keyword, Token.Type.Function);
+            if (Token.GetType(keyword) != Token.Type.None)
+                return new(keyword.ToString());
+
+            return new Token(keyword, Token.Type.Variable);
         }
     }
 
@@ -157,11 +183,11 @@ public static class Tokenizer
         bool a = true, b = true;
 
         for (int i = 0; a && i < nesting; i++)
-            if (code.Length > i && code[i] != '\t')
+            if (code.Length > i && code[i] != Literals.Tab)
                 a = false;
 
         for (int i = 0; b && i < 4 * nesting; i++)
-            if (code.Length > i && code[i] != ' ')
+            if (code.Length > i && code[i] != Literals.Space)
                 b = false;
 
         return a || b;

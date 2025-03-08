@@ -24,10 +24,14 @@ public class Enu : Obj
         }
     }
 
-    public override Obj Init(Collections.Tuple args, Field field)
+    public override Obj Init(Collections.Tuple args, Field field) 
     {
-        if (args[0] is Int i) return new EnuElm($"{number[(int)i.Value].Value}", (int)i.Value);
-        if (args[0] is Str s) return field[s.Value];
+        field.Merge(args, [("value", null!)], 1);
+
+        if (field["value"].As<Int>(out var i))
+             return new EnuElm($"{number[(int)i.Value].Value}", (int)i.Value);
+        if (field["value"].As<Str>(out var s)) 
+            return field[s.Value];
 
         return base.Init(args, field);
     }

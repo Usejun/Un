@@ -2,9 +2,11 @@
 
 public static class Literals
 {
+    public const string Inf = "inf";
     public const string True = "true";
     public const string False = "false";
     public const string None = "none";
+    public const string Null = "null";
     public const string Break = "break";
     public const string Continue = "continue";
     public const string Return = "return";
@@ -21,6 +23,7 @@ public static class Literals
     public const string Enum = "enum";
     public const string Class = "class";
     public const string Throw = "throw";
+    public const string URL = "URL";
     public const string Comment = "#";
     public const char CComment = '#';
     public const string Is = "is";
@@ -33,20 +36,30 @@ public static class Literals
     public const string If = "if";
     public const string Func = "func";
     public const string Colon = ":";
+    public const char CColon = ':';
     public const string Comma = ",";
+    public const char CComma = ',';
     public const string Dot = ".";
+    public const char CDot = '.';
     public const string QuestionDot = ".?";
     public const string DoubleQuestion = "??";
     public const string Question = "?";
     public const string RParen = ")";
+    public const char CRParen = ')';
     public const string LParen = "(";
+    public const char CLParen = '(';
     public const string RBrace = "}";
+    public const char CRBrace = '}';
     public const string LBrace = "{";
+    public const char CLBrace = '{';
     public const string RBrack = "]";
+    public const char CRBrack = ']';
     public const string LBrack = "[";
+    public const char CLBrack = '[';
     public const string Equal = "==";
     public const string Unequal = "!=";
     public const string GreaterThen = ">";
+    public const char CGreaterThen = '>';
     public const string LessThen = "<";
     public const string GreaterOrEqual = ">=";
     public const string LessOrEqual = "<=";
@@ -63,11 +76,14 @@ public static class Literals
     public const string Amperand = "&";
     public const string Percent = "%";
     public const string Slash = "/";
+    public const char CSlash = '/';
     public const string DoubleAsterisk = "**";
     public const string Asterisk = "*";
     public const string Bang = "!";
     public const string Minus = "-";
     public const string Plus = "+";
+    public const char CMinus = '-';
+    public const char CPlus = '+';
     public const string RightShiftAssign = ">>=";
     public const string LeftShiftAssign = "<<=";
     public const string BXorAssign = "^=";
@@ -81,14 +97,29 @@ public static class Literals
     public const string MinusAssign = "-=";
     public const string PlusAssign = "+=";
     public const string Assign = "=";
+    public const char CAssign = '=';
+    public const string Underbar = "_";
+    public const char CUnderbar = '_';
 
     public const string Self = "self";
     public const string Super = "super";
 
     public const string Arrow = "=>";
 
+    public const char NewLine = '\n';
+    public const char Tab = '\t';
+    public const char Backspace = '\b';
+    public const char CarriageReturn = '\r';
+    public const char FormFeed = '\f';
+    public const char VerticalTab = '\v';
+    public const char NullChar = '\0';
+    public const char Bell = '\a';
+
+    public const char Space = ' ';
     public const char Single = '\'';
-    public const char Double = '\"';
+    public const char Escape = '\\';
+    public const char Double = '"';
+    public const char EDouble = '\"';
     public const char Backtick = '`';
 
     public const string Init = "__init__";
@@ -128,10 +159,27 @@ public static class Literals
 
     public const string Extension = "un";
 
+    public const char CZero = '0';
+    public const char CNine = '9';  
+
     public const string Bin = "0b";
     public const string Oct = "0o";
     public const string Hex = "0x";
 
-    public const char CZero = '0';
+    public const char a = 'a';
+    public const char b = 'b';
+    public const char e = 'e';
+    public const char f = 'f';
+    public const char n = 'n';
+    public const char o = 'o';
+    public const char r = 'r';
+    public const char t = 't';
+    public const char u = 'u';
+    public const char v = 'v';
+    public const char x = 'x';
+
+    public const char A = 'A';
+    public const char E = 'E';
+    public const char F = 'F';
 
 }

@@ -27,6 +27,7 @@ fn tokenize(line)
 	return tokens
 
 fn calculate(tokens)
+	write(tokens)
 	v = int(tokens[0].value)
 
 	for i in range(1, len(tokens))

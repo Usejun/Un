@@ -11,21 +11,17 @@ public class Bool : Val<bool>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        if (args.Count == 0)
-            Value = false;
-        else if (args.Count == 1)
-            Value = args[0].CBool().Value;
-        else
-            throw new ClassError("initialize error");
+        field.Merge(args, [("value", False)], 0);
+        Value = field["value"].CBool().Value;
 
         return this;
     }
 
-    public override Obj Add(Obj arg, Field field)
+    public override Obj Add(Obj arg, Field field) => arg switch
     {
-        if (arg is Str) return CStr().Add(arg, field);
-        return base.Add(arg, field);
-    }   
+        Str s => s.Add(arg, field),
+        _ => base.Add(arg, field),
+    };
 
     public override Str CStr() => new(Value ? Literals.True : Literals.False);
 

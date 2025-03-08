@@ -50,65 +50,62 @@ public class Calculator
             }
             else if (IsCallable(token.type))
             {
-                var (name, args, call) = Fun.Split(token.Value, field);
+                var (name, args, call) = Fun.Split(token.value, field);
 
                 if (token.type == Token.Type.Method)
                 {
                     Obj a = Collections.Tuple.Split(calculateStack.Pop());
 
-                    if (a.Get(name) is not Fun fun) throw new SyntaxError();
-
-                    calculateStack.Push(call ? fun.Call(args, Field.Self(a)) : fun);
+                    calculateStack.Push(call ? Fun.Method(a, name, args, new()) : a.Get(name));
                 }
                 else if (token.type == Token.Type.NullableMethod)
                 {
                     Obj a = Collections.Tuple.Split(calculateStack.Pop());
 
-                    if (!a.HasProperty(name))
-                    {
-                        calculateStack.Push(Obj.None);
-                    }
-                    else
-                    {
-                        if (a.Get(name) is not Fun fun) throw new SyntaxError();
-
-                        calculateStack.Push(call ? fun.Call(args, Field.Self(a)) : fun);
-                    }
+                    if (!a.HasProperty(name))                    
+                        calculateStack.Push(Obj.None);                    
+                    else                    
+                        calculateStack.Push(call ? Fun.Method(a, name, args, new()) : a.Get(name));                    
                 }
                 else if (Process.TryGetClass(name, out var cla))
                 {
-                    calculateStack.Push(call ? cla.Clone().Init(args, field) : new NativeFun(name, -1, cla.Init));
+                    calculateStack.Push(call ? cla.Clone().Init(args, new()) : new NativeFun(Literals.Init, 0, field => cla.Init(args, new()), []));
                 }
                 else if (field.Get(name, out var local))
                 {
-                    if (local is not Fun fun) throw new SyntaxError();
+                    if (!local.As<Fun>(out var fun))
+                        throw new SyntaxError($"{name} is not function.");  
 
-                    calculateStack.Push(call ? fun.Clone().Call(args, Field.Null) : fun);
+                    calculateStack.Push(call ? fun.Clone().Call(args, new()) : fun);
                 }
                 else if (Process.TryGetGlobalProperty(name, out var global))
                 {
-                    if (global is not Fun fun) throw new SyntaxError();
+                    if (!global.As<Fun>(out var fun))
+                        throw new SyntaxError($"{name} is not function.");  
 
-                    calculateStack.Push(call ? fun.Clone().Call(args, Field.Null) : fun);
+                    calculateStack.Push(call ? fun.Clone().Call(args, new()) : fun);
                 }
-                else throw new KeyError("this function does not exist.");
+                else throw new KeyError($"{name} function does not exist.");
             }
             else if (Token.IsOperator(token.type))
             {
+                if (calculateStack.Count < 2)
+                    throw new SyntaxError("invalid expression.");
+
                 Obj a = Collections.Tuple.Split(calculateStack.Pop());
                 Obj b = Collections.Tuple.Split(Token.IsSoloOperator(token.type) ? Obj.None : calculateStack.Pop());
                 Obj c = token.type switch
                 {
-                    Token.Type.Indexer => a.GetItem(new(Obj.Convert(token.Value, field)), field),
-                    Token.Type.Slicer => a.Slice(new(Obj.Convert(token.Value.Split(':')[0], field), 
-                                                     Obj.Convert(token.Value.Split(':')[1], field)), field),
-                    Token.Type.Property => a.Get(token.Value),
-                    Token.Type.NullableProperty => a.HasProperty(token.Value) ? a.Get(token.Value) : Obj.None,
+                    Token.Type.Indexer => a.GetItem(Obj.Parse(token.value, field), field),
+                    Token.Type.Slicer => a.Slice(Obj.Parse(token.value.Split(Literals.Colon, 1)[0], field), 
+                                                 Obj.Parse(token.value.Split(Literals.Colon, 2)[1], field), field),
+                    Token.Type.Property => a.Get(token.value),
+                    Token.Type.NullableProperty => a.HasProperty(token.value) ? a.Get(token.value) : Obj.None,
                     Token.Type.Not => new Bool(!a.CBool().Value),
                     Token.Type.BNot => a.BNot(),
                     Token.Type.DoubleQuestion => Obj.IsNone(b) ? a : b,
                     Token.Type.In => a.CList().Contains(b),
-                    Token.Type.Is => new Bool(b.ClassName == (a is Fun fun ? fun.Name : a.ClassName)),
+                    Token.Type.Is => new Bool(b.ClassName == (a.As<Fun>(out var fun) ? fun.Name : a.ClassName)),
                     Token.Type.And => b.CBool().Value ? a.CBool() : new Bool(false),
                     Token.Type.Or => !b.CBool().Value ? a.CBool() : new Bool(true),
                     Token.Type.Plus => b.Add(a, field),
@@ -127,12 +124,12 @@ public class Calculator
                     Token.Type.LessOrEqual => b.Loe(a, field),
                     Token.Type.GreaterThen => b.Gt(a, field),
                     Token.Type.LessThen => b.Lt(a, field),
-                    _ => throw new OperatorError()
+                    _ => throw new OperatorError("unknown operator.")
                 };;
 
                 calculateStack.Push(c);
             }                
-            else calculateStack.Push(Collections.Tuple.Split(Obj.Convert(token.Value, field)));
+            else calculateStack.Push(Collections.Tuple.Split(Obj.Parse(token.value, field)));
         }
 
         if (calculateStack.Count == 1)
@@ -140,7 +137,7 @@ public class Calculator
         else if (calculateStack.Count == 0)
             return Obj.None;
         else
-            throw new SyntaxError();
+            throw new SyntaxError("invalid expression.");
     }
 
     public static Obj On(List<Token> expression, Field field)

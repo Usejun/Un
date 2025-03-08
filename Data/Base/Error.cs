@@ -12,28 +12,28 @@ public class Error : Ref<Exception>
 
     public override void Init()
     {
-        field.Set("message", new NativeFun("message", 0, (args, field) =>
+        field.Set("message", new NativeFun("message", 0, field =>
         {
             if (!field[Literals.Self].Is(Literals.Error))
                 throw new ArgumentError();
 
             return new Str(Value.Message);
-        }));
+        }, []));
     }
 
     public override Str CStr()
     {
-        string result = "";
+        StringBuffer result = new();
 
         Process.TryGetGlobalProperty(Literals.Name, out var v);
 
-        result += "\n";
-        result += $"   File <{v.CStr().Value}>, line [{Process.Line + 1}]\n";
-        result += $"      {Process.Code[Process.Line].Trim()}\n";
-        result += $"      {new string('^', Process.Code[Process.Line].Trim().Length)}\n";
-        result += $"{ClassName} : {Value.Message}";
+        result.AppendLine();
+        result.AppendLine($"   File <{v.CStr().Value}>, line [{Process.Line + 1}]");
+        result.AppendLine($"      {Process.Code[Process.Line].Trim()}");
+        result.AppendLine($"      {new string('^', Process.Code[Process.Line].Trim().Length)}");
+        result.Append    ($"{GetType().Name} : {Value.Message}");
 
-        return new(result);
+        return new(result.ToString());
     }
 
     public static List<(string, NativeFun)> Import() =>
@@ -53,13 +53,6 @@ public class Error : Ref<Exception>
 
     private static NativeFun Make<T>()
         where T : Exception, new()
-    => new(nameof(T), -1, (args, field) =>
-    {
-        if (args.Count == 0)
-            return new Error(new T());
-        else if (args.Count == 1)
-            return new Error((T)Activator.CreateInstance(typeof(T), args[0].CStr().Value));
-        throw new ArgumentError();
-    });
+    => new(nameof(T), 0, field => new Error((T)Activator.CreateInstance(typeof(T), field["message"].CStr().Value)!), [("message", new Str())]);
     
 }
