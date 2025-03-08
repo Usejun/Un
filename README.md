@@ -142,7 +142,6 @@ for i in range(1, 100)
 조건이 `true`인 동안 실행된다.
 
 ```un
->>>>>>> c4ba701 (v1.0.1)
 fib = array(0, 21)
 fib[0] = 1
 fib[1] = 1
@@ -291,7 +290,7 @@ write(a) # error
 name = "usejun"
 age = 20
 s = `i am {name}, my age is {age}`
-<<<<<<< HEAD
+
 ````
 ## 타입 힌트
 각 변수의 타입이나 함수의 반환값, 함수의 인자의 타입을 명시적으로 알려줄 수 있으며, 타입의 강제성은 없다.
