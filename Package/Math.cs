@@ -4,6 +4,8 @@ public class Math : Obj, IPackage, IStatic
 {
     public string Name => "math";
 
+    public override Str Type() => new(Name);
+
     Obj Pow(Field field)
     {
         if (!field["y"].As<Int>(out var y)) 
@@ -79,7 +81,7 @@ public class Math : Obj, IPackage, IStatic
 
     public Obj Static()
     {
-        Math math = new();
+        Obj math = new(Name);
         math.field.Set("pi", new Float(3.14159265));
         math.field.Set("e", new Float(2.718281828));
         math.field.Set("gcd", new NativeFun("gcd", 2, Gcd, [("a", null!), ("b", null!)]));

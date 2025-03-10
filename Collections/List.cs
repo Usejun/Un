@@ -107,7 +107,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
                 self.Append(values[i]);                
 
             return None;
-        }, [("value", null!)], true));
+        }, [("values", null!)], true));
         field.Set("insert", new NativeFun("insert", 2, field =>
         {
             if (!field[Literals.Self].As<List>(out var self) ||
@@ -239,7 +239,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Obj Init(Tuple args, Field field)
     {
-        field.Merge(args, [("key", Lambda.Self), ("values", new List())], 0, true);
+        field.Merge(args, [("key", Lambda.Self), ("values", null!)], 0, true);
         Value = [];
 
         if (!field["values"].As<List>(out var values) ||

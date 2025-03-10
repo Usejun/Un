@@ -4,9 +4,11 @@ public class Env : Obj, IPackage, IStatic
 {
     public string Name => "env";
 
+    public override Str Type() => new(Name);
+
     public Obj Static()
     {
-        Obj env = new();
+        Obj env = new(Name);
         env.field.Set("get", new NativeFun("get", 1, field =>
         {
             if (!field["key"].As<Str>(out var key))

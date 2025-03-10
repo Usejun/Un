@@ -2,7 +2,7 @@
 
 public interface IPackage
 {
-    public string Name { get; }
+    public string Name { get; }    
 
     public virtual IEnumerable<Fun> Import() => [];
 

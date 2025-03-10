@@ -8,6 +8,8 @@ public class Std : Obj, IPackage
 
     private readonly Dictionary<string, Dictionary<int, Obj>> memo = []; 
 
+    public override Str Type() => new(Name);
+
     Obj Write(Field field)
     {
         if (!field["values"].As<List>(out var list))
@@ -343,6 +345,8 @@ public class Std : Obj, IPackage
          if (field["value"].As<Int>(out var i))return new(Literals.Hex + Convert.ToString(i.Value, 16));
         throw new ValueError("value must be an int");
     }
+
+    List Args(Field field) => new(Environment.GetCommandLineArgs());
 
     Obj Eval(Field field)
     {

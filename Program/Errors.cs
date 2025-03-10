@@ -99,6 +99,12 @@ public class ArgumentError : BaseError
     public ArgumentError(string message) : base(message) { }
 }
 
+public class PropertyError : BaseError
+{
+    public PropertyError() : base("occur error in property") { }
+    public PropertyError(string message) : base(message) { }
+}
+
 public class DivideByZeroError : BaseError
 {
     public DivideByZeroError() : base("divide by zero") { }

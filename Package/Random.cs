@@ -2,18 +2,19 @@
 
 public class Random : Obj, IPackage, IStatic
 {
-    public System.Random random = new();
+    public System.Random random = new();    
+
+    public int seed = 0;
 
     public string Name => "random";
     
-    public Obj Seed(Field field)
-    {
-        if (field["seed"].As<Int>(out var seed))
-            throw new ValueError("invalid argument");
-        
-        random = new((int)(seed.Value % int.MaxValue));
-        return None;
-    }
+    // public Obj Seed(Field field)
+    // {
+    //     if (field["seed"].As<Int>(out var seed))
+    //         throw new ValueError("invalid argument");        
+    //     random = new((int)(seed.Value % int.MaxValue));
+    //     return None;
+    // }
 
     public Int Int(Field field) => new(random.NextInt64());
 
@@ -69,11 +70,23 @@ public class Random : Obj, IPackage, IStatic
         throw new ValueError("invalid argument");
     }
 
+    public override Str Type() => new(Name);
+
     public Obj Static()
     {
         Random random = new();
+        random.seed = (int)(random.Int(new()).Value % int.MaxValue);
+        random.random = new(random.seed);
 
-        random.field.Set("seed", new NativeFun("seed", 1, Seed, [("seed", null!)]));
+        //random.field.Set("seed", new NativeFun("seed", 1, Seed, [("seed", null!)]));
+        random.field.Set("seed", new Prop(new NativeFun("seed", 0, _ => new Int(random.seed), []), new NativeFun("seed", 1, field =>
+        {
+            if (!field["seed"].As<Int>(out var seed))
+                throw new PropertyError();
+            random.seed = (int)(seed.Value % int.MaxValue);
+            random.random = new(random.seed);
+            return None;
+        }, [("seed", null!)])));
         random.field.Set("choice", new NativeFun("choice", 1, Choice, [("value", null!)]));
         random.field.Set("shuffle", new NativeFun("shuffle", 1, Shuffle, [("value", null!)]));
         random.field.Set("range", new NativeFun("range", 2, Range, [("min", null!), ("max", null!)]));

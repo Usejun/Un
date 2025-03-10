@@ -3,8 +3,10 @@ namespace Un.Package;
 public class Process : Obj, IPackage, IStatic
 {
     public string Name => "process";
+
+    public override Str Type() => new(Name);
     
-    Str Run(Field field)
+    Str New(Field field)
     {
         if (field["file_name"].As<Str>(out var name)) throw new ValueError("argument only accept str");
 
@@ -32,8 +34,8 @@ public class Process : Obj, IPackage, IStatic
 
     public Obj Static()
     {
-        var process = new Process();
-        process.field.Set("run", new NativeFun("run", 1, Run, [("file_name", null!), 
+        Obj process = new(Name);
+        process.field.Set("new", new NativeFun("new", 1, New, [("file_name", null!), 
                                                                ("working_directory", new Str()),
                                                                ("use_shell_excute", Bool.False), 
                                                                ("redirect_standard_error", Bool.False),

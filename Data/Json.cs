@@ -87,7 +87,10 @@ public class Json : Obj
         }
     }
 
-    public override Obj Clone() => new Json() { top = top };
+    public override Obj Clone() => new Json() 
+    { 
+        top = top,
+    };
 
     private class JsonParser(string str)
     {

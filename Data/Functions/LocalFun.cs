@@ -4,9 +4,8 @@ namespace Un.Data;
 
 public class LocalFun : Fun
 {    
-    public string[] code = [];
-    public int nesting = 0;
-    public bool IsDynamic { get; protected set; } = false;
+    protected string[] code = [];
+    protected int nesting = 0;
 
     public LocalFun(string name) : base(name) { }
 

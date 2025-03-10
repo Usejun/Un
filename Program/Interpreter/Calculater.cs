@@ -89,7 +89,7 @@ public class Calculator
             }
             else if (Token.IsOperator(token.type))
             {
-                if (calculateStack.Count < 2)
+                if (calculateStack.Count == 0)
                     throw new SyntaxError("invalid expression.");
 
                 Obj a = Collections.Tuple.Split(calculateStack.Pop());

@@ -4,9 +4,11 @@ public class Thread : Obj, IPackage, IStatic
 {
     public string Name => "thread";
 
+    public override Str Type() => new(Name);
+
     public Obj Static()
     {   
-        Thread thread = new();
+        Obj thread = new(Name);
         thread.field.Set("foreach", new NativeFun("foreach", 1, field =>
         {
             if (field["func"].As<Fun>(out var func))

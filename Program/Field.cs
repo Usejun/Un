@@ -50,13 +50,14 @@ public class Field
         {
             if (string.IsNullOrEmpty(tuple.Names[i]))
             {
-                Set(args[i].name, tuple[i]);
+                Set(args[i].name, tuple[i]);                
                 j++;
             }
             else if (Key(tuple.Names[i]))
                 Set(tuple.Names[i], tuple[i]);
             else
                 throw new ArgumentError();
+            i++;
         }
 
         if (isDynamic)

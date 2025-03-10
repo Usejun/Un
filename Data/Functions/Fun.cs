@@ -28,7 +28,7 @@ public abstract class Fun(string name) : Obj("func")
     {
         if (obj.As<Fun>(out var function))
         {
-            field.Merge(args, function.Args, function.Args.Count);
+            field.Merge(args, function.Args, function.Args.Count, function.IsDynamic);
             result = function.Call(field);
             return true;
         }
@@ -41,7 +41,7 @@ public abstract class Fun(string name) : Obj("func")
     {
         if (obj.As<Fun>(out var function))
         {
-            field.Merge(args, function.Args, function.Args.Count);
+            field.Merge(args, function.Args, function.Args.Count, function.IsDynamic);
             return function.Call(field);
         }
 
@@ -52,7 +52,7 @@ public abstract class Fun(string name) : Obj("func")
     {
         if (obj.field.Key(name) && obj.Get(name).As<Fun>(out var function))
         {
-            field.Merge(args, function.Args, function.Args.Count);
+            field.Merge(args, function.Args, function.Args.Count, function.IsDynamic);
             result = function.Call(field);
             return true;
         }
@@ -65,7 +65,7 @@ public abstract class Fun(string name) : Obj("func")
     {
         if (obj.field.Key(name) && obj.Get(name).As<Fun>(out var function))
         {
-            field.Merge(args, function.Args, function.Args.Count);
+            field.Merge(args, function.Args, function.Args.Count, function.IsDynamic);
             return function.Call(field);
         }
         return None;
@@ -76,7 +76,7 @@ public abstract class Fun(string name) : Obj("func")
         if (obj.HasProperty(name) && obj.Get(name).As<Fun>(out var function))
         {
             field.Set(Literals.Self, obj);
-            field.Merge(args, function.Args, function.Args.Count);
+            field.Merge(args, function.Args, function.Args.Count, function.IsDynamic);
             result = function.Call(field);
             return true;
         }
@@ -90,7 +90,7 @@ public abstract class Fun(string name) : Obj("func")
         if (obj.HasProperty(name) && obj.Get(name).As<Fun>(out var function))
         {
             field.Set(Literals.Self, obj);
-            field.Merge(args, function.Args, function.Args.Count);
+            field.Merge(args, function.Args, function.Args.Count, function.IsDynamic);
             return function.Call(field);
         }
         return None;

@@ -109,20 +109,23 @@ public class Obj : IComparable<Obj>
 
     public Obj Get(StringBuffer sb) => Get(sb.ToString());
 
-    public virtual Obj Get(string str)
+    public virtual Obj Get(string str, bool isOriginal = false)
     {
         if (field.Get(str, out var property))
             return property;
-        if (Process.Class[ClassName].field.Get(str, out var orginal))
-            return orginal;
-        if (Super != null)
+        if (!isOriginal && Process.TryGetClass(ClassName, out var original))
+            return original.Get(str, true);
+        if (Super is not null)
             return Super.Get(str);
+
         throw new TypeError("A property that doesn't exist.");
     }
 
     public virtual void Set(string str, Obj value)
     {
-        if (field.Key(str))
+        if (IsNone(this))
+            throw new TypeError("A property that doesn't exist.");
+        else if (field.Key(str))
             field[str] = value;      
         else if (Super != null)
             Super.Get(str);
@@ -296,9 +299,9 @@ public class Obj : IComparable<Obj>
         return new(1);
     }
 
-    public Int Hash() => new(GetHashCode());
+    public virtual Int Hash() => new(GetHashCode());
 
-    public Str Type()
+    public virtual Str Type()
     {
         if (Fun.Method(this, Literals.Type, new(), new(), out var result) && result is Str value)
             return value;
@@ -428,10 +431,12 @@ public class Obj : IComparable<Obj>
 
     public bool HasProperty(StringBuffer sb) => HasProperty(sb.ToString());
 
-    public bool HasProperty(string key)
+    public bool HasProperty(string key, bool isOriginal = false)
     {
         if (field.Key(key))
             return true;
+        if (!isOriginal && Process.TryGetClass(ClassName, out var original))
+            return original.HasProperty(key, true);
         if (Super is not null)
             return Super.HasProperty(key);
         return false;
@@ -507,7 +512,7 @@ public class Obj : IComparable<Obj>
         throw new SyntaxError();
     }
 
-    public static bool IsNone(Obj obj) => obj.ClassName == Literals.None;
+    public static bool IsNone(Obj obj) => obj.Type().Value == Literals.None;
 
     public static bool IsNone(string str) => str == Literals.None;    
 }

@@ -41,6 +41,9 @@ public static class Process
         Package.Set("time", new Time());
         Package.Set("process", new Package.Process());
         Package.Set("os", new Os());
+        Package.Set("guid", new Package.Guid());
+        Package.Set("image", new Image());
+        Package.Set("video", new Video());
 
         Path = path;
     }
@@ -76,11 +79,11 @@ public static class Process
             Class[name].Init();
 
         StaticClass.Set("time", new Time().Static()); 
+        StaticClass.Set("random", new Package.Random().Static());
 
         Import(new Std());
         Import(new Time());
-        Import(new Package.Random());
-
+        
         foreach (var(name, error) in Error.Import())
             Global.Set(name, error);         
 
@@ -132,8 +135,11 @@ public static class Process
             Imported.Add(name);
 
             if (Package[name] is IPackage pack) Import(pack);
-            else Class.Set(name, Package[name]);
-
+            else 
+            { 
+                Class.Set(name, Package[name]);
+                Class[name].Init();
+            }
             if (Package[name] is IStatic sta)
                 StaticClass.Set(name, sta.Static());
         }

@@ -2,7 +2,8 @@
 
 public class Lambda : LocalFun
 {    
-    public static readonly Lambda Self = new("(i) => (i)");
+    public static readonly Lambda Empty = new();
+    public static readonly Lambda Self = new("(i) => (i)");    
 
     public Lambda() : base("lambda") 
     {
@@ -13,13 +14,14 @@ public class Lambda : LocalFun
     {
         ClassName = "lambda";
         Args = [];
-
+        
         var line = str.Split(Literals.Arrow);
         var args = line[0][1..^1];
         var code = line[1];
 
         foreach (var arg in args.Split(Literals.CComma).Reverse())
             Args.Add((arg, null!));
+        
 
         Length = Args.Count;
         this.code = [$"{Literals.Return} {code}"];

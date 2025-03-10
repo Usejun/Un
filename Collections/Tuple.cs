@@ -125,6 +125,7 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
         for (int i = 0; i < values.Length; i++)
             Value[i] = values[i].Clone();
 
+        Names = new string[values.Length];
         Count = values.Length;
     }
 
