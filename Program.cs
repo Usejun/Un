@@ -5,4 +5,4 @@ Console.OutputEncoding = Process.Encoding;
 //Process.Run(args[1]);
 
 Process.Initialize("../../../Code");
-Process.Run("Test/type.test.un");
+Process.Run("test.un");

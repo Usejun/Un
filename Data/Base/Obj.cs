@@ -117,7 +117,7 @@ public class Obj : IComparable<Obj>
             return original.Get(str, true);
         if (Super is not null)
             return Super.Get(str);
-
+            
         throw new TypeError("A property that doesn't exist.");
     }
 

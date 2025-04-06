@@ -11,6 +11,7 @@ public class Params : IEnumerable<Pair>
     public Pair this[int index]
     {
         get => (Names[index], Values[index]);
+        set => (Names[index], Values[index]) = value;
     }
 
     public void Add(string name, Obj obj)

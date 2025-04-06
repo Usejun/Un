@@ -32,6 +32,12 @@ public class LocalFun : Fun
         for (int i = 0; i < args.Count; i++)
             Args.Add(args.Names[i], args[i]);
 
+        if (args.Count != 0 && args.Names[^1].StartsWith(Literals.Asterisk))
+        {
+            IsDynamic = true;
+            Args[Args.Len - 1] = (args.Names[^1][1..], args[^1]); 
+        }
+
         Name = name;
         this.code = code;
     }

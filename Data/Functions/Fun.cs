@@ -151,8 +151,8 @@ public abstract class Fun(string name) : Obj("func")
 
                 if (string.IsNullOrEmpty(name))
                 {
-                    data.Append(obj:null);
                     names.Add(value);
+                    data.Append(obj:null);
                 }
                 else
                 {

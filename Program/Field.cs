@@ -31,6 +31,13 @@ public class Field
 
     public void Set(StringBuffer name, Obj value) => Set(name.ToString(), value);
 
+    public void Update(Collections.Tuple tuple)
+    {
+        for (int i = 0; i < tuple.Count; i++)
+            if (Key(tuple.Names[i]))
+                Set(tuple.Names[i], tuple[i]);
+    }
+
     public void Merge(Collections.Tuple tuple, bool isForced = true)
     {
         for (int i = 0; i < tuple.Count; i++)
@@ -66,7 +73,7 @@ public class Field
         for (int i = 0; i < positions; i++)
             this[args.Names[i]] = parameters[i];
 
-        Merge(parameters, false);
+        Update(parameters);
 
         if (isDynamic)
         {
