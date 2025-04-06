@@ -14,7 +14,7 @@ public class Writer : Ref<StreamWriter>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        field.Merge(args, [("value", null!), ("append", Bool.False)], 1);
+        field.Merge(args, [("value", null!), ("append", Bool.False)]);
 
         var value = field["value"];
 

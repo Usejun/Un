@@ -32,7 +32,7 @@ public class Str : Val<string>, IEnumerable<char>
     public override Obj Init(Collections.Tuple args, Field field)
     {
         field["count"] = Int.One;
-        field.Merge(args, [("value", null!), ("count", Int.One)], 1);
+        field.Merge(args, [("value", null!), ("count", Int.One)]);
 
         var value = field["value"].CStr();
         Value = "";

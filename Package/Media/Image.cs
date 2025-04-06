@@ -64,7 +64,7 @@ public class Image : Ref<SKBitmap>, IStatic
             if (!field["b"].As<Int>(out var b))
                 throw new ValueError("invalid blue value");
             if (!field["a"].As<Int>(out var a))
-                throw new ValueError("invalid blue value");
+                throw new ValueError("invalid alpha value");
 
             self.Value.SetPixel((int)x.Value, (int)y.Value, new SKColor((byte)r.Value, (byte)g.Value, (byte)b.Value, (byte)a.Value));
             return None;
@@ -358,7 +358,7 @@ public class Image : Ref<SKBitmap>, IStatic
 
             using var stream = new SKFileStream(path.Value);
             var bitmap = SKBitmap.Decode(stream);
-            return new Image { Value = bitmap ?? throw new ValueError("failed to load image") };
+            return new Image(bitmap ?? throw new ValueError("failed to load image"));
         }, [("path", null!)]));
         return image;
     }

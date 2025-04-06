@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Un.Collections;
 
@@ -173,7 +172,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
                 throw new ValueError("invalid argument");
 
             return self.Clone();
-        }, [("value", null!)]));
+        }, []));
         field.Set("reverse", new NativeFun("reverse", 0, field =>
         {
             if (!field[Literals.Self].As<List>(out var self))
@@ -239,7 +238,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Obj Init(Tuple args, Field field)
     {
-        field.Merge(args, [("key", Lambda.Self), ("values", null!)], 0, true);
+        field.Merge(args, [("key", Lambda.Self), ("values", null!)], true);
         Value = [];
 
         if (!field["values"].As<List>(out var values) ||
@@ -328,7 +327,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Obj GetItem(Obj arg, Field field)
     {
-        if (arg.As<Int>(out var i)) 
+        if (!arg.As<Int>(out var i)) 
             throw new IndexError("out of range");
 
         int index = (int)i.Value < 0 ? Count + (int)i.Value : (int)i.Value;
@@ -341,7 +340,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Obj SetItem(Obj arg, Obj index, Field field)
     {
-        if (index.As<Int>(out var i) || OutOfRange((int)i.Value)) 
+        if (!index.As<Int>(out var i) || OutOfRange((int)i.Value)) 
             throw new IndexError("out of range");
 
         int idx = (int)i.Value < 0 ? Count + (int)i.Value : (int)i.Value;
@@ -366,6 +365,8 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
     {
         if (IsFull)
             Resize();
+        if (obj is null)
+            Append(obj);
         if (obj.As<List>(out _))
             foreach (var item in obj.CList())
                 Append(item);
@@ -405,7 +406,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         if (IsFull)
             Resize();
 
-        Value[Count++] = obj.Copy();
+        Value[Count++] = obj is null ? null : obj.Copy();
 
         return this;
     }

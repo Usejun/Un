@@ -1,8 +1,0 @@
-﻿s1 = set()
-s2 = { 1, 2, 3, 4, 5, 6, 7, 8 }
-
-s1.add(1)
-
-writeln(type(s1))
-writeln(type(s2))
-writeln(s1, s2)

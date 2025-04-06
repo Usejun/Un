@@ -22,7 +22,7 @@ public class Timer : Ref<System.Threading.Timer>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {        
-        field.Merge(args, [("func", null!), ("due_time", Int.MinusOne), ("period", Int.MinusOne)], 1);
+        field.Merge(args, [("func", null!), ("due_time", Int.MinusOne), ("period", Int.MinusOne)]);
 
         if (!field["func"].As<Fun>(out var fun) || fun.Length > 0 ||
             !field["due_time"].As<Int>(out var dueTime) ||

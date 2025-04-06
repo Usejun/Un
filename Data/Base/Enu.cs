@@ -26,7 +26,7 @@ public class Enu : Obj
 
     public override Obj Init(Collections.Tuple args, Field field) 
     {
-        field.Merge(args, [("value", null!)], 1);
+        field.Merge(args, [("value", null!)]);
 
         if (field["value"].As<Int>(out var i))
              return new EnuElm($"{number[(int)i.Value].Value}", (int)i.Value);

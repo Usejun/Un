@@ -31,51 +31,61 @@ public class Field
 
     public void Set(StringBuffer name, Obj value) => Set(name.ToString(), value);
 
-    public void Merge(Field field)
+    public void Merge(Collections.Tuple tuple, bool isForced = true)
     {
-        foreach ((var key, var value) in field.field)
-            Set(key, value);            
+        for (int i = 0; i < tuple.Count; i++)
+            if (isForced || !Key(tuple.Names[i]))
+                Set(tuple.Names[i], tuple[i]);            
     }
 
-    public void Merge(Collections.Tuple tuple, List<(string name, Obj obj)> args, int len, bool isDynamic = false)
+    public void Merge(Params args, bool isForced = true)
     {
-        foreach ((var name, Obj obj) in args)
-            Set(name, obj);
-            
-        Merge(tuple.field);
+        foreach ((var key, var value) in args)
+            if (isForced || !Key(key))
+                Set(key, value);
+    }
 
-        int i = 0, j = 0;
+    public void Merge(Field field, bool isForced = true)
+    {
+        foreach ((var key, var value) in field.field)
+            if (isForced || !Key(key))
+                Set(key, value);            
+    }
 
-        while (j < len)
-        {
-            if (string.IsNullOrEmpty(tuple.Names[i]))
-            {
-                Set(args[i].name, tuple[i]);                
-                j++;
-            }
-            else if (Key(tuple.Names[i]))
-                Set(tuple.Names[i], tuple[i]);
-            else
-                throw new ArgumentError();
-            i++;
-        }
+    public void Merge(Collections.Tuple parameters, Params args, bool isDynamic = false)
+    {        
+        if (!parameters.IsArgument())
+            throw new ArgumentError("invlid arguments positions.");
+        if (!args.Match(parameters))
+            throw new ArgumentError("not matched arguments positions.");
+
+        Merge(args);
+
+        int positions = args.Positional();       
+
+        for (int i = 0; i < positions; i++)
+            this[args.Names[i]] = parameters[i];
+
+        Merge(parameters, false);
 
         if (isDynamic)
         {
-            var value = field[args[^1].name];
-            List list = [];
+            if (!Get(args.Names[^1], out var val))
+                throw new ArgumentError("invalid argument name.");
+                
+            List l = val switch
+            {
+                List => val.As<List>(),
+                null => [],
+                _ => new List().Append(val),
+            };
 
-            if (value is not null)
-                list.Append(value);
+            for (int i = positions; i < parameters.Count; i++)
+                if (string.IsNullOrEmpty(parameters.Names[i]))
+                    l.Append(parameters[i]);
 
-            for (i = len; i < tuple.Count; i++)
-                if (string.IsNullOrEmpty(tuple.Names[i]))
-                    list.Append(tuple[i]);
-                else if (Key(tuple.Names[i]))
-                    Set(tuple.Names[i], tuple[i]);
-
-            Set(args[^1].name, list);
-        }        
+            Set(args.Names[^1], l);
+        }
     }
     
     public void Remove(string name)

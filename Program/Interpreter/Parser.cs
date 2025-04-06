@@ -474,7 +474,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                         {
                             Obj index = Obj.Parse(token.value, Field);
 
-                            var.SetItem(index, Assign(var.GetItem(index, Field.Null), value, analyzedTokens[assign].type).Copy(), Field.Null);
+                            var.SetItem(Assign(var.GetItem(index, Field.Null), value, analyzedTokens[assign].type).Copy(), index, Field.Null);
                         }
                         else if (token.type == Token.Type.Property)
                         {
@@ -484,9 +484,7 @@ public class Parser(string[] code, Field field, int index = 0, int line = 0, int
                                 var.Set(token.value.ToString(), Assign(var.Get(token.value), value, analyzedTokens[assign].type).Copy());
                         }
                         else throw new SyntaxError("invalid assign");
-
-                        i += 2;
-
+                        
                         break;
                     }
                     else

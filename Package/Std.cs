@@ -8,6 +8,10 @@ public class Std : Obj, IPackage
 
     private readonly Dictionary<string, Dictionary<int, Obj>> memo = []; 
 
+    private readonly StreamWriter sw = new(Console.OpenStandardOutput()) {
+        AutoFlush = false
+    };
+
     public override Str Type() => new(Name);
 
     Obj Write(Field field)
@@ -17,16 +21,18 @@ public class Std : Obj, IPackage
 
         foreach (var obj in list)
         {
-            Console.Write(obj.CStr().Value);
-            Console.Write(field["sep"].CStr().Value);
+            sw.Write(obj.CStr().Value);
+            sw.Write(field["sep"].CStr().Value);
         }
+        sw.Flush();
         return None;
     }
 
     Obj Writeln(Field field)
     {
         Write(field);
-        Console.Write(field["end"].CStr().Value);
+        sw.Write(field["end"].CStr().Value);
+        sw.Flush();
         return None;
     }
 
@@ -45,7 +51,7 @@ public class Std : Obj, IPackage
         if (!field.Key("default"))
             throw new ValueError("invalid argument");
 
-        if (!field.Key("length") || !field["length"].As<List>(out var length))
+        if (!field.Key("lengths") || !field["lengths"].As<List>(out var length))
             throw new ValueError("invalid argument");
         
         List Create(List lengths)
@@ -126,10 +132,13 @@ public class Std : Obj, IPackage
             throw new ArgumentError();
         if (!field["end"].As<Int>(out var end))
             throw new ValueError();
+        if (!field.Get("step", out var v) ||
+            !field["step"].As<Int>(out var v2))
+            throw new ValueError();
 
-        int diff = (int)(end.Value - start.Value);
-        int step = field.Get("step", out var v1) && v1.As<Int>(out var v2) ? 
-                   v2.Value > int.MaxValue ? throw new ArgumentError("step must be less than 2^32.") : (int)v2.Value : 1;
+        int diff = (int)(end.Value - start.Value);        
+        int step = (int)v2.Value;
+
         Obj[] objs = new Obj[diff];
 
         for (int i = 0; i < diff; i+=step)
@@ -391,7 +400,7 @@ public class Std : Obj, IPackage
 
     public IEnumerable<Fun> Import() =>
     [
-        new NativeFun("write", 0, Write, [("sep", new Str(Literals.Space)), ("values",null!)], true),
+        new NativeFun("write", 0, Write, [("sep", new Str(Literals.Space)), ("values", null!)], true),
         new NativeFun("writeln", 0, Writeln, [("sep", new Str(Literals.Space)), ("end", new Str(Literals.NewLine)), ("values", null!)], true),
         new NativeFun("clear", 0, Clear, []),
         new NativeFun("readln", 0, Readln, []),
@@ -401,7 +410,7 @@ public class Std : Obj, IPackage
         new NativeFun("field", 0, Field, [("value", None)]),
         new NativeFun("prop", 0, Prop, [("value", None)]),
         new NativeFun("package", 0, Package, []),
-        new NativeFun("range", 2, Range, [("start", null!), ("end", null!), ("step", null!)]),
+        new NativeFun("range", 2, Range, [("start", null!), ("end", null!), ("step", Int.One)]),
         new NativeFun("len", 1, Len, [("value", null!)]),
         new NativeFun("hash", 1, Hash, [("value", null!)]),
         new NativeFun("open", 1, Open, [("value", null!)]),

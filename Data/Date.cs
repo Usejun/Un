@@ -13,7 +13,7 @@ public class Date : Val<DateTime>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        field.Merge(args, [("value", null!)], 1);
+        field.Merge(args, [("value", null!)]);
         var value = field["value"];
 
         Value = value switch

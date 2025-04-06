@@ -20,7 +20,7 @@ public class Json : Obj
 
     public override Obj Init(Un.Collections.Tuple args, Field field)
     {
-        field.Merge(args, [("value", null!)], 1);
+        field.Merge(args, [("value", null!)]);
 
         if (!field["value"].As<Str>(out var str))
             top = new JsonParser(str.Value).Parse();

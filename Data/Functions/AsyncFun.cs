@@ -6,7 +6,7 @@ public class AsyncFun : LocalFun
 {
     public AsyncFun(string name) : base(name) { }
 
-    public AsyncFun(string name, string[] code, int i = 4) : base(name, code, i) { }
+    public AsyncFun(string name, string[] code) : base(name, code) { }
 
     public override Obj Call(Field field)
     {

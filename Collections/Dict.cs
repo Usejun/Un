@@ -65,7 +65,7 @@ public class Dict : Ref<Dictionary<Obj, Obj>>
                 throw new ValueError("invalid argument");
 
             return new Bool(self.Value.ContainsValue(field["value"]));
-        }, [("key", null!)]));
+        }, [("value", null!)]));
         field.Set("clear", new NativeFun("clear", 0, field =>
         {
             if (!field[Literals.Self].As<Dict>(out var self))

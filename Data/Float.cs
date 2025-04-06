@@ -10,7 +10,7 @@ public class Float : Val<double>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        field.Merge(args, [("value", Int.Zero)], 0);
+        field.Merge(args, [("value", Int.Zero)]);
         Value = field["value"].CFloat().Value;
 
         return this;

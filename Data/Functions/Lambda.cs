@@ -23,7 +23,7 @@ public class Lambda : LocalFun
             Args.Add((arg, null!));
         
 
-        Length = Args.Count;
+        Length = Args.Len;
         this.code = [$"{Literals.Return} {code}"];
     }
 

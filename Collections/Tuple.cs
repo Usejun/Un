@@ -4,7 +4,7 @@ namespace Un.Collections;
 
 public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
 {
-    public static Tuple Empty => [];
+    public static Tuple Empty => new();
 
     public string[] Names { get; protected set; }
 
@@ -44,6 +44,13 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
 
     public Tuple() : base("tuple", [])
     {
+        Names = [];
+        Count = 0;
+    }
+
+    public Tuple(int capacity) : base("tuple", new Obj[capacity])
+    {
+        Names = new string[capacity];
         Count = 0;
     }
 
@@ -54,9 +61,11 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
         List data = [];
         List<string> names = [];
 
-        int index = 0, depth = 0;
+        int index = 0;
+        int depth = 0;
         StringBuffer buffer = new();
-        string name = "", value;
+        string name = "";
+        string value;
         var isString = false;
 
         while (index < str.Length)
@@ -84,10 +93,6 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
                     data.Append(Calculator.All(value, field));
                 
                 names.Add(name);
-
-                if (!string.IsNullOrEmpty(name))
-                    this.field.Set(name, data[^1]);
-
                 name = "";
                 buffer.Clear();
             }
@@ -103,8 +108,9 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
         if (!string.IsNullOrWhiteSpace(value))
             data.Append(Calculator.All(value, field));
 
-        if (!string.IsNullOrEmpty(name))
-            this.field.Set(name, data[^1]);
+        for (int i = 0; i < Count; i++)
+            if (!string.IsNullOrEmpty(names[i]))
+                field.Set(names[i], data[i]);
 
         Value = [.. data];
         Names = [.. names];
@@ -118,6 +124,17 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
 
         bool IsName() => !isString && depth == 0 && str[index] == Literals.CAssign;
 
+    }
+
+    public Tuple(string[] names, Obj[] values) : base("tuple", values)
+    {
+        Names = names;
+        
+        for (int i = 0; i < Count; i++)
+            if (!string.IsNullOrEmpty(names[i]))
+                field.Set(names[i], values[i]);
+
+        Count = names.Length;
     }
 
     public Tuple(params Obj[] values) : base("tuple", new Obj[values.Length])
@@ -214,6 +231,41 @@ public class Tuple : Ref<Obj[]>, IEnumerable<Obj>
         }
 
         return hash;
+    }
+
+
+    public bool IsArgument()
+    {
+        int start = 0, end = 0, len = Names.Length;
+
+        while (start < len && string.IsNullOrEmpty(Names[start]))
+            ++start;
+
+        while (end >= 0 && Names.Length != 0 && string.IsNullOrEmpty(Names[end]))
+            --end;
+
+        for (int i = start + 1; i < end; i++)
+            if (string.IsNullOrEmpty(Names[i]))        
+                return false;
+        return true;
+    }
+
+    public int Positional(int start = 0)
+    {
+        int count = 0;
+        for (int i = start; i < Count; i++)
+            if (string.IsNullOrEmpty(Names[i]))
+                ++count;
+        return count;
+    }
+
+    public int Named(int start = 0)
+    {
+        int count = 0;
+        for (int i = start; i < Count; i++)
+            if (!string.IsNullOrEmpty(Names[i]))
+                ++count;
+        return count;
     }
 
     public IEnumerator<Obj> GetEnumerator() => new Enumerator(this);

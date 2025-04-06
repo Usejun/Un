@@ -303,7 +303,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Str Type()
     {
-        if (Fun.Method(this, Literals.Type, new(), new(), out var result) && result is Str value)
+        if (Fun.Method(this, Literals.Type, [], new(), out var result) && result is Str value)
             return value;
         if (Super != null)
             return Super.Type();
@@ -313,7 +313,7 @@ public class Obj : IComparable<Obj>
 
     public virtual Str CStr()
     {
-        if (Fun.Method(this, Literals.CStr, Collections.Tuple.Empty, new(), out var result) && result is Str value)
+        if (Fun.Method(this, Literals.CStr, [], new(), out var result) && result is Str value)
             return value;
         if (Super != null)
             return Super.CStr();
@@ -451,6 +451,14 @@ public class Obj : IComparable<Obj>
         return false;
     }
 
+    public T As<T>()
+        where T : Obj
+    {
+        if (this is T t)
+            return t;
+        throw new TypeError();
+    }
+
     public bool As<T>(out T value)
         where T : Obj
     {
@@ -505,9 +513,9 @@ public class Obj : IComparable<Obj>
         if (long.TryParse(str, out var l)) return new Int(l);
         if (int.TryParse(str, out var i)) return new Int(i);
         if (double.TryParse(str, out var d)) return new Float(d);
-        if (Lambda.IsLambda(str)) return new Lambda(str);
         if (Str.IsDoubleStr(str)) return new Str(str.Trim(Literals.Double));
         if (Str.IsSingleStr(str)) return new Str(str.Trim(Literals.Single));
+        if (Lambda.IsLambda(str)) return new Lambda(str);
 
         throw new SyntaxError();
     }

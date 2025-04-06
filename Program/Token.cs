@@ -1,6 +1,6 @@
 ﻿namespace Un;
 
-public class Token
+public partial class Token
 {
     public static Token None => new(Literals.None, Type.None);
 

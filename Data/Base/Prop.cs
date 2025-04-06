@@ -36,8 +36,8 @@ public class Prop : Obj
     public override Bool Eq(Obj arg, Field field) => Getter.Call([], new()).Eq(arg, field);
     public override Bool Lt(Obj arg, Field field)  => Getter.Call([], new()).Lt(arg, field);
     public override Int Len() => Getter.Call([], new()).Len();
-    public Int Hash() => Getter.Call([], new()).Hash();
-    public Str Type() => Getter.Call([], new()).Type();
+    public override Int Hash() => Getter.Call([], new()).Hash();
+    public override Str Type() => Getter.Call([], new()).Type();
     public override Str CStr() => Getter.Call([], new()).CStr();
     public override Bool CBool() => Getter.Call([], new()).CBool();
     public override Float CFloat() => Getter.Call([], new()).CFloat();

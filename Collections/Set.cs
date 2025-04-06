@@ -17,10 +17,10 @@ public class Set : Ref<HashSet<Obj>>
 
     public override Obj Init(Tuple args, Field field)
     {
-        field.Merge(args, [("values", new List())], 0, true);
+        field.Merge(args, [("values", new List())], true);
         Value.Clear();
 
-        if (field["values"].As<List>(out var list))
+        if (!field["values"].As<List>(out var list))
             throw new ClassError();
 
         foreach (var arg in list)

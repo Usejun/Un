@@ -11,7 +11,7 @@ public class Bool : Val<bool>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        field.Merge(args, [("value", False)], 0);
+        field.Merge(args, [("value", False)]);
         Value = field["value"].CBool().Value;
 
         return this;

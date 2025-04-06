@@ -17,7 +17,7 @@ public class Math : Obj, IPackage, IStatic
         if (count == 0) return new Int(0);
         if (count == 1) return x;
         if (count % 2 == 1) return x.Mul(Pow(new Collections.Tuple(x, new Int(count - 1)), Field.Null), Field.Null);
-        var p = Pow(new Collections.Tuple(x, new Int(count / 2)), Un.Field.Null);
+        var p = Pow(new Collections.Tuple(x, new Int(count / 2)), Field.Null);
         return p.Mul(p, Field.Null);
     }
 
@@ -59,7 +59,7 @@ public class Math : Obj, IPackage, IStatic
 
         for (long i = 2; i <= k.Value; i++)
             sum /= i;
-
+        
         return new(sum);
     }
 

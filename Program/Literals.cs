@@ -181,5 +181,4 @@ public static class Literals
     public const char A = 'A';
     public const char E = 'E';
     public const char F = 'F';
-
 }

@@ -16,7 +16,7 @@ public class Int : Val<long>
 
     public override Obj Init(Collections.Tuple args, Field field)
     {
-        field.Merge(args, [("value", Zero)], 0);
+        field.Merge(args, [("value", Zero)]);
         Value = field["value"].CInt().Value;
 
         return this;
