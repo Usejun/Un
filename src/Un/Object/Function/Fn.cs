@@ -1,0 +1,174 @@
+using Un.Object.Primitive;
+using Un.Object.Collections;
+
+namespace Un.Object.Function;
+
+public class Fn : Obj
+{
+    public string Name { get; set; }
+    public List<Arg> Args { get; set; }
+    public string ReturnType { get; set; }    
+
+    protected void Bind(Scope scope, Tup args)
+    {
+        var unnamed = new List<Obj>();
+        var extraNamed = new Scope();
+
+        for (int i = 0; i < args.Count; i++)
+        {
+            var name = args.Name[i];
+            var val = args.Value[i];
+
+            if (string.IsNullOrEmpty(name))
+            {
+                unnamed.Add(val);
+            }
+            else
+            {
+                if (scope.ContainsKey(name))
+                    throw new Error($"argument '{name}' provided multiple times.");
+                extraNamed[name] = val;
+            }
+        }
+
+        int unnamedIndex = 0;
+        var argNames = new HashSet<string>();
+        Arg positionalArg = null;
+        Arg keywordArg = null;
+
+        foreach (var arg in Args)
+        {
+            argNames.Add(arg.Name);
+
+            if (arg.IsEssential)
+            {
+                if (unnamedIndex < unnamed.Count)
+                {
+                    scope[arg.Name] = unnamed[unnamedIndex++];
+                }
+                else if (extraNamed.TryGetValue(arg.Name, out var val))
+                {
+                    scope[arg.Name] = val;
+                    extraNamed.Remove(arg.Name);
+                }
+                else
+                {
+                    throw new Error($"missing required argument: '{arg.Name}'");
+                }
+            }
+            else if (extraNamed.TryGetValue(arg.Name, out var val))
+            {
+                scope[arg.Name] = val;
+                extraNamed.Remove(arg.Name);
+            }
+            else if (arg.IsOptional)
+            {
+                scope[arg.Name] = arg.DefaultValue;
+            }
+
+            if (arg.IsPositional)
+                positionalArg = arg;
+
+            if (arg.IsKeyword)
+                keywordArg = arg;
+        }
+
+        if (unnamedIndex < unnamed.Count)
+        {
+            if (positionalArg != null)
+            {
+                var rest = unnamed.Skip(unnamedIndex);
+                scope[positionalArg.Name] = new Tup([..rest], []);
+            }
+            else
+            {
+                throw new Error("function does not accept positional arguments.");
+            }
+        }
+
+        if (extraNamed.Count > 0)
+        {
+            if (keywordArg != null)
+            {
+                var dict = new Dict();
+                foreach (var (k, v) in extraNamed)
+                    dict.Value.Add(new Str(k), v);
+                scope[keywordArg.Name] = dict;
+            }
+            else
+            {
+                var unexpected = extraNamed.Keys.First();
+                throw new Error($"unexpected keyword argument: '{unexpected}'");
+            }
+        }
+    }
+
+
+
+    public static List<Arg> GetArgs(List<Node> args, Scope scope)
+    {
+        List<Arg> result = [];
+        List<Node> buf = [];
+
+        string name = "";
+        string argType = "";
+        bool isOptional = false;
+        bool isPositional = false;
+        bool isKeyword = false;
+
+        bool hasDefault = false;
+
+        for (int i = 0; i < args.Count; i++)
+        {
+            (_, var type, _) = args[i];
+
+            if (hasDefault)
+                buf.Add(args[i]);
+            else if (type == TokenType.Comma)
+            {
+                result.Add(new Arg(name)
+                {
+                    Type = argType,
+                    IsEssential = !isOptional && !isPositional && !isKeyword,
+                    IsOptional = isOptional,
+                    IsPositional = isPositional,
+                    IsKeyword = isKeyword,
+                    DefaultValue = hasDefault ? Executer.On(buf, scope) : Null,
+                });
+
+                (argType, name) = ("", "");
+                (isOptional, isPositional, isKeyword, hasDefault) = (false, false, false, false);
+
+                buf.Clear();
+            }
+            else if (type == TokenType.Asterisk)
+                isPositional = true;
+            else if (type == TokenType.DoubleAsterisk)
+                isKeyword = true;
+            else if (type == TokenType.Assign)
+            {
+                hasDefault = true;
+                isOptional = true;
+            }
+            else if (type == TokenType.Colon)
+            {
+                argType = args[i + 1].Value;
+                i++;
+            }
+            else if (type == TokenType.Identifier)
+                name = args[i].Value;
+        }
+
+        result.Add(new Arg(name)
+        {
+            Type = argType,
+            IsEssential = !isOptional && !isPositional && !isKeyword,
+            IsOptional = isOptional,
+            IsPositional = isPositional,
+            IsKeyword = isKeyword,
+            DefaultValue = hasDefault ? Executer.On(buf, scope) : Null,
+        });
+
+        return result;
+    }
+}
