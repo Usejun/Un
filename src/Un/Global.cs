@@ -153,6 +153,8 @@ public static class Global
         return returned;
     }
 
+    public static Obj Go() => Run(global);
+
     public static Obj Run(Scope scope)
     {
         var tokenizer = new Tokenizer();

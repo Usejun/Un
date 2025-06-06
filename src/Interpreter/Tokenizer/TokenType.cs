@@ -13,8 +13,6 @@ public enum TokenType
     DoubleQuestion,
     Dot, Question,
 
-    Variable,
-
     Assign, PlusAssign, MinusAssign,
     AsteriskAssign, DoubleAsteriskAssign,
     SlashAssign, DoubleSlashAssign,
@@ -55,7 +53,7 @@ public enum TokenType
     True, False,
     If, ElIf, Else, Match,
     For, While,
-    Break, Continue, Return,
+    Break, Skip, Return,
     Use, Using, Sub,
     Comment,
 
@@ -64,9 +62,9 @@ public enum TokenType
     Integer, Float, String, FString, Boolean,
     List, Dict, Set, Tuple, Pair,
 
-    Call, AsyncCall, TryCall,
+    Call,
 
-    Try, Catch, Fin, Throw,
-    
-    Body,
+    Go, Wait,
+
+    Try, Catch, Fin,
 }

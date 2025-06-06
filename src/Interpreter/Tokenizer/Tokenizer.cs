@@ -20,7 +20,11 @@ public class Tokenizer
                 Read();
                 continue;
             }
-            else if (IsComment(peek)) break;
+            else if (IsComment(peek))
+            {
+                code.Move(0, code.Line + 1);
+                break;
+            }
             else if (IsString(peek)) token = GetStringToken();
             else if (IsFString(peek)) token = GetFStringToken();
             else if (IsNumber(peek)) token = GetNumberToken();
@@ -185,7 +189,7 @@ public class Tokenizer
             "for" => TokenType.For,
             "while" => TokenType.While,
             "break" => TokenType.Break,
-            "continue" => TokenType.Continue,
+            "skip" => TokenType.Skip,
             "use" => TokenType.Use,
             "using" => TokenType.Using,
             "class" => TokenType.Class,
@@ -201,8 +205,9 @@ public class Tokenizer
             "not" => TokenType.Not,
             "xor" => TokenType.Xor,
             "match" => TokenType.Match,
-            "sub" => TokenType.Sub,
             "as" => TokenType.As,
+            "go" => TokenType.Go,
+            "wait" => TokenType.Wait,
             _ => TokenType.Identifier
         });
     }
@@ -212,19 +217,21 @@ public class Tokenizer
 
         switch (chr)
         {
-            case '=':
+            case '|':
+                if (Now('>'))
+                    return new Token($"{chr}{Read()}", TokenType.Sub);
                 if (Now('='))
-                    return new Token($"{chr}{Read()}", TokenType.Equal);
-                return new Token($"{chr}", TokenType.Assign);
+                    return new Token($"{chr}{Read()}", TokenType.BOrAssign);
+                return new Token($"{chr}", TokenType.BOr);       
             case '-':
                 if (Now('>'))
                     return new Token($"{chr}{Read()}", TokenType.Return);
                 return new Token($"{chr}", TokenType.Minus);
+            case '=':
             case '+':
             case '%':
             case '^':
             case '&':
-            case '|':       
             case '!':
                 if (Now('='))
                     return new Token($"{chr}{Read()}", chr switch
@@ -236,6 +243,7 @@ public class Tokenizer
                         '&' => TokenType.BAndAssign,
                         '|' => TokenType.BOrAssign,                        
                         '!' => TokenType.Unequal,
+                        '=' => TokenType.Equal,
                         _ => TokenType.Error
                     });
                 return new Token($"{chr}", chr switch
@@ -246,7 +254,8 @@ public class Tokenizer
                         '^' => TokenType.BXor,
                         '&' => TokenType.BAnd,
                         '|' => TokenType.BOr,
-                        '!' => TokenType.Unequal,
+                        '!' => TokenType.BNot,
+                        '=' => TokenType.Assign,
                         _ => TokenType.Error
                     });
             case '/':
@@ -342,15 +351,12 @@ public class Tokenizer
             _ => ' ',
         };
 
-        int depth = 1;
-
         while (!code.EOF)
         {
             Token token;
             var peek = Peek();
-            depth = peek == bracket ? depth + 1 : peek == closer ? depth - 1 : depth;
-
-            if (depth == 0)
+            
+            if (peek == closer)
                 break;
 
             if (char.IsWhiteSpace(peek))

@@ -86,18 +86,6 @@ public static class Convert
         return new(str);
     }
 
-    public static Lambda ToLambda(Node node, Scope scope)
-    {
-        var (_, _, children) = node;
-        return new()
-        {
-            Name = "lambda",
-            Args = Fn.GetArgs(children[0].Children, scope),
-            Nodes = children[1].Children,
-            Closure = scope,
-        };
-    }
-
     public static Obj Auto(Node node, Scope scope)
     {
         var (value, type, _) = node;

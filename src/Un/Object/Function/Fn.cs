@@ -8,6 +8,7 @@ public class Fn : Obj
     public string Name { get; set; }
     public List<Arg> Args { get; set; }
     public string ReturnType { get; set; }    
+    public Scope Closure { get; set; }
 
     protected void Bind(Scope scope, Tup args)
     {

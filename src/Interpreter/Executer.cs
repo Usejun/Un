@@ -36,33 +36,6 @@ public static class Executer
                 else
                     values.Push(value.As<Fn>().Call(args));
             }
-            else if (type == TokenType.TryCall)
-            {
-                try
-                {
-                    var value = values.Pop();
-                    var args = Convert.ToTuple(node, scope);
-
-                    if (value.Type.EndsWith(".__init__"))
-                        values.Push(Global.Class[value.Type.Split('.')[0]].Init(args));
-                    else
-                        values.Push(value.As<Fn>().Call(args));
-                }
-                catch
-                {
-                    values.Push(Obj.None);
-                }
-            }
-            else if (type == TokenType.AsyncCall)
-            {
-                var value = values.Pop();
-                var args = Convert.ToTuple(node, scope);
-
-                if (value.Type.EndsWith(".__init__"))
-                    throw new Error("class constructor cannot be asynchronous");
-
-                values.Push(new Object.Task(new Task<Obj>(() => value.As<Fn>().Call(args))));
-            }
             else if (type == TokenType.Identifier)
             {
                 if (scope.TryGetValue(node.Value, out Obj? value))
@@ -85,6 +58,57 @@ public static class Executer
                 var obj = values.Pop();
                 var prop = node.Value;
                 values.Push(obj.Has(prop) ? obj.GetAttr(prop) : Obj.None);
+            }
+            else if (type == TokenType.Func)
+            {
+                Fn fn = node.Value == "fn"
+                ? new PFn()
+                {
+                    Name = node.Value,
+                    Args = Fn.GetArgs(node.Children[0].Children, scope),
+                    Nodes = node.Children[2..],
+                    Closure = scope,
+                }
+                : new LFn()
+                {
+                    Name = node.Value,
+                    Args = Fn.GetArgs(node.Children[0].Children, scope),
+                    Body = Global.File.GetBody(),
+                    Closure = scope,
+                };
+
+                if (node.Value != "fn")
+                    scope[node.Value] = fn;
+
+                values.Push(fn);
+            }
+            else if (type == TokenType.Go)
+            {
+                var fn = values.Pop();
+                if (fn is not Fn function)
+                    throw new Error($"cannot call {fn.Type} as a function.");
+
+                values.Push(new GFn()
+                {
+                    Name = function.Name,
+                    Func = function,
+                    Args = function.Args,
+                    Closure = function.Closure,
+                });
+            }
+            else if (type == TokenType.Wait)
+            {
+                var fn = values.Pop();
+                if (fn is not Fn function)
+                    throw new Error($"cannot call {fn.Type} as a function.");
+
+                values.Push(new WFn()
+                {
+                    Name = function.Name,
+                    Func = function,
+                    Args = function.Args,
+                    Closure = function.Closure,
+                });
             }
             else if (type.IsBinaryOperator())
             {
@@ -137,19 +161,6 @@ public static class Executer
                     _ => throw new Error($"unary operator {type} is not implemented.")
                 });
             }
-            else if (type == TokenType.Func)
-            {
-                if (node.Children.Count == 1)
-                {
-                    
-                }
-                else if (node.Children.Count == 2)
-                {
-                    
-                }
-
-            }
-   
         }
 
         return values.Count == 1 ? values.Pop() : values.Count == 0 ? Obj.None : throw new Error("invalid expression");

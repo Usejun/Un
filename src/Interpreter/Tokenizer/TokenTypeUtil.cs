@@ -26,7 +26,7 @@ public static class TokenTypeUtil
 
             // 기타 연산자 
             TokenType.DoubleQuestion or TokenType.Question or TokenType.Indexer or TokenType.Slicer or
-            TokenType.QuestionDot or TokenType.In or TokenType.Is => true,
+            TokenType.QuestionDot or TokenType.In or TokenType.Is or TokenType.Go or TokenType.Wait or TokenType.Call => true,
             _ => false,
         };
     
@@ -98,8 +98,9 @@ public static class TokenTypeUtil
     public static int GetPrecedence(this TokenType type) => type switch
     {
         TokenType.LParen => -1,
-        TokenType.Indexer or TokenType.Slicer or TokenType.NullableProperty or TokenType.Property => 1,
-        TokenType.DoubleAsterisk => 2,
+        TokenType.Indexer or TokenType.Slicer or TokenType.NullableProperty or TokenType.Property => 0,
+        TokenType.Go or TokenType.Wait => 1,
+        TokenType.Call => 2,
         TokenType.BNot => 3,
         TokenType.Asterisk or TokenType.Slash or TokenType.DoubleSlash or TokenType.Percent => 4,
         TokenType.Plus or TokenType.Minus => 5,
@@ -107,25 +108,26 @@ public static class TokenTypeUtil
         TokenType.BAnd => 7,
         TokenType.BXor => 8,
         TokenType.BOr => 9,
+        TokenType.DoubleAsterisk => 10,
 
         TokenType.In or TokenType.Is or TokenType.Equal or TokenType.Unequal or TokenType.LessThan or TokenType.LessOrEqual or
-        TokenType.GreaterThan or TokenType.GreaterOrEqual => 10,
+        TokenType.GreaterThan or TokenType.GreaterOrEqual => 11,
 
         TokenType.Assign or TokenType.PlusAssign or TokenType.MinusAssign or TokenType.AsteriskAssign or TokenType.SlashAssign or
         TokenType.DoubleSlashAssign or TokenType.DoubleAsteriskAssign or TokenType.PercentAssign or TokenType.BAndAssign or
-        TokenType.BOrAssign or TokenType.BXorAssign or TokenType.LeftShiftAssign or TokenType.RightShiftAssign => 11,
+        TokenType.BOrAssign or TokenType.BXorAssign or TokenType.LeftShiftAssign or TokenType.RightShiftAssign => 12,
 
-        TokenType.Not => 12,
+        TokenType.Not => 13,
 
-        TokenType.And => 13,
+        TokenType.And => 14,
 
-        TokenType.Xor => 14,
+        TokenType.Xor => 15,
 
-        TokenType.Or => 15,
+        TokenType.Or => 16,
 
-        TokenType.DoubleQuestion => 16,
+        TokenType.DoubleQuestion => 17,
 
-        TokenType.RParen => 17,
+        TokenType.RParen => 18,
         _ => 0,
     };
 }

@@ -1,2 +1,8 @@
-fn a(b)->int
-    write(b)
+fn test(func)
+    delay(1.0)
+    -> func(2, 2)
+
+mul = fn(a, b) -> a * b
+|> a = wait test(mul)
+|> b = wait test(mul)
+write(a, b)

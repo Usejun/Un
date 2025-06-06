@@ -21,10 +21,10 @@ public class Std : IPack
         { "write", new NFn()
             {
                 Name = "write",
-                Args = [ 
+                Args = [
                    new Arg("value") {
                     Type = "tuple",
-                    IsPositional = true,                    
+                    IsPositional = true,
                 }, new Arg("sep") {
                     Type = "str",
                     IsOptional = true,
@@ -61,20 +61,20 @@ public class Std : IPack
                     return Obj.None;
                 }
             }
-        },  
+        },
         { "read", new NFn()
             {
                 Name = "read",
                 ReturnType = "str",
-                Args = [ 
+                Args = [
                    new Arg("prompt") {
                     Type = "str",
                     IsOptional = true,
-                    DefaultValue = new Str("")                    
+                    DefaultValue = new Str("")
                 }, new Arg("stream") {
                     Type = "stream",
                     IsOptional = true,
-                    DefaultValue = sr                    
+                    DefaultValue = sr
                 }],
                 Func = (args) =>
                 {
@@ -96,10 +96,10 @@ public class Std : IPack
         { "log", new NFn()
             {
                 Name = "log",
-                Args = [ 
+                Args = [
                    new Arg("value") {
                     Type = "tuple",
-                    IsPositional = true,                    
+                    IsPositional = true,
                 }, new Arg("sep") {
                     Type = "str",
                     IsOptional = true,
@@ -124,14 +124,14 @@ public class Std : IPack
                     return Obj.None;
                 }
             }
-        },  
+        },
         { "len", new NFn()
             {
                 Name = "len",
                 ReturnType = "any",
-                Args = [ 
+                Args = [
                    new Arg("value") {
-                    IsEssential = true,                    
+                    IsEssential = true,
                 }],
                 Func = (args) => args["value"].Len()
             }
@@ -150,7 +150,7 @@ public class Std : IPack
         { "exit", new NFn()
             {
                 Name = "exit",
-                Args = [ 
+                Args = [
                    new Arg("code") {
                     Type = "int",
                     IsOptional = true,
@@ -167,9 +167,9 @@ public class Std : IPack
             {
                 Name = "type",
                 ReturnType = "str",
-                Args = [ 
+                Args = [
                    new Arg("value") {
-                    IsEssential = true,                    
+                    IsEssential = true,
                 }],
                 Func = (args) => new Str(args["value"].Type)
             }
@@ -178,28 +178,28 @@ public class Std : IPack
             {
                 Name = "array",
                 ReturnType = "list[T]",
-                Args = [ 
+                Args = [
                    new Arg("default") {
-                    IsEssential = true,                    
+                    IsEssential = true,
                 }, new Arg("size") {
                     Type = "tuple[int]",
                     IsPositional = true,
                     DefaultValue = new Tup([new Int(1)], [])
                 }],
-                Func = (args) => 
+                Func = (args) =>
                 {
                     return Create(args["size"].ToList());
 
                     List Create(List lengths)
                     {
                         List list = [];
-    
+
                         if (!lengths[0].As<Int>(out var count))
                             throw new Error("length argument is expected an integer");
 
                         for (int i = 0; i < count.Value; i++)
                             list.Append(lengths.Count == 1 ? args["default"].Clone() : Create([.. lengths.Value[1..]]));
-    
+
                         return list;
                     }
                 }
@@ -216,7 +216,7 @@ public class Std : IPack
                     new Arg("count") {
                         IsOptional = true,
                         DefaultValue = new Int(-1),
-                    }, 
+                    },
                     new Arg("step") {
                         IsOptional = true,
                         DefaultValue = new Int(1),
@@ -224,8 +224,8 @@ public class Std : IPack
                 ],
                 Func = (args) =>
                 {
-                    long start = args["start"].ToInt().Value, 
-                         count = args["count"].ToInt().Value, 
+                    long start = args["start"].ToInt().Value,
+                         count = args["count"].ToInt().Value,
                          step  = args["step"].ToInt().Value;
 
                     if (count == -1)
@@ -254,7 +254,7 @@ public class Std : IPack
                 Func = (args) => new Int(args["value"].GetHashCode())
             }
         },
-        { "open", new NFn() 
+        { "open", new NFn()
             {
                 Name = "open",
                 ReturnType = "stream",
@@ -281,16 +281,16 @@ public class Std : IPack
                 Func = (args) => {
                     var tuple = args["value"].ToTuple();
 
-                    if (tuple.Count == 0) 
+                    if (tuple.Count == 0)
                         throw new Error("expected more than one argument");
 
                     if (tuple.Count == 1)
                     {
-                        if (tuple[0].As<List>(out var l)) 
+                        if (tuple[0].As<List>(out var l))
                             tuple = l.ToTuple();
                         else if (tuple[0].As<Tup>(out var t))
                             tuple = t;
-                        else 
+                        else
                             return tuple[0];
                     }
 
@@ -313,16 +313,16 @@ public class Std : IPack
                 Func = (args) => {
                     var tuple = args["value"].ToTuple();
 
-                    if (tuple.Count == 0) 
+                    if (tuple.Count == 0)
                         throw new Error("expected more than one argument");
 
                     if (tuple.Count == 1)
                     {
-                        if (tuple[0].As<List>(out var l)) 
+                        if (tuple[0].As<List>(out var l))
                             tuple = l.ToTuple();
                         else if (tuple[0].As<Tup>(out var t))
                             tuple = t;
-                        else 
+                        else
                             return tuple[0];
                     }
 
@@ -346,16 +346,16 @@ public class Std : IPack
                 Func = (args) => {
                     var tuple = args["value"].ToTuple();
 
-                    if (tuple.Count == 0) 
+                    if (tuple.Count == 0)
                         throw new Error("expected more than one argument");
 
                     if (tuple.Count == 1)
                     {
-                        if (tuple[0].As<List>(out var l)) 
+                        if (tuple[0].As<List>(out var l))
                             tuple = l.ToTuple();
                         else if (tuple[0].As<Tup>(out var t))
                             tuple = t;
-                        else 
+                        else
                             return tuple[0];
                     }
 
@@ -382,7 +382,7 @@ public class Std : IPack
                         DefaultValue = new Int(0),
                     }
                 ],
-                Func = (args) => 
+                Func = (args) =>
                 {
                     double v = args["value"] switch
                     {
@@ -479,10 +479,11 @@ public class Std : IPack
                         IsEssential = true
                     },
                     new Arg("args") {
+                        Type = "tuple",
                         IsPositional = true,
                     }
                 ],
-                Func = (args) => 
+                Func = (args) =>
                 {
                     var fn = args["func"].As<Fn>();
 
@@ -502,7 +503,32 @@ public class Std : IPack
                     {
                         return result;
                     }
-        
+
+                }
+            }
+        },
+        { "delay", new NFn()
+            {
+                Name = "delay",
+                Args = [
+                    new Arg("milliseconds")
+                    {
+                        Type = "int | float",
+                        IsEssential = true
+                    }
+                ],
+                Func = args =>
+                {
+                    if (!args["milliseconds"].As<Int, Float>(out var ms))
+                        throw new Error("expected 'milliseconds' argument to be of type 'int' or 'float");
+
+                    Thread.Sleep(ms switch
+                    {
+                        Int i => (int)i.Value,
+                        Float f => (int)(f.Value * 1000),
+                        _ => throw new Error("expected 'milliseconds' argument to be of type 'int' or 'float'"),
+                    });
+                    return Obj.None;
                 }
             }
         }

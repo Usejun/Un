@@ -23,12 +23,12 @@ public class Parser(Scope scope)
         {
             TokenType.Use => ParseUse(),
             TokenType.Using => ParseUsing(),
-            //TokenType.Func => ParseFn(),
             TokenType.Class => ParseClass(),
             TokenType.Enum => ParseEunm(),
             TokenType.Return => ParseReturn(),
             TokenType.For => ParseFor(),
             TokenType.If => ParseIf(),
+            TokenType.Sub => ParseSub(),
             _ => ParseExpreession(),
         };
 
@@ -72,24 +72,6 @@ public class Parser(Scope scope)
             Global.Include(name: name);
 
         return Obj.None;
-    }
-    public Obj ParseFn()
-    {
-        if (nodes.Count != 3 && nodes.Count != 5)
-            throw new Error("invalid function declaration");
-        if (nodes.Count == 5 && nodes[3].Type != TokenType.Return)
-            throw new Error("expected return type after '->'");
-
-        var name = nodes[1].Value;
-        var args = nodes[2];
-
-        return scope[name] = new LFn()
-        {
-            Name = name,
-            Args = Fn.GetArgs(args.Children, scope),
-            ReturnType = nodes.Count == 3 ? "any" : nodes[4].Value,
-            Body = Global.File.GetBody(),
-        };
     }
     public Obj ParseClass()
     {

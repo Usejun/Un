@@ -2,9 +2,9 @@ using Un.Object.Collections;
 
 namespace Un.Object.Function;
 
-public class LFn : Fn
+public class PFn : Fn
 {
-    public string[] Body { get; set; }
+    public List<Node> Nodes { get; set; }
 
     public override Obj Call(Tup args)
     {
@@ -12,7 +12,9 @@ public class LFn : Fn
         {
             ["self"] = Self
         };
+        var parser = new Parser(scope);
         Bind(scope, args);
-        return Global.Swap(Name, Body, scope);
+
+        return parser.Parse(Nodes);
     }
 }

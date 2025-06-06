@@ -57,7 +57,8 @@ public class UnFile
     public string[] GetBody()
     {
         var (start, end) = GetBodyRange();
-        Line = end + 1;
+        Index = 0;
+        Line = end;
 
         return [.. Code[start..end].Select(x => x.code)];
     }

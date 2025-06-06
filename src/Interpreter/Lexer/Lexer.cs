@@ -20,7 +20,7 @@ public class Lexer
             {
                 var closer = type.GetCloser();
                 var (start, end) = GetBracketRange(closer);
-                var children = new Lexer().Lex(tokens[start..end]);
+                var children = new Lexer().Lex(tokens[(start+1)..end]);
 
                 nodes.Add(new Node(type switch
                 {
@@ -32,7 +32,7 @@ public class Lexer
                 {
                     TokenType.LBrack => IsSlicer(start, end) ? TokenType.Indexer : TokenType.List,
                     TokenType.LBrace => IsSet(start, end) ? TokenType.Set : TokenType.Dict,
-                    TokenType.LParen =>  IsIdentifier() ? TokenType.Call : TokenType.Tuple,
+                    TokenType.LParen => IsIdentifier() ? TokenType.Call : TokenType.Tuple,
                     _ => throw new Error($"invalid left bracket type {type}")
                 })
                 {
@@ -40,33 +40,7 @@ public class Lexer
                 });
 
                 index = end + 1;
-            }
-            else if (type == TokenType.BNot)
-            {
-                if (nodes.Count != 0 && nodes[^1].Type == TokenType.Call)
-                    nodes[^1].Type = TokenType.AsyncCall;
-                else
-                    nodes.Add(new Node(token.Value, type));
-            }
-            else if (type == TokenType.Question)
-            {
-                if (nodes.Count != 0 && nodes[^1].Type == TokenType.Call)
-                    nodes[^1].Type = TokenType.TryCall;
-                else
-                    nodes.Add(new Node(token.Value, type));
-            }
-            else if (type.IsUnaryOperator())
-            {
-                nodes.Add(new Node(token.Value, IsUnaryOperator() ? type switch
-                {
-                    TokenType.Plus => TokenType.Positive,
-                    TokenType.Minus => TokenType.Negative,
-                    TokenType.Not => TokenType.Not,
-                    TokenType.Asterisk => TokenType.Spread,
-                    TokenType.DoubleAsterisk => TokenType.DictSpread,
-                    _ => throw new Error($"invalid unary operator type {type}")
-                } : type));
-            }
+            }            
             else if (type == TokenType.Dot)
             {
                 if (!IsIdentifier())
@@ -78,41 +52,40 @@ public class Lexer
             }
             else if (type == TokenType.Func)
             {
-                var value = Peek(index);
+                var lexed = new Lexer().Lex(tokens[index..]);
 
-                if (value.type == TokenType.Identifier)
-                {
-                    var args = Peek(index + 1);
-                    if (args.type == TokenType.LBrack)
-                    {
-                        nodes.Add(new Node("fn", TokenType.Func)
-                        {
-                            Children = [
-                                new Node(value.token.Value, TokenType.Identifier),
-                                new Node(args.token.Value, TokenType.Tuple)],
-                        });
-                        index += 2;
-                    }
-                    else
-                        throw new Error("invalid function definition");
-                }
-                else if (value.type == TokenType.Tuple)
+                if (lexed.Count < 2)
+                    throw new Error("expected function body after func keyword");
+
+                if (lexed[0].Type == TokenType.Tuple && lexed[1].Type == TokenType.Return)
                 {
                     nodes.Add(new Node("fn", TokenType.Func)
                     {
-                        Children = [new Node(value.token.Value, TokenType.Tuple)],
+                        Children = lexed
                     });
-                    index++;
                 }
-                else
-                    throw new Error("invalid function definition");
+                else if (lexed[0].Type == TokenType.Identifier && lexed[1].Type == TokenType.Call)
+                {
+                    nodes.Add(new Node(lexed[0].Value, TokenType.Func)
+                    {
+                        Children = [lexed[1]]
+                    });
+                }
+                else if (type.IsUnaryOperator())
+                {
+                    nodes.Add(new Node(token.Value, IsUnaryOperator() ? type switch
+                    {
+                        TokenType.Plus => TokenType.Positive,
+                        TokenType.Minus => TokenType.Negative,
+                        TokenType.Not => TokenType.Not,
+                        TokenType.Asterisk => TokenType.Spread,
+                        TokenType.DoubleAsterisk => TokenType.DictSpread,
+                        _ => throw new Error($"invalid unary operator type {type}")
+                    } : type));
+                }
+                else throw new Error("expected function body after func keyword");
 
-                value = Next();
-
-                if (value.type == TokenType.Return)
-                    break;
-                else
-                    throw new Error("expected return type after '->'");
+                break;
             }
             else nodes.Add(new Node(token.Value, type));
         }
@@ -198,9 +171,9 @@ public class Lexer
 
     private (int start, int end) GetBracketRange(TokenType closer)
     {
-        int start = index, end = index + 1, depth = 1;
+        int start = index-1, end = index-1, depth = 0;
 
-        while (end < tokens.Count && depth > 0)
+        while (end < tokens.Count)
         {
             var (_, type) = Peek(end);
             if (type == closer)
