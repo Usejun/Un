@@ -1,8 +1,15 @@
-fn test(func)
-    delay(1.0)
-    -> func(2, 2)
+use flow
 
-mul = fn(a, b) -> a * b
-|> a = wait test(mul)
-|> b = wait test(mul)
-write(a, b)
+fn test(n)
+    lock.acquire()
+
+    count += 1
+
+    lock.release()
+    
+count: int = 0
+using lock: lock = flow.lock()
+using pool: pool = flow.spawn()
+
+pool.map(test, 1, 2)
+write(count)

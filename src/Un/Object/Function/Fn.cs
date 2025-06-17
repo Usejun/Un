@@ -6,12 +6,15 @@ namespace Un.Object.Function;
 public class Fn : Obj
 {
     public string Name { get; set; }
-    public List<Arg> Args { get; set; }
-    public string ReturnType { get; set; }    
+    public List<Arg> Args { get; set; } = [];
+    public string ReturnType { get; set; } = "any";  
     public Scope Closure { get; set; }
 
     protected void Bind(Scope scope, Tup args)
     {
+        scope.Add("self", Self);
+        scope.Add("super", Super);
+
         var unnamed = new List<Obj>();
         var extraNamed = new Scope();
 
@@ -37,9 +40,24 @@ public class Fn : Obj
         Arg positionalArg = null;
         Arg keywordArg = null;
 
+        bool positionalReached = false;
+
         foreach (var arg in Args)
         {
             argNames.Add(arg.Name);
+
+            if (arg.IsPositional)
+            {
+                positionalArg = arg;
+                positionalReached = true;
+                continue;
+            }
+
+            if (arg.IsKeyword)
+            {
+                keywordArg = arg;
+                continue;
+            }
 
             if (arg.IsEssential)
             {
@@ -57,35 +75,48 @@ public class Fn : Obj
                     throw new Error($"missing required argument: '{arg.Name}'");
                 }
             }
+            else if (arg.IsOptional && !positionalReached)
+            {
+                if (unnamedIndex < unnamed.Count)
+                {
+                    scope[arg.Name] = unnamed[unnamedIndex++];
+                }
+                else if (extraNamed.TryGetValue(arg.Name, out var val))
+                {
+                    scope[arg.Name] = val;
+                    extraNamed.Remove(arg.Name);
+                }
+                else
+                {
+                    scope[arg.Name] = arg.DefaultValue;
+                }
+            }
             else if (extraNamed.TryGetValue(arg.Name, out var val))
             {
                 scope[arg.Name] = val;
                 extraNamed.Remove(arg.Name);
             }
-            else if (arg.IsOptional)
+            else
             {
                 scope[arg.Name] = arg.DefaultValue;
             }
-
-            if (arg.IsPositional)
-                positionalArg = arg;
-
-            if (arg.IsKeyword)
-                keywordArg = arg;
         }
+
+
 
         if (unnamedIndex < unnamed.Count)
         {
             if (positionalArg != null)
             {
                 var rest = unnamed.Skip(unnamedIndex);
-                scope[positionalArg.Name] = new Tup([..rest], []);
+                scope[positionalArg.Name] = new Tup([..rest], new string[rest.Count()]);
             }
             else
             {
                 throw new Error("function does not accept positional arguments.");
             }
         }
+
 
         if (extraNamed.Count > 0)
         {
@@ -103,8 +134,6 @@ public class Fn : Obj
             }
         }
     }
-
-
 
     public static List<Arg> GetArgs(List<Node> args, Scope scope)
     {
@@ -160,15 +189,16 @@ public class Fn : Obj
                 name = args[i].Value;
         }
 
-        result.Add(new Arg(name)
-        {
-            Type = argType,
-            IsEssential = !isOptional && !isPositional && !isKeyword,
-            IsOptional = isOptional,
-            IsPositional = isPositional,
-            IsKeyword = isKeyword,
-            DefaultValue = hasDefault ? Executer.On(buf, scope) : Null,
-        });
+        if (!string.IsNullOrEmpty(name))
+            result.Add(new Arg(name)
+            {
+                Type = argType,
+                IsEssential = !isOptional && !isPositional && !isKeyword,
+                IsOptional = isOptional,
+                IsPositional = isPositional,
+                IsKeyword = isKeyword,
+                DefaultValue = hasDefault ? Executer.On(buf, scope) : Null,
+            });
 
         return result;
     }

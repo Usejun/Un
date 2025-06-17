@@ -87,9 +87,15 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
 
     public override Bool ToBool() => new(Count != 0);
 
-    public override List ToList() => Clone().ToList();
+    public override List ToList()
+    {
+        var newList = new List(new Obj[Count]);
+        for (int i = 0; i < Count; i++)
+            newList[i] = this[i].Copy();
+        return newList;
+    }
 
-    public override Tup ToTuple() => new([.. Value], []);
+    public override Tup ToTuple() => new([.. Value], new string[Count]);
 
     public override Iters Iter() => new(this);
 

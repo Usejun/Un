@@ -28,7 +28,6 @@ public class Parser(Scope scope)
             TokenType.Return => ParseReturn(),
             TokenType.For => ParseFor(),
             TokenType.If => ParseIf(),
-            TokenType.Sub => ParseSub(),
             _ => ParseExpreession(),
         };
 
@@ -40,12 +39,7 @@ public class Parser(Scope scope)
         return Parse();
     }
     #region Parser
-    public Obj ParseSub()
-    {
-        Global.Sub(nodes[1..], scope);
-        return Obj.None;
-    }
-    public Obj ParseUse()
+    private Obj ParseUse()
     {
         var splited = nodes.Split(TokenType.As);
         var modules = splited[0][1..];
@@ -73,22 +67,22 @@ public class Parser(Scope scope)
 
         return Obj.None;
     }
-    public Obj ParseClass()
+    private Obj ParseClass()
     {
         if (returned == Obj.Error)
             throw new Error("No value returned");
 
         return returned;
     }
-    public Obj ParseEunm()
+    private Obj ParseEunm()
     {
         if (returned == Obj.Error)
             throw new Error("No value returned");
 
         return returned;
     }
-    public Obj ParseReturn() => returned = Executer.On(nodes[1..], scope);
-    public Obj ParseUsing()
+    private Obj ParseReturn() => returned = Executer.On(nodes[1..], scope);
+    private Obj ParseUsing()
     {
         if (!scope.TryGetValue("__using__", out var usings))
         {
@@ -108,14 +102,14 @@ public class Parser(Scope scope)
 
         return Obj.None;
     }
-    public Obj ParseExpreession()
+    private Obj ParseExpreession()
     {
         for (int i = 0; i < nodes.Count; i++)
             if (nodes[i].Type.IsAssignmentOperator())
                 return ParseAssignment(i);
         return Executer.On(nodes, scope);
     }
-    public Obj ParseAssignment(int assign)
+    private Obj ParseAssignment(int assign)
     {
         var names = nodes[..assign];
         var values = nodes[(assign + 1)..];
@@ -143,6 +137,7 @@ public class Parser(Scope scope)
 
         objs.Add(Executer.On(buf, scope));
         int count = 0;
+        var type = nodes[assign].Type;
 
         for (int i = 0; i < names.Count; i++)
         {
@@ -151,17 +146,27 @@ public class Parser(Scope scope)
                 switch (names[i].Type)
                 {
                     case TokenType.Indexer:
-                        variable.SetItem(Convert.Auto(names[i].Children[0], scope), objs[count++]);
+                        var index = Convert.Auto(names[i].Children[0], scope);
+                        variable.SetItem(index, AssignValue(type, variable.GetItem(index), objs[count]));
                         break;
                     case TokenType.Property:
-                        variable.SetAttr(names[i].Value, objs[count++]);
+                        variable.SetAttr(names[i].Value, AssignValue(type, variable.GetAttr(names[i].Value), objs[count]));
                         break;
                     case TokenType.Identifier:
-                        scope[names[i].Value] = objs[count++];
+                        var name = names[i].Value;
+                        if (scope.TryGetValue(name, out Obj? value))
+                            scope[name] = AssignValue(type, value, objs[count]);
+                        else if (Global.TryGetGlobalVariable(name, out value))
+                            Global.TrySetGlobalVariable(name, AssignValue(type, value, objs[count]));
+                        else if (type == TokenType.Assign)
+                            scope.Add(name, objs[count]);
+                        else 
+                            throw new Error($"invalid assignment {names[i].Type}.");
                         break;
                     default:
                         throw new Error($"invalid assignment {names[i].Type}.");
                 }
+                count++;
                 i++;
 
                 if (names.Count > i && names[i].Type == TokenType.Colon)
@@ -178,14 +183,29 @@ public class Parser(Scope scope)
         }
 
         if (objs.Count == 1) return objs[0];
-        return new Tup()
-        {
-            Value = [.. objs]
-        };
+        return new Tup([.. objs], new string[nameCount]);
 
         bool IsEnd(int index) => index >= names.Count || names[index].Type == TokenType.Comma || names[index].Type == TokenType.Colon;
+
+        Obj AssignValue(TokenType type, Obj a, Obj b) => type switch
+        {
+            TokenType.Assign => b,
+            TokenType.PlusAssign => a.Add(b),
+            TokenType.MinusAssign => a.Sub(b),
+            TokenType.SlashAssign => a.Div(b),
+            TokenType.DoubleSlashAssign => a.IDiv(b),
+            TokenType.AsteriskAssign => a.Mul(b),
+            TokenType.DoubleAsteriskAssign => a.Pow(b),
+            TokenType.PercentAssign => a.Mod(b),
+            TokenType.BAndAssign => a.BAnd(b),
+            TokenType.BOrAssign => a.BOr(b),
+            TokenType.BXorAssign => a.BXor(b),
+            TokenType.LeftShiftAssign => a.LShift(b),
+            TokenType.RightShiftAssign => a.RShift(b),
+            _ => throw new Error("invalid assing operator"),
+        };
     }
-    public Obj ParseFor()
+    private Obj ParseFor()
     {
         var inIdx = nodes.FindIndex(x => x.Type == TokenType.In);
         var vars = nodes[..inIdx][1..].Split(TokenType.Comma).Select(x => x[0]).ToList();
@@ -219,7 +239,7 @@ public class Parser(Scope scope)
 
         return Obj.None;
     }
-    public Obj ParseIf()
+    private Obj ParseIf()
     {
         Bool condition = nodes[0].Type == TokenType.Else ? new(true) : Executer.On(nodes[1..], scope).ToBool();
 

@@ -6,10 +6,8 @@ public class GFn : Fn
 {
     public Fn Func { get; set; }
 
-    public override Obj Call(Tup args)
+    public override Obj Call(Tup args) => new Future()
     {
-        Task.Run(() => Func.Call(args));
-
-        return None;
-    }
+        State = Task.Run(() => Func.Call(args))
+    };
 }

@@ -1,16 +1,14 @@
-using Un.Object;
-using Un.Object.IO;
 using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
 
-namespace Un.Package;
+namespace Un.Object.Util;
 
 public class Std : IPack
 {
-    private static readonly Object.IO.Stream so = new(Console.OpenStandardOutput());
+    private static readonly IO.Stream so = new(Console.OpenStandardOutput());
     private static readonly StreamWriter ew = new(Console.OpenStandardError()) { AutoFlush = false };
-    private static readonly Object.IO.Stream sr = new(Console.OpenStandardInput());
+    private static readonly IO.Stream sr = new(Console.OpenStandardInput());
 
     private static readonly Dictionary<string, Dictionary<int, Obj>> memo = []; 
 
@@ -21,9 +19,10 @@ public class Std : IPack
         { "write", new NFn()
             {
                 Name = "write",
+                ReturnType = "none",
                 Args = [
                    new Arg("value") {
-                    Type = "tuple",
+                    Type = "tuple[any]",
                     IsPositional = true,
                 }, new Arg("sep") {
                     Type = "str",
@@ -40,7 +39,7 @@ public class Std : IPack
                 }],
                 Func = (args) =>
                 {
-                    if (!args["stream"].As<Object.IO.Stream>(out var stream))
+                    if (!args["stream"].As<IO.Stream>(out var stream))
                         throw new Error("expected 'stream' argument to be of type 'stream'");
 
                     var cw = new StreamWriter(stream.Value)
@@ -96,9 +95,10 @@ public class Std : IPack
         { "log", new NFn()
             {
                 Name = "log",
+                ReturnType = "none",
                 Args = [
                    new Arg("value") {
-                    Type = "tuple",
+                    Type = "tuple[any]",
                     IsPositional = true,
                 }, new Arg("sep") {
                     Type = "str",
@@ -128,7 +128,6 @@ public class Std : IPack
         { "len", new NFn()
             {
                 Name = "len",
-                ReturnType = "any",
                 Args = [
                    new Arg("value") {
                     IsEssential = true,
@@ -139,7 +138,7 @@ public class Std : IPack
         { "clear", new NFn()
             {
                 Name = "clear",
-                Args = [],
+                ReturnType = "none",
                 Func = (args) =>
                 {
                     Console.Clear();
@@ -150,6 +149,7 @@ public class Std : IPack
         { "exit", new NFn()
             {
                 Name = "exit",
+                ReturnType = "none",
                 Args = [
                    new Arg("code") {
                     Type = "int",
@@ -180,6 +180,7 @@ public class Std : IPack
                 ReturnType = "list[T]",
                 Args = [
                    new Arg("default") {
+                    Type = "T",
                     IsEssential = true,
                 }, new Arg("size") {
                     Type = "tuple[int]",
@@ -211,13 +212,16 @@ public class Std : IPack
                 ReturnType = "list[int]",
                 Args = [
                     new Arg("start") {
+                        Type = "int",
                         IsEssential = true
                     },
                     new Arg("count") {
+                        Type = "int",
                         IsOptional = true,
                         DefaultValue = new Int(-1),
                     },
                     new Arg("step") {
+                        Type = "int",
                         IsOptional = true,
                         DefaultValue = new Int(1),
                     }
@@ -273,8 +277,10 @@ public class Std : IPack
         { "sum", new NFn()
             {
                 Name = "sum",
+                ReturnType = "T",
                 Args = [
                     new Arg("value") {
+                        Type = "tuple[T]",
                         IsPositional = true,
                     }
                 ],
@@ -305,8 +311,10 @@ public class Std : IPack
         { "max", new NFn()
             {
                 Name = "max",
+                ReturnType = "T",
                 Args = [
                     new Arg("value") {
+                        Type = "tuple[T]",
                         IsPositional = true,
                     }
                 ],
@@ -338,8 +346,10 @@ public class Std : IPack
         { "min", new NFn()
             {
                 Name = "min",
+                ReturnType = "T",
                 Args = [
                     new Arg("value") {
+                        Type = "tuple[T]",
                         IsPositional = true,
                     }
                 ],
@@ -371,6 +381,7 @@ public class Std : IPack
         { "round", new NFn()
             {
                 Name = "round",
+                ReturnType = "int | floor",
                 Args = [
                     new Arg("value") {
                         Type = "int | floor",
@@ -398,13 +409,14 @@ public class Std : IPack
 
                     v = Math.Round(v, d);
 
-                    return d == 0 ? new Int((long)v) : new Float(v);
+                    return d == 0 || double.IsInteger(v) ? new Int((long)v) : new Float(v);
                 }
             }
         },
         { "abs", new NFn()
             {
                 Name = "abs",
+                ReturnType = "int | floor",
                 Args = [
                     new Arg("value") {
                         Type = "int | floor",
@@ -419,9 +431,10 @@ public class Std : IPack
                 }
             }
         },
-        { "cell", new NFn()
+        { "ceil", new NFn()
             {
-                Name = "cell",
+                Name = "ceil",
+                ReturnType = "int | floor",
                 Args = [
                     new Arg("value") {
                         Type = "int | floor",
@@ -430,8 +443,12 @@ public class Std : IPack
                 ],
                 Func = (args) => args["value"] switch
                 {
-                    Int i => new(i.Value),
-                    Float f => new Float(Math.Ceiling(f.Value)),
+                    Int i => new Int(i.Value),
+                    Float f => Math.Ceiling(f.Value) switch
+                    {
+                        double d when d == (long)d => new Int((long)d),
+                        double d => new Float(d),
+                    },
                     _ => throw new Error("expected number type"),
                 }
             }
@@ -439,6 +456,7 @@ public class Std : IPack
         { "sqrt", new NFn()
             {
                 Name = "sqrt",
+                ReturnType = "floor",
                 Args = [
                     new Arg("value") {
                         Type = "int | floor",
@@ -456,6 +474,7 @@ public class Std : IPack
         { "floor", new NFn()
             {
                 Name = "floor",
+                ReturnType = "int | floor",
                 Args = [
                     new Arg("value") {
                         Type = "int | floor",
@@ -464,8 +483,12 @@ public class Std : IPack
                 ],
                 Func = (args) => args["value"] switch
                 {
-                    Int i => new(i.Value),
-                    Float f => new Float(Math.Floor(f.Value)),
+                    Int i => new Int(i.Value),
+                    Float f => Math.Floor(f.Value) switch
+                    {
+                        double d when d == (long)d => new Int((long)d),
+                        double d => new Float(d),
+                    },
                     _ => throw new Error("expected number type"),
                 }
             }
@@ -507,11 +530,12 @@ public class Std : IPack
                 }
             }
         },
-        { "delay", new NFn()
+        { "sleep", new NFn()
             {
-                Name = "delay",
+                Name = "sleep",
+                ReturnType = "none",
                 Args = [
-                    new Arg("milliseconds")
+                    new Arg("time")
                     {
                         Type = "int | float",
                         IsEssential = true
@@ -519,18 +543,58 @@ public class Std : IPack
                 ],
                 Func = args =>
                 {
-                    if (!args["milliseconds"].As<Int, Float>(out var ms))
-                        throw new Error("expected 'milliseconds' argument to be of type 'int' or 'float");
+                    if (!args["time"].As<Int, Float>(out var time))
+                        throw new Error("expected 'time' argument to be of type 'int' or 'float");
 
-                    Thread.Sleep(ms switch
+                    Thread.Sleep(time switch
                     {
                         Int i => (int)i.Value,
                         Float f => (int)(f.Value * 1000),
-                        _ => throw new Error("expected 'milliseconds' argument to be of type 'int' or 'float'"),
+                        _ => throw new Error("expected 'time' argument to be of type 'int' or 'float'"),
                     });
                     return Obj.None;
                 }
             }
-        }
+        },
+        { "delay", new NFn()
+            {
+                Name = "delay",
+                ReturnType = "T",
+                Args = [
+                    new Arg("time")
+                    {
+                        Type = "int | float",
+                        IsEssential = true
+                    },
+                    new Arg("fn")
+                    {
+                        Type = "func",
+                        IsEssential = true
+                    },
+                    new Arg("args")
+                    {
+                        Type = "tuple[any]",
+                        IsPositional = true,
+                    }
+                ],
+                Func = args =>
+                {
+                    if (!args["time"].As<Int, Float>(out var time))
+                        throw new Error("expected 'time' argument to be of type 'int' or 'float");
+                    if (!args["fn"].As<Fn>(out var fn))
+                        throw new Error("expected 'fn' argument to be of type 'func'");
+                    var vargs = args["args"].ToTuple();
+
+                    Thread.Sleep(time switch
+                    {
+                        Int i => (int)i.Value,
+                        Float f => (int)(f.Value * 1000),
+                        _ => throw new Error("expected 'time' argument to be of type 'int' or 'float'"),
+                    });
+
+                    return fn.Call(vargs);
+                }
+            }
+        },
     };
 }

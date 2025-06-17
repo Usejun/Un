@@ -5,7 +5,7 @@ using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
 
-namespace Un.Package;
+namespace Un.Object.Media;
 
 public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), IPack
 {

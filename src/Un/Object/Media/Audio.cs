@@ -4,7 +4,7 @@ using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
 
-namespace Un.Package;
+namespace Un.Object.Media;
 
 public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), IPack
 {

@@ -54,8 +54,9 @@ public enum TokenType
     If, ElIf, Else, Match,
     For, While,
     Break, Skip, Return,
-    Use, Using, Sub,
+    Use, Using,
     Comment,
+
 
     Identifier,
 

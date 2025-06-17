@@ -5,7 +5,7 @@ using Un.Object.Primitive;
 using Un.Object.Collections;
 using System.Text;
 
-namespace Un.Package;
+namespace Un.Object.Media;
 
 public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "image"), IPack
 {

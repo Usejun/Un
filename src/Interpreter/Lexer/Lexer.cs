@@ -59,10 +59,17 @@ public class Lexer
 
                 if (lexed[0].Type == TokenType.Tuple && lexed[1].Type == TokenType.Return)
                 {
+                    var splited = lexed.Split(TokenType.Comma);
                     nodes.Add(new Node("fn", TokenType.Func)
                     {
-                        Children = lexed
+                        Children = splited[0]
                     });
+
+                    for (int i = 1; i < splited.Count; i++)
+                    {
+                        nodes.Add(new Node(",", TokenType.Comma));
+                        nodes.AddRange(splited[i]);
+                    }
                 }
                 else if (lexed[0].Type == TokenType.Identifier && lexed[1].Type == TokenType.Call)
                 {

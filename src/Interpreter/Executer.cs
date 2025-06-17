@@ -85,6 +85,7 @@ public static class Executer
             else if (type == TokenType.Go)
             {
                 var fn = values.Pop();
+
                 if (fn is not Fn function)
                     throw new Error($"cannot call {fn.Type} as a function.");
 
@@ -99,16 +100,12 @@ public static class Executer
             else if (type == TokenType.Wait)
             {
                 var fn = values.Pop();
-                if (fn is not Fn function)
-                    throw new Error($"cannot call {fn.Type} as a function.");
-
-                values.Push(new WFn()
-                {
-                    Name = function.Name,
-                    Func = function,
-                    Args = function.Args,
-                    Closure = function.Closure,
-                });
+                if (fn is Fn function)
+                    values.Push(fn);
+                else if (fn is Future future)
+                    values.Push(future.Wait());
+                else
+                    throw new Error($"cannot wait on {fn.Type}.");
             }
             else if (type.IsBinaryOperator())
             {

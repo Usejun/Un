@@ -9,7 +9,7 @@ public class Tokenizer
     {
         tokens = [];
 
-        while (!code.EOF && !code.EOL &&!code.EOL)
+        while (!code.EOF && !code.EOL)
         {
             Token token;
             var peek = Peek();
@@ -218,8 +218,6 @@ public class Tokenizer
         switch (chr)
         {
             case '|':
-                if (Now('>'))
-                    return new Token($"{chr}{Read()}", TokenType.Sub);
                 if (Now('='))
                     return new Token($"{chr}{Read()}", TokenType.BOrAssign);
                 return new Token($"{chr}", TokenType.BOr);       

@@ -342,7 +342,7 @@ public class Obj(string type) : IComparable<Obj>
     {
         if (TryMethod("__copy__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Copy() : throw new Error("Cannot copyable object");
+        return Super is not null && !Super.IsNone() ? Super.Copy() : this;
     }
 
     public virtual Obj Clone()

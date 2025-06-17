@@ -15,10 +15,7 @@ public class NFn : Fn
 
     public override Obj Call(Tup args)
     {
-        var scope = new Scope
-        {
-            ["self"] = Self
-        };      
+        var scope = new Scope();    
         Bind(scope, args);        
         var returned = Func(scope);
         return returned;

@@ -5,8 +5,9 @@ using Un.Object;
 using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
-
-using Un.Package;
+using Un.Object.Media;
+using Un.Object.Util;
+using Un.Object.Flow;
 
 namespace Un;
 
@@ -14,6 +15,7 @@ public static class Global
 {
     public static UnFile File { get; private set; }
     public static string Path { get; private set; }
+    public static Scope Context { get; private set; }
 
     public static bool WriteLog { get; private set; }
 
@@ -27,13 +29,15 @@ public static class Global
         { "video", new Video(null!) },
         { "audio", new Audio(null!) },
         { "image", new Image(null!) },
+        { "time", new Time() },
+        { "long", new Long() },
+        { "flow", new Flow() },
     };
     public static Attributes Package { get; private set; } = [];
 
     public static void Init(string file, bool writeLog = false)
     {
         var path = "/workspaces/Un/src/";
-        //var file = "main.un"; //Path.Combine("/workspaces/Un/src/main.un", name);
         var name = file[..^3];
         var std = new Std();
 
@@ -57,7 +61,7 @@ public static class Global
             global.Add(key, value);
 
         foreach (var (key, value) in std.GetOriginalMethods())
-            global.Add(key, value);  
+            global.Add(key, value);
 
         File = new UnFile(name, System.IO.File.ReadAllLines(path + file));
         Path = path;
@@ -155,8 +159,10 @@ public static class Global
 
     public static Obj Go() => Run(global);
 
-    public static Obj Run(Scope scope)
+    private static Obj Run(Scope scope)
     {
+        Context = scope;
+
         var tokenizer = new Tokenizer();
         var lexer = new Lexer();
         var parser = new Parser(scope);
@@ -177,15 +183,6 @@ public static class Global
         return returned;
     }
 
-    public static void Sub(List<Node> nodes, Scope scope)
-    {
-        Parallel.Invoke(() =>
-        {
-            var parser = new Parser(scope);
-            parser.Parse(nodes);
-        });
-    }
-
     private static void Free(Scope scope)
     {
         if (scope.TryGetValue("__using__", out var usings))
@@ -196,6 +193,16 @@ public static class Global
     public static bool IsClass(string name) => Class.ContainsKey(name);
 
     public static bool TryGetGlobalVariable(string name, out Obj value) => global.TryGetValue(name, out value);
+
+    public static bool TrySetGlobalVariable(string name, Obj value)
+    {
+        if (global.ContainsKey(name))
+        {
+            global[name] = value;
+            return true;
+        }
+        return false;
+    }
 
     public static bool TryGetOriginalValue(string type, string name, out Obj value)
     {

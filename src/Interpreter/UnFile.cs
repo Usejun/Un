@@ -31,7 +31,11 @@ public class UnFile
         if (EOF)
             throw new Exception($"end of file {Name} reached");
         if (EOL)
+        {
+            if (Line + 1 < Code.Count)
+                return Code[Line + 1].code[0];
             throw new Exception($"end of line {Name} reached");
+        }
         
         return Code[Line].code[Index];
     }
@@ -41,7 +45,15 @@ public class UnFile
         if (EOF)
             throw new Exception($"end of file {Name} reached");
         if (EOL)
-            throw new Exception($"end of line {Name} reached");
+        {
+            if (Line + 1 < Code.Count)
+            {
+                Line++;
+                Index = 0;
+            }
+            else
+                throw new Exception($"end of line {Name} reached");
+        }
 
         return Code[Line].code[Index++];
     }

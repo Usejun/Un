@@ -1,2 +1,0 @@
-fn pow(a: int, b: int) -> int
-    -> a ** b

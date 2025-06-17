@@ -13,6 +13,9 @@ public class Long(BigInteger value) : Val<BigInteger>(value, "long")
         { Count: 1 } => args[0] switch
         {
             Str s => BigInteger.TryParse(s.Value, out var result) ? new Long(result) : throw new Error($"cannot convert '{args[0].Type}' to '{Type}'"),
+            Int i => new Long(i.Value),
+            Float f => new Long((long)f.Value),
+            Long l => new Long(l.Value),
             _ => throw new Error($"cannot convert '{args[0].Type}' to '{Type}'"),
         },
         _ => throw new Error($"cannot convert '{args[0].Type}' to '{Type}'"),
