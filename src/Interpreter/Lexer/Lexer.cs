@@ -17,10 +17,9 @@ public class Lexer
             (var token, var type) = Next();
 
             if (type.IsLeftBracket())
-            {
-                var closer = type.GetCloser();
-                var (start, end) = GetBracketRange(closer);
-                var children = new Lexer().Lex(tokens[(start+1)..end]);
+            {                
+                var (start, end) = GetBracketRange(type);
+                var children = new Lexer().Lex(tokens[(start + 1)..end]);
 
                 nodes.Add(new Node(type switch
                 {
@@ -40,7 +39,19 @@ public class Lexer
                 });
 
                 index = end + 1;
-            }            
+            }
+            else if (type.IsUnary())
+            {
+                nodes.Add(new Node(token.Value, IsUnary() ? type switch
+                {
+                    TokenType.Plus => TokenType.Positive,
+                    TokenType.Minus => TokenType.Negative,
+                    TokenType.Not => TokenType.Not,
+                    TokenType.Asterisk => TokenType.Spread,
+                    TokenType.DoubleAsterisk => TokenType.DictSpread,
+                    _ => throw new Error($"invalid unary operator type {type}")
+                } : type));
+            }
             else if (type == TokenType.Dot)
             {
                 if (!IsIdentifier())
@@ -78,18 +89,6 @@ public class Lexer
                         Children = [lexed[1]]
                     });
                 }
-                else if (type.IsUnaryOperator())
-                {
-                    nodes.Add(new Node(token.Value, IsUnaryOperator() ? type switch
-                    {
-                        TokenType.Plus => TokenType.Positive,
-                        TokenType.Minus => TokenType.Negative,
-                        TokenType.Not => TokenType.Not,
-                        TokenType.Asterisk => TokenType.Spread,
-                        TokenType.DoubleAsterisk => TokenType.DictSpread,
-                        _ => throw new Error($"invalid unary operator type {type}")
-                    } : type));
-                }
                 else throw new Error("expected function body after func keyword");
 
                 break;
@@ -101,7 +100,7 @@ public class Lexer
 
         bool IsIdentifier() => nodes.Count > 0 && nodes[^1].Type.IsIdentifier();
 
-        bool IsUnaryOperator() => (nodes.Count == 0 || nodes[^1].Type.IsOperator()) && index < tokens.Count && tokens[index].Type.IsIdentifier();
+        bool IsUnary() => (nodes.Count == 0 || nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma) && index < tokens.Count ;
     }
 
     public List<Node> Lex(List<Token> tokens)
@@ -176,14 +175,15 @@ public class Lexer
     private bool IsEnd(int idx) => idx >= tokens.Count;
     #endregion
 
-    private (int start, int end) GetBracketRange(TokenType closer)
+    private (int start, int end) GetBracketRange(TokenType opener)
     {
         int start = index-1, end = index-1, depth = 0;
+        var closer = opener.GetCloser();
 
         while (end < tokens.Count)
         {
             var (_, type) = Peek(end);
-            if (type == closer)
+            if (type.IsRightBracket())
                 depth--;
             else if (type.IsLeftBracket())
                 depth++;

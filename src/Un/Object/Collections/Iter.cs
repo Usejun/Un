@@ -33,6 +33,8 @@ public class Iters(IEnumerable<Obj> value) : Ref<IEnumerable<Obj>>(value, "iter"
         throw new Error("iteration stopped");
     }
 
+    public override Spread Spread() => new([.. Value]);
+
     public override Obj Copy() => this;
 
     public override Obj Clone() => new Iters(Value);

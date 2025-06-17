@@ -91,11 +91,13 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Iters Iter() => new(this);
 
+    public override Spread Spread() => new(Value);
+
     public override Obj Copy()
     {
         var obj = new Obj[Count];
         var names = new string[Count];
-        
+
         for (int i = 0; i < Count; i++)
         {
             obj[i] = this[i].Copy();

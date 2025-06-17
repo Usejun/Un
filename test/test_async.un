@@ -1,0 +1,6 @@
+fn slow(x)
+    sleep(3.0)
+    -> x * 2
+
+a = go slow(5)
+write(wait a)

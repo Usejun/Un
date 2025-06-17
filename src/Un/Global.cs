@@ -35,14 +35,9 @@ public static class Global
     };
     public static Attributes Package { get; private set; } = [];
 
-    public static void Init(string file, bool writeLog = false)
+    public static void Init(bool writeLog = false)
     {
-        var path = "/workspaces/Un/src/";
-        var name = file[..^3];
         var std = new Std();
-
-        if (!System.IO.File.Exists(path + file))
-            throw new Error($"file {file} not found in {path}");
 
         InitType<Int>();
         InitType<Float>();
@@ -63,9 +58,20 @@ public static class Global
         foreach (var (key, value) in std.GetOriginalMethods())
             global.Add(key, value);
 
-        File = new UnFile(name, System.IO.File.ReadAllLines(path + file));
-        Path = path;
         WriteLog = writeLog;
+    }
+
+    public static void Load(string file, string path = "/src/")
+    {
+        var topPath = System.IO.Path.Combine("/workspaces/Un/", path);
+        var allPath = System.IO.Path.Combine(topPath, file);
+        var name = file[..^3];
+
+        if (!System.IO.File.Exists(allPath))
+            throw new Error($"file {file} not found in {topPath}");
+
+        File = new UnFile(name, System.IO.File.ReadAllLines(allPath));
+        Path = topPath;
     }
 
     public static void InitType<T>(T obj)

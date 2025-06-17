@@ -94,10 +94,9 @@ public class UnFile
                 continue;
 
             var nesting = GetNesting(line);
-            var trimmedLine = line.TrimStart('\t', ' ');
 
-            if (trimmedLine.Length > 0)
-                Code.Add((nesting, trimmedLine));
+            if (!string.IsNullOrWhiteSpace(line))
+                Code.Add((nesting, line));
         }
     }
 

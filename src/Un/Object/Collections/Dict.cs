@@ -40,6 +40,8 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
 
     public override Iters Iter() => new([.. Value.Keys.Zip(Value.Values).Select(x => new Tup([x.First, x.Second], ["key", "value"]))]);
 
+    public override Spread Spread() => new([.. Value.Select(i => new Tup([i.Key, i.Value], ["key", "value"]))]);
+
     private bool Overlap(Dict dict)
     {
         foreach (var (key, value) in dict.Value)

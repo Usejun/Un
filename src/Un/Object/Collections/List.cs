@@ -95,7 +95,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         return newList;
     }
 
-    public override Tup ToTuple() => new([.. Value], new string[Count]);
+    public override Tup ToTuple() => new(Value[..Count], new string[Count]);
 
     public override Iters Iter() => new(this);
 
@@ -109,7 +109,9 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         return newList;
     }
 
-    public override Str ToStr() => new($"[{string.Join(", ", Value.Take(Count).Select(v => v.ToStr().Value))}]");
+    public override Str ToStr() => new($"[{string.Join(", ", Value[..Count].Select(v => v.ToStr().Value))}]");
+
+    public override Spread Spread() => new(Value[..Count]);
 
     private bool OutOfRange(int index) => index < 0 || index >= Value.Length;
 

@@ -12,6 +12,8 @@ public class Fn : Obj
 
     protected void Bind(Scope scope, Tup args)
     {
+        args = UnpackArgs(args);
+
         scope.Add("self", Self);
         scope.Add("super", Super);
 
@@ -133,6 +135,31 @@ public class Fn : Obj
                 throw new Error($"unexpected keyword argument: '{unexpected}'");
             }
         }
+    }
+
+    public static Tup UnpackArgs(Tup rawArgs)
+    {
+        var objs = new List<Obj>();
+        var names = new List<string>();
+
+        for (var i = 0; i < rawArgs.Count; i++)
+        {
+            if (rawArgs[i] is Spread spread)
+            {
+                foreach (var v in spread)
+                {
+                    objs.Add(v);
+                    names.Add(rawArgs.Name[i]);
+                }
+            }
+            else
+            {
+                objs.Add(rawArgs[i]);
+                names.Add(rawArgs.Name[i]);
+            }
+        }
+
+        return new([.. objs], [.. names]);
     }
 
     public static List<Arg> GetArgs(List<Node> args, Scope scope)

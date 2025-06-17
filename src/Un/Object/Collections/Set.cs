@@ -46,7 +46,9 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
     public override Obj Clone() => new Set([.. Value]);
 
     public override Str ToStr() => new($"{{{string.Join(", ", Value.Select(x => x.ToStr().Value))}}}");
-    
+
+    public override Spread Spread() => new([.. Value]);
+
     public override Attributes GetOriginal() => new()
     {
         { "add", new NFn

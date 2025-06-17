@@ -1,0 +1,7 @@
+use flow
+
+using pool: pool = flow.spawn()
+
+f = fn(x) -> write(x * 2)
+
+pool.map(f, 1, 2, 3)

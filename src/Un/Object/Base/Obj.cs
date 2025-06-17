@@ -247,10 +247,10 @@ public class Obj(string type) : IComparable<Obj>
         return Super is not null && !Super.IsNone() ? Super.Neg() : throw new Error("Cannot negativeable object");
     }
 
-    public virtual Obj Spread()
+    public virtual Spread Spread()
     {
-        if (TryMethod("__spread__", out Obj? value))
-            return value;
+        if (TryMethod("__spread__", out Obj? value) && value.As<Spread>(out var spread))
+            return spread;
         return Super is not null && !Super.IsNone() ? Super.Spread() : throw new Error("Cannot spreadable object");
     }
 

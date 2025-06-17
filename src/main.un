@@ -1,15 +1,3 @@
 use flow
-
-fn test(n)
-    lock.acquire()
-
-    count += 1
-
-    lock.release()
-    
-count: int = 0
-using lock: lock = flow.lock()
 using pool: pool = flow.spawn()
-
-pool.map(test, 1, 2)
-write(count)
+write(1*)

@@ -8,7 +8,7 @@ namespace Un;
 public static class Executer
 {
     public static Obj On(List<Node> nodes, Scope scope)
-    {        
+    {              
         var postfix = GetPostfix(nodes);
         var values = new Stack<Obj>();
 
@@ -109,35 +109,43 @@ public static class Executer
             }
             else if (type.IsBinaryOperator())
             {
-                var right = values.Pop();
-                var left = values.Pop();
-                values.Push(type switch
+                try
                 {
-                    TokenType.Plus => left.Add(right),
-                    TokenType.Minus => left.Sub(right),
-                    TokenType.Asterisk => left.Mul(right),
-                    TokenType.Slash => left.Div(right),
-                    TokenType.DoubleSlash => left.IDiv(right),
-                    TokenType.Percent => left.Mod(right),
-                    TokenType.DoubleAsterisk => left.Pow(right),
-                    TokenType.BAnd => left.BAnd(right),
-                    TokenType.BOr => left.BOr(right),
-                    TokenType.BXor => left.BXor(right),
-                    TokenType.LeftShift => left.LShift(right),
-                    TokenType.RightShift => left.RShift(right),
-                    TokenType.Equal => left.Eq(right),
-                    TokenType.Unequal => left.NEq(right),
-                    TokenType.LessOrEqual => left.LtOrEq(right),
-                    TokenType.GreaterOrEqual => left.GtOrEq(right),
-                    TokenType.LessThan => left.Lt(right),
-                    TokenType.GreaterThan => left.Gt(right),
-                    TokenType.And => left.And(right),
-                    TokenType.Or => left.Or(right),
-                    TokenType.Xor => left.Xor(right),
-                    TokenType.In => right.In(left),
-                    TokenType.Is => left.Is(right),
-                    _ => throw new Error($"binary operator {type} is not implemented.")
-                });
+                    var right = values.Pop();
+                    var left = values.Pop();
+
+                    values.Push(type switch
+                    {
+                        TokenType.Plus => left.Add(right),
+                        TokenType.Minus => left.Sub(right),
+                        TokenType.Asterisk => left.Mul(right),
+                        TokenType.Slash => left.Div(right),
+                        TokenType.DoubleSlash => left.IDiv(right),
+                        TokenType.Percent => left.Mod(right),
+                        TokenType.DoubleAsterisk => left.Pow(right),
+                        TokenType.BAnd => left.BAnd(right),
+                        TokenType.BOr => left.BOr(right),
+                        TokenType.BXor => left.BXor(right),
+                        TokenType.LeftShift => left.LShift(right),
+                        TokenType.RightShift => left.RShift(right),
+                        TokenType.Equal => left.Eq(right),
+                        TokenType.Unequal => left.NEq(right),
+                        TokenType.LessOrEqual => left.LtOrEq(right),
+                        TokenType.GreaterOrEqual => left.GtOrEq(right),
+                        TokenType.LessThan => left.Lt(right),
+                        TokenType.GreaterThan => left.Gt(right),
+                        TokenType.And => left.And(right),
+                        TokenType.Or => left.Or(right),
+                        TokenType.Xor => left.Xor(right),
+                        TokenType.In => right.In(left),
+                        TokenType.Is => left.Is(right),
+                        _ => throw new Error($"binary operator {type} is not implemented.")
+                    });
+                }
+                catch (InvalidOperationException e1)
+                {
+                    throw new Error("invalid expression");
+                }
             }
             else if (type.IsUnaryOperator())
             {
@@ -155,6 +163,7 @@ public static class Executer
                                                      index.Count == 3 ? index[2].As<Int>() : new Int(1)),
                     TokenType.BNot => right.BNot(),
                     TokenType.Not => right.Not(),
+                    TokenType.Spread => right.Spread(),
                     _ => throw new Error($"unary operator {type} is not implemented.")
                 });
             }

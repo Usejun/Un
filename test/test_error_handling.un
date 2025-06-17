@@ -1,0 +1,4 @@
+fn div(a, b)
+    -> a / b
+    
+write(div(10, 0))

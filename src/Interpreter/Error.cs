@@ -7,7 +7,7 @@ $"""
 
     <{Global.File.Name}>, line [{Global.File.Index}] 
         {Global.File.Code[Global.File.Line].code}
-        {new string('^', Global.File.Code.Count)}
+        {new string('^', Global.File.Code[Global.File.Line].code.Length)}
 {GetType().Name} : {Message}
 """;
 }

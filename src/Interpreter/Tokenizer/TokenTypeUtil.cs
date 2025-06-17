@@ -25,8 +25,9 @@ public static class TokenTypeUtil
             TokenType.RightShiftAssign or TokenType.LeftShiftAssign => true,
 
             // 기타 연산자 
-            TokenType.DoubleQuestion or TokenType.Question or TokenType.Indexer or TokenType.Slicer or
-            TokenType.QuestionDot or TokenType.In or TokenType.Is or TokenType.Go or TokenType.Wait or TokenType.Call => true,
+            TokenType.DoubleQuestion or TokenType.Question or TokenType.Indexer or TokenType.Slicer or TokenType.Spread or
+            TokenType.Positive or TokenType.Negative or TokenType.QuestionDot or TokenType.In or TokenType.Is or TokenType.Go or
+            TokenType.Wait or TokenType.Call => true,
             _ => false,
         };
     
@@ -43,17 +44,23 @@ public static class TokenTypeUtil
         _ => false
     };
 
+    public static bool IsUnary(this TokenType type) => type switch
+    {
+        TokenType.Plus or TokenType.Minus or TokenType.BNot or TokenType.Not or TokenType.Indexer or TokenType.Slicer or TokenType.Asterisk => true,
+        _ => false
+    };
+    
     public static bool IsUnaryOperator(this TokenType type) => type switch
     {
-        TokenType.Plus or TokenType.Minus or TokenType.BNot or TokenType.Not or TokenType.Indexer or TokenType.Slicer => true,
+        TokenType.Positive or TokenType.Negative or TokenType.BNot or TokenType.Not or TokenType.Indexer or TokenType.Slicer or TokenType.Spread => true,
         _ => false
     };
 
     public static bool IsAssignmentOperator(this TokenType type) => type switch
     {
-        TokenType.Assign or TokenType.PlusAssign or TokenType.MinusAssign or TokenType.AsteriskAssign or 
-        TokenType.SlashAssign or TokenType.PercentAssign or TokenType.DoubleAsteriskAssign or 
-        TokenType.BAndAssign or TokenType.BOrAssign or TokenType.BXorAssign or 
+        TokenType.Assign or TokenType.PlusAssign or TokenType.MinusAssign or TokenType.AsteriskAssign or
+        TokenType.SlashAssign or TokenType.PercentAssign or TokenType.DoubleAsteriskAssign or
+        TokenType.BAndAssign or TokenType.BOrAssign or TokenType.BXorAssign or
         TokenType.LeftShiftAssign or TokenType.RightShiftAssign => true,
         _ => false
     };
@@ -79,6 +86,12 @@ public static class TokenTypeUtil
         _ => false
     };
 
+    public static bool IsRightBracket(this TokenType type) => type switch
+    {
+        TokenType.RParen or TokenType.RBrace or TokenType.RBrack => true,
+        _ => false
+    };
+
     public static TokenType GetCloser(this TokenType type) => type switch
     {
         TokenType.LParen => TokenType.RParen,
@@ -101,7 +114,7 @@ public static class TokenTypeUtil
         TokenType.Indexer or TokenType.Slicer or TokenType.NullableProperty or TokenType.Property => 0,
         TokenType.Go or TokenType.Wait => 1,
         TokenType.Call => 2,
-        TokenType.BNot => 3,
+        TokenType.BNot or TokenType.Positive or TokenType.Negative or TokenType.Spread => 3,
         TokenType.Asterisk or TokenType.Slash or TokenType.DoubleSlash or TokenType.Percent => 4,
         TokenType.Plus or TokenType.Minus => 5,
         TokenType.LeftShift or TokenType.RightShift => 6,
