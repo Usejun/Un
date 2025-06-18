@@ -15,7 +15,7 @@ public class NFn : Fn
 
     public override Obj Call(Tup args)
     {
-        var scope = new Scope();    
+        var scope = new Map(Closure ?? new Map());    
         Bind(scope, args);        
         var returned = Func(scope);
         return returned;

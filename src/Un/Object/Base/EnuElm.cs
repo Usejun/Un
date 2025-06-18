@@ -10,17 +10,17 @@ public class EnuElm(string type, int n) : Obj(type)
 
     public override Int ToInt() => new(N);
 
-    public override Bool Eq(Obj other) => other switch
+    public override Obj Eq(Obj other) => other switch
     {
-        Int i => new(N == i.Value),
-        EnuElm e => Type == other.Type ? new(N == e.N) : base.Eq(e),
-        _ => throw new Error($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'")
+        Int i => new Bool(N == i.Value),
+        EnuElm e => Type == other.Type ? new Bool(N == e.N) : base.Eq(e),
+        _ => new Err($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'")
     };
 
-    public override Bool Lt(Obj other) => other switch
+    public override Obj Lt(Obj other) => other switch
     {
-        Int i => new(N < i.Value),
-        EnuElm e => Type == other.Type ? new(N < e.N) : base.Eq(e),
-        _ => throw new Error($"unsupported operand type(s) for <: '{Type}' and '{other.Type}'")
+        Int i => new Bool(N < i.Value),
+        EnuElm e => Type == other.Type ? new Bool(N < e.N) : base.Eq(e),
+        _ => new Err($"unsupported operand type(s) for <: '{Type}' and '{other.Type}'")
     };
 }

@@ -8,26 +8,13 @@ public class LFn : Fn
 
     public override Obj Call(Tup args)
     {
-        var scope = new Scope();
+        var scope = new Map(Closure?? new Map());
         Bind(scope, args);
-        var file = new UnFile(Name, Body);
-        var tokenizer = new Tokenizer();
-        var lexer = new Lexer();
-        var parser = new Parser(scope);
-        var returned = None;
 
-        while (!file.EOF)
-        {
-            var tokens = tokenizer.Tokenize(file);
-            var nodes = lexer.Lex(tokens);
-            returned = parser.Parse(nodes);
-
-            if (file.EOL)
-                file.Move(0, file.Line + 1);
-        }
+        var returned = Runner.Load(Name, Body, scope).Run();
 
         if (scope.TryGetValue("__using__", out var usings))
-            foreach (var obj in usings.ToList())
+            foreach (var obj in usings.As<List>())
                 obj.Exit();
 
         return returned;

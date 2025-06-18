@@ -9,7 +9,7 @@ namespace Un.Object.Media;
 
 public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "image"), IPack
 {
-    public override Obj Init(Tup args) => throw new Error("cannot be created. use image.new or image.load");
+    public override Obj Init(Tup args) => new Err("cannot be created. use image.new or image.load");
 
     public override Obj Clone() => new Image(Value.Copy());
 
@@ -27,11 +27,11 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["path"].As<Str>(out var path))
-                        throw new Error("invalid argument: path");
+                        return new Err("invalid argument: path");
                     if (!args["format"].As<Str>(out var format))
-                        throw new Error("invalid argument: format");
+                        return new Err("invalid argument: format");
 
                     var imgFormat = format.Value.ToLower() switch
                     {
@@ -39,7 +39,7 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                         "jpg" or "jpeg" => SKEncodedImageFormat.Jpeg,
                         "bmp" => SKEncodedImageFormat.Bmp,
                         "ico" => SKEncodedImageFormat.Ico,
-                        _ => throw new Error("unsupported format")
+                        _ => throw new Panic("unsupported format")
                     };
 
                     using var image = SKImage.FromBitmap(self.Value);
@@ -61,13 +61,13 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["x"].As<Int, Float>(out var x))
-                        throw new Error("invalid argument: x");
+                        return new Err("invalid argument: x");
                     if (!args["y"].As<Int, Float>(out var y))
-                        throw new Error("invalid argument: y");
+                        return new Err("invalid argument: y");
 
-                    var color = self.Value.GetPixel((int)x.ToInt().Value, (int)y.ToInt().Value);
+                    var color = self.Value.GetPixel((int)x.ToInt().As<Int>().Value, (int)y.ToInt().As<Int>().Value);
                     return new Tup([new Int(color.Red), new Int(color.Green), new Int(color.Blue), new Int(color.Alpha)], ["red", "green", "blue", "alpha"]);
                 }
             }
@@ -86,22 +86,22 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["x"].As<Int, Float>(out var x))
-                        throw new Error("invalid argument: x");
+                        return new Err("invalid argument: x");
                     if (!args["y"].As<Int, Float>(out var y))
-                        throw new Error("invalid argument: y");
+                        return new Err("invalid argument: y");
                     if (!args["r"].As<Int, Float>(out var r))
-                        throw new Error("invalid argument: r");
+                        return new Err("invalid argument: r");
                     if (!args["g"].As<Int, Float>(out var g))
-                        throw new Error("invalid argument: g");
+                        return new Err("invalid argument: g");
                     if (!args["b"].As<Int, Float>(out var b))
-                        throw new Error("invalid argument: b");
+                        return new Err("invalid argument: b");
                     if (!args["a"].As<Int, Float>(out var a))
-                        throw new Error("invalid argument: a");
+                        return new Err("invalid argument: a");
 
-                    self.Value.SetPixel((int)x.ToInt().Value, (int)y.ToInt().Value,
-                            new SKColor((byte)r.ToInt().Value, (byte)g.ToInt().Value, (byte)b.ToInt().Value, (byte)a.ToInt().Value));
+                    self.Value.SetPixel((int)x.ToInt().As<Int>().Value, (int)y.ToInt().As<Int>().Value,
+                            new SKColor((byte)r.ToInt().As<Int>().Value, (byte)g.ToInt().As<Int>().Value, (byte)b.ToInt().As<Int>().Value, (byte)a.ToInt().As<Int>().Value));
                     return None;
                 }
             }
@@ -116,18 +116,18 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["width"].As<Int, Float>(out var width))
-                        throw new Error("invalid argument: width");
+                        return new Err("invalid argument: width");
                     if (!args["height"].As<Int, Float>(out var height))
-                        throw new Error("invalid argument: height");
+                        return new Err("invalid argument: height");
 
-                    if (width.ToInt().Value <= 0)
-                        throw new Error("width is non-zero");
-                    if (height.ToInt().Value <= 0)
-                        throw new Error("height is non-zero");
+                    if (width.ToInt().As<Int>().Value <= 0)
+                        return new Err("width is non-zero");
+                    if (height.ToInt().As<Int>().Value <= 0)
+                        return new Err("height is non-zero");
 
-                    var resized = self.Value.Resize(new SKImageInfo((int)width.ToInt().Value, (int)height.ToInt().Value),
+                    var resized = self.Value.Resize(new SKImageInfo((int)width.ToInt().As<Int>().Value, (int)height.ToInt().As<Int>().Value),
                                                     new SKSamplingOptions(SKCubicResampler.Mitchell));
                     return new Image(resized);
                 }
@@ -142,11 +142,11 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["angle"].As<Int, Float>(out var angle))
-                        throw new Error("invalid argument: angle");
+                        return new Err("invalid argument: angle");
 
-                    var matrix = SKMatrix.CreateRotationDegrees((float)angle.ToFloat().Value, self.Value.Width / 2, self.Value.Height / 2);
+                    var matrix = SKMatrix.CreateRotationDegrees((float)angle.ToFloat().As<Float>().Value, self.Value.Width / 2, self.Value.Height / 2);
                     var rotated = new SKBitmap(self.Value.Width, self.Value.Height);
                     using var canvas = new SKCanvas(rotated);
 
@@ -171,26 +171,26 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["text"].As<Str>(out var text))
-                        throw new Error("invalid argument: text");
+                        return new Err("invalid argument: text");
                     if (!args["x"].As<Int, Float>(out var x))
-                        throw new Error("invalid argument: x");
+                        return new Err("invalid argument: x");
                     if (!args["y"].As<Int, Float>(out var y))
-                        throw new Error("invalid argument: y");
+                        return new Err("invalid argument: y");
                     if (!args["size"].As<Int, Float>(out var size))
-                        throw new Error("invalid argument: size");
+                        return new Err("invalid argument: size");
                     if (!args["color"].As<Str>(out var color))
-                        throw new Error("invalid argument: color");
+                        return new Err("invalid argument: color");
 
                     using var canvas = new SKCanvas(self.Value);
-                    using var font = new SKFont(SKTypeface.Default, size.ToInt().Value);
+                    using var font = new SKFont(SKTypeface.Default, size.ToInt().As<Int>().Value);
                     using var paint = new SKPaint()
                     {
                         Color = SKColor.Parse(color.Value),
                         IsAntialias = true
                     };
-                    canvas.DrawText(text.Value, x.ToInt().Value, y.ToInt().Value, font, paint);
+                    canvas.DrawText(text.Value, x.ToInt().As<Int>().Value, y.ToInt().As<Int>().Value, font, paint);
                     return None;
                 }
             }
@@ -208,17 +208,17 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["x"].As<Int, Float>(out var x))
-                        throw new Error("invalid argument: x");
+                        return new Err("invalid argument: x");
                     if (!args["y"].As<Int, Float>(out var y))
-                        throw new Error("invalid argument: y");
+                        return new Err("invalid argument: y");
                     if (!args["width"].As<Int, Float>(out var width))
-                        throw new Error("invalid argument: width");
+                        return new Err("invalid argument: width");
                     if (!args["height"].As<Int, Float>(out var height))
-                        throw new Error("invalid argument: height");
+                        return new Err("invalid argument: height");
                     if (!args["color"].As<Str>(out var color))
-                        throw new Error("invalid argument: color");
+                        return new Err("invalid argument: color");
 
                     using var canvas = new SKCanvas(self.Value);
                     using var paint = new SKPaint
@@ -226,7 +226,8 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                         Color = SKColor.Parse(color.Value),
                         Style = SKPaintStyle.Fill
                     };
-                    canvas.DrawRect(x.ToInt().Value, y.ToInt().Value, width.ToInt().Value, height.ToInt().Value, paint);
+                    canvas.DrawRect(x.ToInt().As<Int>().Value, y.ToInt().As<Int>().Value,
+                                    width.ToInt().As<Int>().Value, height.ToInt().As<Int>().Value, paint);
                     return None;
                 }
             }
@@ -244,21 +245,21 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["x1"].As<Int, Float>(out var x1))
-                        throw new Error("invalid argument: x1");
+                        return new Err("invalid argument: x1");
                     if (!args["y1"].As<Int, Float>(out var y1))
-                        throw new Error("invalid argument: y1");
+                        return new Err("invalid argument: y1");
                     if (!args["x2"].As<Int, Float>(out var x2))
-                        throw new Error("invalid argument: x2");
+                        return new Err("invalid argument: x2");
                     if (!args["y2"].As<Int, Float>(out var y2))
-                        throw new Error("invalid argument: y2");
+                        return new Err("invalid argument: y2");
                     if (!args["thickness"].As<Int, Float>(out var thickness))
-                        throw new Error("invalid argument: thickness");
+                        return new Err("invalid argument: thickness");
 
                     using var canvas = new SKCanvas(self.Value);
-                    using var paint = new SKPaint { Color = SKColors.Black, StrokeWidth = (float)thickness.ToFloat().Value };
-                    canvas.DrawLine(x1.ToInt().Value, y1.ToInt().Value, x2.ToInt().Value, y2.ToInt().Value, paint);
+                    using var paint = new SKPaint { Color = SKColors.Black, StrokeWidth = (float)thickness.ToFloat().As<Float>().Value };
+                    canvas.DrawLine(x1.ToInt().As<Int>().Value, y1.ToInt().As<Int>().Value, x2.ToInt().As<Int>().Value, y2.ToInt().As<Int>().Value, paint);
                     return None;
                 }
             }
@@ -276,22 +277,22 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self) || self.Value == null)
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["x"].As<Int, Float>(out var x))
-                        throw new Error("invalid argument: x");
+                        return new Err("invalid argument: x");
                     if (!args["y"].As<Int, Float>(out var y))
-                        throw new Error("invalid argument: y");
+                        return new Err("invalid argument: y");
                     if (!args["radius"].As<Int, Float>(out var radius))
-                        throw new Error("invalid argument: radius");
+                        return new Err("invalid argument: radius");
                     if (!args["thickness"].As<Int, Float>(out var thickness))
-                        throw new Error("invalid argument: thickness");
+                        return new Err("invalid argument: thickness");
                     if (!args["fill"].As<Bool>(out var fill))
-                        throw new Error("invalid argument: fill");
+                        return new Err("invalid argument: fill");
 
                     using var canvas = new SKCanvas(self.Value);
-                    using var paint = new SKPaint { Color = SKColors.Red, StrokeWidth = (float)thickness.ToFloat().Value };
+                    using var paint = new SKPaint { Color = SKColors.Red, StrokeWidth = (float)thickness.ToFloat().As<Float>().Value };
                     paint.Style = fill.Value ? SKPaintStyle.Fill : SKPaintStyle.Stroke;
-                    canvas.DrawCircle(x.ToInt().Value, y.ToInt().Value, radius.ToInt().Value, paint);
+                    canvas.DrawCircle(x.ToInt().As<Int>().Value, y.ToInt().As<Int>().Value, radius.ToInt().As<Int>().Value, paint);
                     return None;
                 }
             }
@@ -303,7 +304,7 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     var grayBitmap = new SKBitmap(self.Value.Width, self.Value.Height);
                     using var canvas = new SKCanvas(grayBitmap);
@@ -332,15 +333,15 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["radius"].As<Int, Float>(out var radius))
-                        throw new Error("invalid argument: radius");
+                        return new Err("invalid argument: radius");
 
                     using var surface = SKSurface.Create(self.Value.Info);
                     using var canvas = surface.Canvas;
                     using var paint = new SKPaint
                     {
-                        ImageFilter = SKImageFilter.CreateBlur((float)radius.ToFloat().Value, (float)radius.ToFloat().Value)
+                        ImageFilter = SKImageFilter.CreateBlur((float)radius.ToFloat().As<Float>().Value, (float)radius.ToFloat().As<Float>().Value)
                     };
                     canvas.DrawBitmap(self.Value, 0, 0, paint);
                     self.Value = SKBitmap.Decode(surface.Snapshot().Encode());
@@ -360,17 +361,19 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self) || self.Value == null)
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["x"].As<Int, Float>(out var x))
-                        throw new Error("invalid argument: x");
+                        return new Err("invalid argument: x");
                     if (!args["y"].As<Int, Float>(out var y))
-                        throw new Error("invalid argument: y");
-                    if (!args["width"].As<Int, Float>(out var width) || width.ToInt().Value <= 0)
-                        throw new Error("invalid argument: width");
-                    if (!args["height"].As<Int, Float>(out var height) || height.ToInt().Value <= 0)
-                        throw new Error("invalid argument: height");
+                        return new Err("invalid argument: y");
+                    if (!args["width"].As<Int, Float>(out var width) || width.ToInt().As<Int>().Value <= 0)
+                        return new Err("invalid argument: width");
+                    if (!args["height"].As<Int, Float>(out var height) || height.ToInt().As<Int>().Value <= 0)
+                        return new Err("invalid argument: height");
 
-                    var rect = new SKRectI((int)x.ToInt().Value, (int)y.ToInt().Value, (int)(x.ToInt().Value + width.ToInt().Value), (int)(y.ToInt().Value + height.ToInt().Value));
+                    var rect = new SKRectI((int)x.ToInt().As<Int>().Value, (int)y.ToInt().As<Int>().Value,
+                                           (int)(x.ToInt().As<Int>().Value + width.ToInt().As<Int>().Value),
+                                           (int)(y.ToInt().As<Int>().Value + height.ToInt().As<Int>().Value));
                     var copyBitmap = self.Value.Copy();
                     var croppedBitmap = self.Value.ExtractSubset(copyBitmap, rect);
                     return new Image(copyBitmap);
@@ -384,15 +387,15 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["opacity"].As<Int, Float>(out var opacity))
-                        throw new Error("invalid argument: opacity");
+                        return new Err("invalid argument: opacity");
 
                     var adjustedBitmap = new SKBitmap(self.Value.Width, self.Value.Height);
                     using var canvas = new SKCanvas(adjustedBitmap);
                     using var paint = new SKPaint
                     {
-                        ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Black.WithAlpha((byte)(255 * (1 - (opacity.ToFloat().Value % 1f)))), SKBlendMode.DstIn)
+                        ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Black.WithAlpha((byte)(255 * (1 - (opacity.ToFloat().As<Float>().Value % 1f)))), SKBlendMode.DstIn)
                     };
 
                     canvas.DrawBitmap(self.Value, 0, 0, paint);
@@ -411,19 +414,19 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["r"].As<Int, Float>(out var r))
-                        throw new Error("invalid argument: r");
+                        return new Err("invalid argument: r");
                     if (!args["g"].As<Int, Float>(out var g))
-                        throw new Error("invalid argument: g");
+                        return new Err("invalid argument: g");
                     if (!args["b"].As<Int, Float>(out var b))
-                        throw new Error("invalid argument: r");
+                        return new Err("invalid argument: r");
 
                     var colorMatrix = new float[]
                     {
-                        1, 0, 0, 0, (float)r.ToFloat().Value, 
-                        0, 1, 0, 0, (float)g.ToFloat().Value,
-                        0, 0, 1, 0, (float)b.ToFloat().Value,
+                        1, 0, 0, 0, (float)r.ToFloat().As<Float>().Value, 
+                        0, 1, 0, 0, (float)g.ToFloat().As<Float>().Value,
+                        0, 0, 1, 0, (float)b.ToFloat().As<Float>().Value,
                         0, 0, 0, 1, 0
                     };
                     using var paint = new SKPaint
@@ -446,9 +449,9 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return  new Err("invalid argument: self");
                     if (!args["other"].As<Image>(out var other))
-                        throw new Error("invalid argument: other");
+                        return  new Err("invalid argument: other");
 
                     var diff = 0;
                     for (int y = 0; y < self.Value.Height; y++)
@@ -474,7 +477,7 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["self"].As<Image>(out var self))
-                        throw new Error("invalid argument: self");
+                        return  new Err("invalid argument: self");
 
                     string ascii = "@%#*+=-:. ";
 
@@ -510,16 +513,16 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["path"].As<Str>(out var path))
-                        throw new Error("invalid arguments: path");
+                        new Err("invalid arguments: path");
 
-                    var fullPath = Path.GetFullPath(Global.Path + path.Value);
+                    var fullPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(Environment.CurrentDirectory, path.Value));
 
                     if (!File.Exists(fullPath))
-                        throw new Error("A file that doesn't exist.");
+                        new Err("A file that doesn't exist.");
 
                     using var stream = new SKFileStream(fullPath);
                     var bitmap = SKBitmap.Decode(stream);
-                    return new Image(bitmap ?? throw new Error("failed to load image"));
+                    return new Image(bitmap ?? throw new Panic("failed to load image"));
                 }
             }
         },
@@ -533,11 +536,11 @@ public class Image(SKBitmap value) : Ref<SKBitmap>(value ?? new SKBitmap(), "ima
                 Func = (args) =>
                 {
                     if (!args["width"].As<Int, Float>(out var width))
-                        throw new Error("invalid arguments: width");
+                        return new Err("invalid arguments: width");
                     if (!args["height"].As<Int, Float>(out var height))
-                        throw new Error("invalid arguments: height");
+                        return new Err("invalid arguments: height");
 
-                    var bitmap = new SKBitmap((int)width.ToInt().Value, (int)height.ToInt().Value);
+                    var bitmap = new SKBitmap((int)width.ToInt().As<Int>().Value, (int)height.ToInt().As<Int>().Value);
 
                     return new Image(bitmap);
                 }

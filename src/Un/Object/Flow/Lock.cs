@@ -28,7 +28,7 @@ public class Lock : Obj
         return None;
     }
 
-    public override Scope GetOriginal() => new()
+    public override Attributes GetOriginal() => new()
     {
         { "acquire", new NFn()
             {
@@ -67,7 +67,7 @@ public class Lock : Obj
                     }
                     else
                     {
-                        throw new Error("lock not held");
+                        return new Err("lock not held");
                     }
                     return this;
                 }

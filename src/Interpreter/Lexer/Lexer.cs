@@ -2,7 +2,7 @@ namespace Un;
 
 using TokenInfo = (Token token, TokenType type);
 
-public class Lexer
+public class Lexer()
 {
     private List<Token> tokens;
     private int index = 0;
@@ -26,13 +26,13 @@ public class Lexer
                     TokenType.LBrack => IsSlicer(start, end) ? "indexer" : "list",
                     TokenType.LBrace => IsSet(start, end) ? "set" : "dict",
                     TokenType.LParen => IsIdentifier() ? "call" : "tuple",
-                    _ => throw new Error($"invalid left bracket type {type}")
+                    _ => throw new Panic($"invalid left bracket type {type}")
                 }, type switch
                 {
                     TokenType.LBrack => IsSlicer(start, end) ? TokenType.Indexer : TokenType.List,
                     TokenType.LBrace => IsSet(start, end) ? TokenType.Set : TokenType.Dict,
                     TokenType.LParen => IsIdentifier() ? TokenType.Call : TokenType.Tuple,
-                    _ => throw new Error($"invalid left bracket type {type}")
+                    _ => throw new Panic($"invalid left bracket type {type}")
                 })
                 {
                     Children = children,
@@ -49,13 +49,13 @@ public class Lexer
                     TokenType.Not => TokenType.Not,
                     TokenType.Asterisk => TokenType.Spread,
                     TokenType.DoubleAsterisk => TokenType.DictSpread,
-                    _ => throw new Error($"invalid unary operator type {type}")
+                    _ => throw new Panic($"invalid unary operator type {type}")
                 } : type));
             }
             else if (type == TokenType.Dot)
             {
                 if (!IsIdentifier())
-                    throw new Error("expected identifier after dot");
+                    throw new Panic("expected identifier after dot");
 
                 (var property, _) = Next();
 
@@ -66,7 +66,7 @@ public class Lexer
                 var lexed = new Lexer().Lex(tokens[index..]);
 
                 if (lexed.Count < 2)
-                    throw new Error("expected function body after func keyword");
+                    throw new Panic("expected function body after func keyword");
 
                 if (lexed[0].Type == TokenType.Tuple && lexed[1].Type == TokenType.Return)
                 {
@@ -89,7 +89,7 @@ public class Lexer
                         Children = [lexed[1]]
                     });
                 }
-                else throw new Error("expected function body after func keyword");
+                else throw new Panic("expected function body after func keyword");
 
                 break;
             }
@@ -114,7 +114,7 @@ public class Lexer
     private TokenInfo Next()
     {
         if (IsEnd())
-            throw new Error("end of tokens reached");
+            throw new Panic("end of tokens reached");
 
         var token = tokens[index];
         var type = token.Type;
@@ -126,7 +126,7 @@ public class Lexer
     private TokenInfo Peek(int index)
     {
         if (IsEnd(index))
-            throw new Error("end of tokens reached");
+            throw new Panic("end of tokens reached");
 
         var token = tokens[index];
         var type = token.Type;
@@ -151,7 +151,7 @@ public class Lexer
         }
 
         if (colon > 2)
-            throw new Error("too many colons in slicer");
+            throw new Panic("too many colons in slicer");
 
         return colon > 0 && colon < 3;
     }
@@ -195,7 +195,7 @@ public class Lexer
         }
 
         if (depth > 0)
-            throw new Error($"unmatched {closer} at index {end}");
+            throw new Panic($"unmatched {closer} at index {end}");
         return (start, end);
     }
 }

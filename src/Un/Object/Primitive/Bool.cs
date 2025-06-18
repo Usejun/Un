@@ -10,7 +10,7 @@ public class Bool(bool value) : Val<bool>(value, "bool")
     {
         { Count: 0 } => new Bool(),
         { Count: 1 } => args[0].ToBool(),
-        _ => new(false)
+        _ => new Bool(false)
     };
 
     public override Obj And(Obj other) => Value ? other : this;

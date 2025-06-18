@@ -1,3 +1,10 @@
-use flow
-using pool: pool = flow.spawn()
-write(1*)
+fn power(func: func[int]) -> func
+    x = 2
+    fn inner()
+        -> func() ** x
+    -> inner
+
+two = fn() -> 2
+three = fn() -> 3
+
+write(power(two), power(three))

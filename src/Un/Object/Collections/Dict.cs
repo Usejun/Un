@@ -10,12 +10,12 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
     public override Obj Init(Tup args) => args switch
     {
         { Count: 0 } => new Dict(),
-        _ => throw new Error($"invaild '{Type}' initialize"),
+        _ => new Err($"invaild '{Type}' initialize"),
     };
 
-    public override Obj Len() => new Int(Value.Count);
+    public override Int Len() => new(Value.Count);
 
-    public override Obj GetItem(Obj key) => Value.TryGetValue(key, out var value) ? value : throw new Error($"key '{key.ToStr().Value}' not found in dictionary");
+    public override Obj GetItem(Obj key) => Value.TryGetValue(key, out var value) ? value : new Err($"key '{key.ToStr().As<Str>().Value}' not found in dictionary");
 
     public override void SetItem(Obj key, Obj value)
     {
@@ -25,14 +25,14 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
     public override Obj In(Obj obj) => obj switch
     {
         Dict dict => new Bool(Overlap(dict)),
-        _ => throw new Error($"cannot check if '{obj.Type}' is in '{Type}'"),
+        _ => new Err($"cannot check if '{obj.Type}' is in '{Type}'"),
     };
 
     public override Obj Copy() => this;
 
     public override Obj Clone() => new Dict(new Dictionary<Obj, Obj>(Value));
 
-    public override Str ToStr() => new($"{{{string.Join(", ", Value.Select(x => $"{x.Key.ToStr().Value}: {x.Value.ToStr().Value}"))}}}");
+    public override Str ToStr() => new($"{{{string.Join(", ", Value.Select(x => $"{x.Key.ToStr().As<Str>().Value}: {x.Value.ToStr().As<Str>().Value}"))}}}");
 
     public override List ToList() => new([.. Value.Keys.Zip(Value.Values).Select(x => new Tup([x.First, x.Second], ["key", "value"]))]);
 
@@ -46,7 +46,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
     {
         foreach (var (key, value) in dict.Value)
         {
-            if (!Value.TryGetValue(key, out var v) || !v.Eq(value).Value)
+            if (!Value.TryGetValue(key, out var v) || !v.Eq(value).As<Bool>().Value)
                 return false;
         }
         return true;
@@ -64,7 +64,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                 Func = (args) =>
                 {
                     if (!args["self"].As<Dict>(out var self))
-                        throw new Error("invalid argument");
+                        return new Err("invalid argument");
 
                     self.Value.Add(args["key"], args["value"]);
                     return self;
@@ -80,7 +80,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                 Func = (args) =>
                 {
                     if (!args["self"].As<Dict>(out var self))
-                        throw new Error("invalid argument");
+                        return new Err("invalid argument");
 
                     return new Bool(self.Value.Remove(args["key"]));
                 }
@@ -96,7 +96,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                 Func = (args) =>
                 {
                     if (!args["self"].As<Dict>(out var self))
-                        throw new Error("invalid argument");
+                        return new Err("invalid argument");
 
                     return self.Value.TryGetValue(args["key"], out var value) ? value : args["default"];
                 }
@@ -111,7 +111,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                 Func = (args) =>
                 {
                     if (!args["self"].As<Dict>(out var self))
-                        throw new Error("invalid argument");
+                        return new Err("invalid argument");
 
                     return new Bool(self.Value.ContainsKey(args["key"]));
                 }
@@ -126,7 +126,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                 Func = (args) =>
                 {
                     if (!args["self"].As<Dict>(out var self))
-                        throw new Error("invalid argument");
+                        return new Err("invalid argument");
 
                     return new Bool(self.Value.ContainsValue(args["value"]));
                 }
@@ -139,10 +139,10 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                 Func = (args) =>
                 {
                     if (!args["self"].As<Dict>(out var self))
-                        throw new Error("invalid argument");
+                        return new Err("invalid argument");
 
                     self.Value.Clear();
-                    return Obj.None;
+                    return None;
                 }
             }
         },
@@ -153,7 +153,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                 Func = (args) =>
                 {
                     if (!args["self"].As<Dict>(out var self))
-                        throw new Error("invalid argument");
+                        return new Err("invalid argument");
 
                     return new List([.. self.Value.Keys]);
                 }
@@ -166,7 +166,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                 Func = (args) =>
                 {
                     if (!args["self"].As<Dict>(out var self))
-                        throw new Error("invalid argument");
+                        return new Err("invalid argument");
 
                     return new List([.. self.Value.Values]);
                 }

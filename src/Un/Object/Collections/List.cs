@@ -52,7 +52,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
             return new(false);
 
         for (int i = 0; i < Count; i++)
-            if (Value[i].NEq(list[i]).Value)
+            if (Value[i].NEq(list[i]).As<Bool>().Value)
                 return new(false);
 
         return new(true);
@@ -60,17 +60,17 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
 
     public override Obj GetItem(Obj key) => key switch
     {
-        Int i => OutOfRange((int)i.Value) ? throw new Error("list index out of range") : this[(int)i.Value],
-        _ => throw new Error("invalid index type")
+        Int i => OutOfRange((int)i.Value) ? new Err("list index out of range") : this[(int)i.Value],
+        _ => new Err("invalid index type")
     };
 
     public override void SetItem(Obj key, Obj value)
     {
         if (key is not Int i)
-            throw new Error("invalid index type");
+            throw new Panic("invalid index type");
 
         if (OutOfRange((int)i.Value))
-            throw new Error("list index out of range");
+            throw new Panic("list index out of range");
 
         this[(int)i.Value] = value;
     }
@@ -80,7 +80,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         List list => new Bool(Overlap(list)),
         Tup tup => new Bool(Overlap(tup.ToList())),
 
-        _ => throw new Error($"cannot check if '{obj.Type}' is in '{Type}'"),
+        _ => new Err($"cannot check if '{obj.Type}' is in '{Type}'"),
     };
 
     public override Obj Len() => new Int(Count);
@@ -109,7 +109,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         return newList;
     }
 
-    public override Str ToStr() => new($"[{string.Join(", ", Value[..Count].Select(v => v.ToStr().Value))}]");
+    public override Str ToStr() => new($"[{string.Join(", ", Value[..Count].Select(v => v.ToStr().As<Str>().Value))}]");
 
     public override Spread Spread() => new(Value[..Count]);
 
@@ -134,7 +134,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
 
     public void Extend(Obj value)
     {
-        foreach (var v in value.Iter().Value)
+        foreach (var v in value.Iter().As<Iters>().Value)
             Append(v);
     }
 
@@ -143,7 +143,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         if (IsFull)
             Resize();
 
-        foreach (var item in obj.Iter().Value)
+        foreach (var item in obj.Iter().As<Iters>().Value)
             Insert(item, index);
 
         return this;
@@ -171,13 +171,16 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
     public Bool Remove(Obj obj)
     {
         for (int i = 0; i < Count; i++)
-            if (this[i].Eq(obj).Value)
+            if (this[i].Eq(obj).As<Bool>().Value)
                 return RemoveAt(new(i));
         return new(false);
     }
 
     public Bool RemoveAt(Int index)
     {
+        if (OutOfRange((int)index.Value))
+            return new(false);
+
         for (int i = (int)index.Value; i < Count - 1; i++)
             this[i] = this[i + 1];
         Count--;
@@ -187,7 +190,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
     public Int IndexOf(Obj obj)
     {
         for (int i = 0; i < Count; i++)
-            if (this[i].Eq(obj).Value)
+            if (this[i].Eq(obj).As<Bool>().Value)
                 return new(i);
         return new(-1);
     }
@@ -217,7 +220,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         while (r > l)
         {
             m = (l + r) / 2;
-            if (this[m].Lt(obj).Value) l = m + 1;
+            if (this[m].Lt(obj).As<Bool>().Value) l = m + 1;
             else r = m;
         }
         return new(r);
@@ -229,7 +232,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         while (r > l)
         {
             m = (l + r) / 2;
-            if (this[m].LtOrEq(obj).Value) l = m + 1;
+            if (this[m].LtOrEq(obj).As<Bool>().Value) l = m + 1;
             else r = m;
         }
         return new(r);
@@ -254,7 +257,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
     public Obj HPop()
     {
         if (Count == 0)
-            throw new Error("list is empty");
+            return new Err("list is empty");
 
         Obj value = this[0];
         this[0] = this[^1];
@@ -290,14 +293,13 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
 
     public override int GetHashCode()
     {
-        int hash = 123456789;
+        int hash = Global.BASEHASH;
 
         foreach (var item in this)
         {
-            hash <<= 5;
-            hash |= item.GetHashCode();
-            hash += item.GetHashCode();
-            hash = Math.Abs(hash);
+            hash <<= Global.HASHPRIME;
+            hash ^= value.GetHashCode();
+            hash >>= Global.HASHPRIME;
         }
 
         return hash;
@@ -324,9 +326,9 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["values"].As<List>(out var values))
-                        throw new Error("invalid argument: values");
+                        return new Err("invalid argument: values");
 
                     for (int i = 0; i < values.Count; i++)
                         self.Append(values[i]);
@@ -346,9 +348,9 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["index"].As<Int>(out var i))
-                        throw new Error("invalid argument: index");
+                        return new Err("invalid argument: index");
 
                     self.Insert(args["value"], (int)i.Value);
                     return None;
@@ -362,7 +364,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     self.Extend(args["value"]);
                     return None;
@@ -380,9 +382,9 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["index"].As<Int>(out var i))
-                        throw new Error("invalid argument: index");
+                        return new Err("invalid argument: index");
 
                     self.ExtendInsert(args["value"], (int)i.Value);
                     return None;
@@ -396,7 +398,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return self.Remove(args["value"]);
                 }
@@ -409,9 +411,9 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["index"].As<Int>(out var i))
-                        throw new Error("invalid argument: index");
+                        return new Err("invalid argument: index");
 
                     return self.RemoveAt(i);
                 }
@@ -424,7 +426,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return self.IndexOf(args["value"]);
                 }
@@ -437,7 +439,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return self.Contains(args["value"]);
                 }
@@ -450,7 +452,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return self.Clone();
                 }
@@ -463,7 +465,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     self.Reverse();
                     return None;
@@ -477,9 +479,9 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["key"].As<Fn>(out var f))
-                        throw new Error("invalid argument: key");
+                        return new Err("invalid argument: key");
 
                     self.Order(f);
                     return None;
@@ -493,9 +495,9 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["index"].As<Int>(out var index))
-                        throw new Error("invalid argument: index");
+                        return new Err("invalid argument: index");
 
                     return self.Pop(index);
                 }
@@ -508,7 +510,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     self.HPush(args["value"]);
                     return None;
@@ -522,7 +524,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return self.HPop();
                 }
@@ -535,7 +537,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return self.BinarySearch(args["value"]);
                 }
@@ -548,7 +550,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return self.LowerBound(args["value"]);
                 }
@@ -561,7 +563,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return self.UpperBound(args["value"]);
                 }

@@ -14,11 +14,11 @@ public class Fn : Obj
     {
         args = UnpackArgs(args);
 
-        scope.Add("self", Self);
-        scope.Add("super", Super);
+        scope["self"] = Self;
+        scope["super"] = Super;
 
         var unnamed = new List<Obj>();
-        var extraNamed = new Scope();
+        var extraNamed = new Map();
 
         for (int i = 0; i < args.Count; i++)
         {
@@ -32,7 +32,7 @@ public class Fn : Obj
             else
             {
                 if (scope.ContainsKey(name))
-                    throw new Error($"argument '{name}' provided multiple times.");
+                    throw new Panic($"argument '{name}' provided multiple times.");
                 extraNamed[name] = val;
             }
         }
@@ -74,7 +74,7 @@ public class Fn : Obj
                 }
                 else
                 {
-                    throw new Error($"missing required argument: '{arg.Name}'");
+                    throw new Panic($"missing required argument: '{arg.Name}'");
                 }
             }
             else if (arg.IsOptional && !positionalReached)
@@ -115,7 +115,7 @@ public class Fn : Obj
             }
             else
             {
-                throw new Error("function does not accept positional arguments.");
+                throw new Panic("function does not accept positional arguments.");
             }
         }
 
@@ -132,7 +132,7 @@ public class Fn : Obj
             else
             {
                 var unexpected = extraNamed.Keys.First();
-                throw new Error($"unexpected keyword argument: '{unexpected}'");
+                throw new Panic($"unexpected keyword argument: '{unexpected}'");
             }
         }
     }
@@ -162,7 +162,7 @@ public class Fn : Obj
         return new([.. objs], [.. names]);
     }
 
-    public static List<Arg> GetArgs(List<Node> args, Scope scope)
+    public static List<Arg> GetArgs(List<Node> args, Context context)
     {
         List<Arg> result = [];
         List<Node> buf = [];
@@ -190,7 +190,7 @@ public class Fn : Obj
                     IsOptional = isOptional,
                     IsPositional = isPositional,
                     IsKeyword = isKeyword,
-                    DefaultValue = hasDefault ? Executer.On(buf, scope) : Null,
+                    DefaultValue = hasDefault ? Executer.On(buf, context) : Null,
                 });
 
                 (argType, name) = ("", "");
@@ -224,7 +224,7 @@ public class Fn : Obj
                 IsOptional = isOptional,
                 IsPositional = isPositional,
                 IsKeyword = isKeyword,
-                DefaultValue = hasDefault ? Executer.On(buf, scope) : Null,
+                DefaultValue = hasDefault ? Executer.On(buf, context) : Null,
             });
 
         return result;

@@ -1,6 +1,6 @@
 namespace Un;
 
-public class Tokenizer
+public class Tokenizer()
 {
     private UnFile code;
     private List<Token> tokens;
@@ -34,7 +34,7 @@ public class Tokenizer
             else token = new Token($"{peek}", TokenType.Error);
 
             if (token.Type == TokenType.Error)
-                throw new Error("unexpected token: " + token.Value);
+                throw new Panic("unexpected token: " + token.Value);
 
             tokens.Add(token);
         }
@@ -131,7 +131,7 @@ public class Tokenizer
                 'x' or 'X' => ReadRange(char.IsAsciiHexDigit),
                 'o' or 'O' => ReadRange('0', '1', '2', '3', '4', '5', '6', '7'),
                 'b' or 'B' => ReadRange('0', '1'),
-                _ => throw new Error("unexpected token: " + peek)
+                _ => throw new Panic("unexpected token: " + peek)
             };
             
             return new Token($"{System.Convert.ToInt64(buffer, buffer[..2] switch
@@ -380,7 +380,7 @@ public class Tokenizer
             {
                 code.Move(0, code.Line + 1);
                 if (code.EOF)
-                    throw new Error("unclosed bracket: " + bracket);
+                    throw new Panic("unclosed bracket: " + bracket);
             }
         }
 

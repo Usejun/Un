@@ -9,35 +9,32 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
 
     public override Obj Init(Tup args) => new Set([..args.ToList()]);
 
-    public override Obj Add(Obj other)
+    public override Obj Add(Obj other) => other switch
     {
-        if (other is not Set otherSet)
-            throw new Error($"unsupported operand type(s) for +: 'set' and '{other.Type}'");
-        return new Set([.. Value.Union(otherSet.Value)]);
-    }
+        Set otherSet => new Set([.. Value.Union(otherSet.Value)]),
+        _ => new Err($"unsupported operand type(s) for +: 'set' and '{other.Type}'")
+    };
 
-    public override Obj Sub(Obj other)
+    public override Obj Sub(Obj other)=> other switch
     {
-        if (other is not Set otherSet)
-            throw new Error($"unsupported operand type(s) for -: 'set' and '{other.Type}'");
-        return new Set([.. Value.Except(otherSet.Value)]);
-    }
+        Set otherSet => new Set([.. Value.Except(otherSet.Value)]),
+        _ => new Err($"unsupported operand type(s) for -: 'set' and '{other.Type}'")
+    };
 
-    public override Obj BXor(Obj other)
+    public override Obj BXor(Obj other)=> other switch
     {
-        if (other is not Set otherSet)
-            throw new Error($"unsupported operand type(s) for ^: 'set' and '{other.Type}'");
-        return new Set([.. Value.Intersect(otherSet.Value)]);
-    }
+        Set otherSet => new Set([.. Value.Intersect(otherSet.Value)]),
+        _ => new Err($"unsupported operand type(s) for ^: 'set' and '{other.Type}'")
+    };
 
-    public override Obj Len() => new Int(Value.Count);
+    public override Int Len() => new(Value.Count);
 
-    public override Obj GetItem(Obj key) => Value.TryGetValue(key, out var value) ? value : throw new Error($"key {key.ToStr().Value} not found in set");
+    public override Obj GetItem(Obj key) => Value.TryGetValue(key, out var value) ? value : new Err($"key {key.ToStr().As<Str>().Value} not found in set");
 
     public override void SetItem(Obj key, Obj value)
     {
         if (Value.Contains(key))
-            throw new Error($"key {key.ToStr().Value} already exists in set");
+            throw new Panic($"key {key.ToStr().As<Str>().Value} already exists in set");
         Value.Add(key);
     }
 
@@ -45,7 +42,7 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
 
     public override Obj Clone() => new Set([.. Value]);
 
-    public override Str ToStr() => new($"{{{string.Join(", ", Value.Select(x => x.ToStr().Value))}}}");
+    public override Str ToStr() => new($"{{{string.Join(", ", Value.Select(x => x.ToStr().As<Str>().Value))}}}");
 
     public override Spread Spread() => new([.. Value]);
 
@@ -58,7 +55,7 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
                 Func = args =>
                 {
                     if (!args["self"].As<Set>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     return new Bool(self.Value.Add(args["value"]));
                 }
             }
@@ -70,7 +67,7 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
                 Func = args =>
                 {
                     if (!args["self"].As<Set>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     return new Bool(self.Value.Remove(args["value"]));
                 }
             }
@@ -82,7 +79,7 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
                 Func = args =>
                 {
                     if (!args["self"].As<Set>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     return new Bool(self.Value.Contains(args["value"]));
                 }
             }
@@ -94,7 +91,7 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
                 Func = args =>
                 {
                     if (!args["self"].As<Set>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     self.Value.Clear();
                     return None;
                 }
@@ -107,7 +104,7 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
                 Func = args =>
                 {
                     if (!args["self"].As<Set>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     return self.Clone();
                 }
             }
@@ -119,9 +116,9 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
                 Func = args =>
                 {
                     if (!args["self"].As<Set>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["other"].As<Set>(out var other))
-                        throw new Error("invalid argument: other");
+                        return new Err("invalid argument: other");
                     return self.Add(other);
                 }
             }
@@ -133,9 +130,9 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
                 Func = args =>
                 {
                     if (!args["self"].As<Set>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["other"].As<Set>(out var other))
-                        throw new Error("invalid argument: other");
+                        return new Err("invalid argument: other");
                     return self.Sub(other);
                 }
             }
@@ -147,9 +144,9 @@ public class Set(HashSet<Obj> value) : Ref<HashSet<Obj>>(value, "set")
                 Func = args =>
                 {
                     if (!args["self"].As<Set>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["other"].As<Set>(out var other))
-                        throw new Error("invalid argument: other");
+                        return new Err("invalid argument: other");
                     return self.BXor(other);
                 }
             }

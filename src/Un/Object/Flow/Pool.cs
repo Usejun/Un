@@ -30,8 +30,8 @@ public class Pool : Obj
     public override Obj Init(Tup args) => args switch
     {
         { Count: 0 } => new Pool(4),
-        { Count: 1 } => args[0] is Int count ? new Pool(count.Value) : throw new Error("expected a worker count as an integer"),
-        _ => throw new Error("pool takes at most one argument")
+        { Count: 1 } => args[0] is Int count ? new Pool(count.Value) : new Err("expected a worker count as an integer"),
+        _ => new Err("pool takes at most one argument")
     };
 
     public override Obj Entry() => this;
@@ -67,7 +67,7 @@ public class Pool : Obj
                 Func = (args) =>
                 {
                     if (!args["fn"].As<Fn>(out var fn))
-                        throw new Error("expected 'fn' argument to be of type 'func'");
+                        return new Err("expected 'fn' argument to be of type 'func'");
 
                     var future = new Future()
                     {
@@ -94,10 +94,10 @@ public class Pool : Obj
                 Func = (args) =>
                 {
                     if (!args["fn"].As<Fn>(out var fn))
-                        throw new Error("expected 'fn' argument to be of type 'func'");
+                        return new Err("expected 'fn' argument to be of type 'func'");
 
                     if (!args["vargs"].As<Tup>(out var vargs))
-                        throw new Error("expected 'iterable' argument to be of type 'iterable'");
+                        return new Err("expected 'iterable' argument to be of type 'iterable'");
 
                     var len = vargs.Count;
                     var result = new List<Obj>();

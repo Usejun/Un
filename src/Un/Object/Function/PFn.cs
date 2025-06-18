@@ -8,10 +8,10 @@ public class PFn : Fn
 
     public override Obj Call(Tup args)
     {
-        var scope = new Scope();
+        var scope = new Map(Closure?? new Map());
         Bind(scope, args);
         
-        var parser = new Parser(scope);
+        var parser = new Parser(new(scope, new("", [])));
 
         return parser.Parse(Nodes);
     }

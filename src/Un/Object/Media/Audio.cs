@@ -10,7 +10,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
 {
     public Str Path { get; set; }
 
-    public override Obj Init(Tup args) => throw new Error("cannot be created. use audio.load");
+    public override Obj Init(Tup args) => new Err("cannot be created. use audio.load");
 
     public override Attributes GetOriginal() => new()
     {
@@ -21,7 +21,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Audio>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Float(self.Value.Duration.TotalSeconds);
                 }
@@ -34,7 +34,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Audio>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Int(self.Value.PrimaryAudioStream?.BitRate ?? 0);
                 }
@@ -47,7 +47,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Audio>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Int(self.Value.PrimaryAudioStream.SampleRateHz);
                 }
@@ -60,7 +60,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Audio>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Int(self.Value.PrimaryAudioStream?.Channels ?? 0);
                 }
@@ -75,10 +75,10 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Audio>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     var outputFile = output.Value[^4..] switch
                     {
@@ -109,13 +109,13 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Audio>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     if (!args["volume"].As<Float, Int>(out var volume))
-                        throw new Error("invalid argument: volume");
+                        return new Err("invalid argument: volume");
 
                     var outputFile = output.Value[^4..] switch
                     {
@@ -126,7 +126,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                     if (FFMpegArguments
                         .FromFileInput(self.Path.Value)
                         .OutputToFile(outputFile, overwrite: true, options => options
-                            .WithCustomArgument($"volume={volume.ToFloat().Value}"))
+                            .WithCustomArgument($"volume={volume.ToFloat().As<Float>().Value}"))
                         .ProcessSynchronously())
                         File.Create(outputFile);
 
@@ -148,16 +148,16 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Audio>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     if (!args["start"].As<Float, Int>(out var start))
-                        throw new Error("invalid argument: start");
+                        return new Err("invalid argument: start");
 
                     if (!args["duration"].As<Float, Int>(out var duration))
-                        throw new Error("invalid argument: duration");
+                        return new Err("invalid argument: duration");
 
                     var outputFile = output.Value[^4..] switch
                     {
@@ -168,7 +168,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                     if (FFMpegArguments
                         .FromFileInput(self.Path.Value)
                         .OutputToFile(outputFile, overwrite: true, options => options
-                            .WithCustomArgument($"-ss {start.ToFloat().Value} -t {duration.ToFloat().Value}"))
+                            .WithCustomArgument($"-ss {start.ToFloat().As<Float>().Value} -t {duration.ToFloat().As<Float>().Value}"))
                         .ProcessSynchronously())
                         File.Create(outputFile);
 
@@ -192,7 +192,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["path"].As<Str>(out var path))
-                        throw new Error("invalid argument: path");
+                        return new Err("invalid argument: path");
 
                     return new Audio(FFProbe.Analyse(path.Value))
                     {
@@ -210,7 +210,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["video"].As<Video, Str>(out var video))
-                        throw new Error("invalid argument: video");
+                        return new Err("invalid argument: video");
 
                     var output = System.IO.Path.GetTempFileName() + ".mp3";
 
@@ -223,7 +223,7 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                                 ".mp3" => s.Value,
                                 _ => s.Value + ".mp3"
                             },
-                            _ => throw new Error("invalid argument: video")
+                            _ => throw new Panic("invalid argument: video")
                         })
                         .OutputToFile(output, overwrite: true, options => options
                             .WithAudioCodec("mp3"))
@@ -247,12 +247,12 @@ public class Audio(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "audio"), 
                 Func = (args) =>
                 {
                     if (!args["files"].As<List>(out var files))
-                        throw new Error("invalid argument: files");
+                        return new Err("invalid argument: files");
 
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
-                    var inputFiles = files.Select(file => file.ToStr().Value).ToArray();
+                    var inputFiles = files.Select(file => file.ToStr().As<Str>().Value).ToArray();
                     var outputFile = $"{output.Value}.mp3";
 
                     if (!FFMpeg.Join(outputFile, inputFiles))                    

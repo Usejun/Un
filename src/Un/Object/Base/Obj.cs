@@ -21,141 +21,141 @@ public class Obj(string type) : IComparable<Obj>
     {
         if (TryMethod("__init__", out Obj? value))
             return value.Call([this, .. args]);
-        return Super is not null && !Super.IsNone() ? Super.Init(args) : throw new Error($"unsupported operand type(s) for __init__: '{Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Init(args) : new Err($"unsupported operand type(s) for __init__: '{Type}'");
     }
 
     public virtual Obj Add(Obj other)
     {
         if (TryMethod("__add__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Add(other) : throw new Error($"unsupported operand type(s) for +: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Add(other) : new Err($"unsupported operand type(s) for +: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj Sub(Obj other)
     {
         if (TryMethod("__sub__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Sub(other) : throw new Error($"unsupported operand type(s) for -: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Sub(other) : new Err($"unsupported operand type(s) for -: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj Mul(Obj other)
     {
         if (TryMethod("__mul__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Mul(other) : throw new Error($"unsupported operand type(s) for *: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Mul(other) : new Err($"unsupported operand type(s) for *: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj Div(Obj other)
     {
         if (TryMethod("__div__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Div(other) : throw new Error($"unsupported operand type(s) for /: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Div(other) : new Err($"unsupported operand type(s) for /: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj IDiv(Obj other)
     {
         if (TryMethod("__idiv__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.IDiv(other) : throw new Error($"unsupported operand type(s) for //: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.IDiv(other) : new Err($"unsupported operand type(s) for //: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj Mod(Obj other)
     {
         if (TryMethod("__mod__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Mod(other) : throw new Error($"unsupported operand type(s) for %: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Mod(other) : new Err($"unsupported operand type(s) for %: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj Pow(Obj other)
     {
         if (TryMethod("__pow__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Pow(other) : throw new Error($"unsupported operand type(s) for **: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Pow(other) : new Err($"unsupported operand type(s) for **: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj And(Obj other)
     {
-        if (ToBool().Value) return other;
+        if (ToBool().As<Bool>().Value) return other;
         return other;
     }
 
     public virtual Obj Or(Obj other)
     {
-        if (ToBool().Value) return this;
+        if (ToBool().As<Bool>().Value) return this;
         return other;
     }
 
     public virtual Obj Xor(Obj other)
     {
-        if (ToBool().Value ^ other.ToBool().Value) return new Bool(true);
+        if (ToBool().As<Bool>().Value ^ other.ToBool().As<Bool>().Value) return new Bool(true);
         return new Bool(false);
     }
 
-    public virtual Obj Not() => new Bool(!ToBool().Value);
+    public virtual Obj Not() => new Bool(!ToBool().As<Bool>().Value);
 
     public virtual Obj BAnd(Obj other)
     {
         if (TryMethod("__band__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.BAnd(other) : throw new Error($"unsupported operand type(s) for &: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.BAnd(other) : new Err($"unsupported operand type(s) for &: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj BOr(Obj other)
     {
         if (TryMethod("__bor__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.BOr(other) : throw new Error($"unsupported operand type(s) for |: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.BOr(other) : new Err($"unsupported operand type(s) for |: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj BXor(Obj other)
     {
         if (TryMethod("__bxor__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.BXor(other) : throw new Error($"unsupported operand type(s) for ^: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.BXor(other) : new Err($"unsupported operand type(s) for ^: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj BNot()
     {
         if (TryMethod("__bnot__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.BNot() : throw new Error($"unsupported operand type(s) for ~: '{Type}'");
+        return Super is not null && !Super.IsNone() ? Super.BNot() : new Err($"unsupported operand type(s) for ~: '{Type}'");
     }
 
     public virtual Obj LShift(Obj other)
     {
         if (TryMethod("__lsh__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.LShift(other) : throw new Error($"unsupported operand type(s) for <<: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.LShift(other) : new Err($"unsupported operand type(s) for <<: '{Type}' and '{other.Type}'");
     }
 
     public virtual Obj RShift(Obj other)
     {
         if (TryMethod("__rsh__", out Obj? value, other))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.RShift(other) : throw new Error($"unsupported operand type(s) for >>: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.RShift(other) : new Err($"unsupported operand type(s) for >>: '{Type}' and '{other.Type}'");
     }
 
-    public virtual Bool Eq(Obj other)
+    public virtual Obj Eq(Obj other)
     {
         if (TryMethod("__eq__", out Obj? value, other))
             return value.ToBool();
-        return Super is not null && !Super.IsNone() ? Super.Eq(other) : throw new Error($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Eq(other) : new Err($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'");
     }
 
-    public virtual Bool NEq(Obj other) => new(!Eq(other).Value);
+    public virtual Obj NEq(Obj other) => new Bool(!Eq(other).As<Bool>().Value);
 
-    public virtual Bool Lt(Obj other)
+    public virtual Obj Lt(Obj other)
     {
         if (TryMethod("__lt__", out Obj? value))
             return value.Call([this, other]).ToBool();
-        return Super is not null && !Super.IsNone() ? Super.Lt(other) : throw new Error($"unsupported operand type(s) for <: '{Type}' and '{other.Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Lt(other) : new Err($"unsupported operand type(s) for <: '{Type}' and '{other.Type}'");
     }
 
-    public virtual Bool Gt(Obj other) => new(!other.Lt(other).Value && !other.Eq(other).Value);
+    public virtual Obj Gt(Obj other) => new Bool(!other.Lt(other).As<Bool>().Value && !other.Eq(other).As<Bool>().Value);
 
-    public virtual Bool LtOrEq(Obj other) => new(other.Lt(other).Value || other.Eq(other).Value);
+    public virtual Obj LtOrEq(Obj other) => new Bool(other.Lt(other).As<Bool>().Value || other.Eq(other).As<Bool>().Value);
 
-    public virtual Bool GtOrEq(Obj other) => new(!other.Lt(other).Value);
+    public virtual Obj GtOrEq(Obj other) => new Bool(!other.Lt(other).As<Bool>().Value);
 
     public virtual Obj Slicer(Int to, Int from, Int step)
     {
@@ -176,21 +176,21 @@ public class Obj(string type) : IComparable<Obj>
     {
         if (TryMethod("__call__", out Obj? value))
             return value.Call([this, .. args]);
-        return Super is not null && !Super.IsNone() ? Super.Call(args) : throw new Error($"unsupported operand type(s) for (): '{Type}'");
+        return Super is not null && !Super.IsNone() ? Super.Call(args) : new Err($"unsupported operand type(s) for (): '{Type}'");
     }
 
     public virtual Obj Len()
     {
         if (TryMethod("__len__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Len() : throw new Error("unsupported operand type(s) for len()");
+        return Super is not null && !Super.IsNone() ? Super.Len() : new Err("unsupported operand type(s) for len()");
     }
 
-    public virtual Int Hash()
+    public virtual Obj Hash()
     {
         if (TryMethod("__hash__", out Obj? value))
             return value.ToInt();
-        return Super is not null && !Super.IsNone() ? Super.Hash() : throw new Error("Cannot hashable object");
+        return Super is not null && !Super.IsNone() ? Super.Hash() : new Err("Cannot hashable object");
     }
 
     public virtual void SetAttr(string name, Obj value)
@@ -210,7 +210,7 @@ public class Obj(string type) : IComparable<Obj>
         else if (Members.TryGetValue(name, out value)) {}
         else if (Super is not null && !Super.IsNone())
             value = Super.GetAttr(name);
-        else throw new Error($"'{Type}' object has no attribute '{name}'");
+        else new Err($"'{Type}' object has no attribute '{name}'");
 
         value.Self = this;
         return value;
@@ -223,35 +223,35 @@ public class Obj(string type) : IComparable<Obj>
         else if (Super is not null && !Super.IsNone())
             Super.SetItem(key, value);
         else
-            throw new Error($"unsupported operand type(s) for [] = 'value': '{Type}'");
+            new Err($"unsupported operand type(s) for [] = 'value': '{Type}'");
     }
 
     public virtual Obj GetItem(Obj key)
     {
         if (TryMethod("__getitem__", out Obj? value, key))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.GetItem(key) : throw new Error($"unsupported operand type(s) for []: '{Type}'");
+        return Super is not null && !Super.IsNone() ? Super.GetItem(key) : new Err($"unsupported operand type(s) for []: '{Type}'");
     }
 
     public virtual Obj Pos()
     {
         if (TryMethod("__pos__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Pos() : throw new Error("Cannot positiveable object");
+        return Super is not null && !Super.IsNone() ? Super.Pos() : new Err("Cannot positiveable object");
     }
 
     public virtual Obj Neg()
     {
         if (TryMethod("__neg__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Neg() : throw new Error("Cannot negativeable object");
+        return Super is not null && !Super.IsNone() ? Super.Neg() : new Err("Cannot negativeable object");
     }
 
-    public virtual Spread Spread()
+    public virtual Obj Spread()
     {
         if (TryMethod("__spread__", out Obj? value) && value.As<Spread>(out var spread))
             return spread;
-        return Super is not null && !Super.IsNone() ? Super.Spread() : throw new Error("Cannot spreadable object");
+        return Super is not null && !Super.IsNone() ? Super.Spread() : new Err("Cannot spreadable object");
     }
 
     public virtual Obj Is(Obj obj)
@@ -265,77 +265,77 @@ public class Obj(string type) : IComparable<Obj>
     {
         if (TryMethod("__in__", out Obj? value, obj))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.In(obj) : throw new Error("Cannot inable object");
+        return Super is not null && !Super.IsNone() ? Super.In(obj) : new Err("Cannot inable object");
     }
 
-    public virtual Int ToInt()
+    public virtual Obj ToInt()
     {
         if (TryMethod("__int__", out Obj? value))
             return value.ToInt();
-        return Super is not null && !Super.IsNone() ? Super.ToInt() : throw new Error("Cannot intable object");
+        return Super is not null && !Super.IsNone() ? Super.ToInt() : new Err("Cannot intable object");
     }
 
-    public virtual Float ToFloat()
+    public virtual Obj ToFloat()
     {
         if (TryMethod("__tuple__", out Obj? value))
             return value.ToFloat();
-        return Super is not null && !Super.IsNone() ? Super.ToFloat() : throw new Error("Cannot floatable object");
+        return Super is not null && !Super.IsNone() ? Super.ToFloat() : new Err("Cannot floatable object");
     }
 
-    public virtual Str ToStr()
+    public virtual Obj ToStr()
     {
         if (TryMethod("__str__", out Obj? value))
             return value.ToStr();
         return Super is not null && !Super.IsNone() ? Super.ToStr() : new Str($"{Type}");
     }
 
-    public virtual Bool ToBool()
+    public virtual Obj ToBool()
     {
         if (TryMethod("__bool__", out Obj? value))
             return value.ToBool();
-        return Super is not null && !Super.IsNone() ? Super.ToBool() : throw new Error("Cannot boolable object");
+        return Super is not null && !Super.IsNone() ? Super.ToBool() : new Err("Cannot boolable object");
     }
 
-    public virtual List ToList()
+    public virtual Obj ToList()
     {
         if (TryMethod("__list__", out Obj? value))
             return value.ToList();
-        return Super is not null && !Super.IsNone() ? Super.ToList() : throw new Error("Cannot listable object");
+        return Super is not null && !Super.IsNone() ? Super.ToList() : new Err("Cannot listable object");
     }
 
-    public virtual Tup ToTuple()
+    public virtual Obj ToTuple()
     {
         if (TryMethod("__tuple__", out Obj? value))
             return value.ToTuple();
-        return Super is not null && !Super.IsNone() ? Super.ToTuple() : throw new Error("Cannot tupleable object");
+        return Super is not null && !Super.IsNone() ? Super.ToTuple() : new Err("Cannot tupleable object");
     }
 
     public virtual Obj Entry()
     {
         if (TryMethod("__entry__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Entry() : throw new Error("Cannot entryable object");
+        return Super is not null && !Super.IsNone() ? Super.Entry() : new Err("Cannot entryable object");
     }
 
     public virtual Obj Exit()
     {
         if (TryMethod("__exit__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Exit() : throw new Error("Cannot exitable object");
+        return Super is not null && !Super.IsNone() ? Super.Exit() : new Err("Cannot exitable object");
     }
 
-    public virtual Iters Iter()
+    public virtual Obj Iter()
     {
         if (TryMethod("__iter__", out Obj? value))
             return value.Iter();
-        return Super is not null && !Super.IsNone() ? Super.Iter() : throw new Error("Cannot iterable object");
+        return Super is not null && !Super.IsNone() ? Super.Iter() : new Err("Cannot iterable object");
     }
 
     public virtual Obj Next()
     {
         if (TryMethod("__next__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Next() : throw new Error("Cannot iterable object");
+        return Super is not null && !Super.IsNone() ? Super.Next() : new Err("Cannot iterable object");
     }
 
     public virtual Obj Copy()
@@ -349,7 +349,7 @@ public class Obj(string type) : IComparable<Obj>
     {
         if (TryMethod("__clone__", out Obj? value))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Clone() : throw new Error("Cannot cloneable object");
+        return Super is not null && !Super.IsNone() ? Super.Clone() : new Err("Cannot cloneable object");
     }
 
     public bool As<T>(out T value) where T : Obj
@@ -387,7 +387,7 @@ public class Obj(string type) : IComparable<Obj>
         if (this is T obj)
             return obj;
 
-        throw new Error($"cannot cast {Type} to {typeof(T).Name}");
+        throw new Panic($"cannot cast {Type} to {typeof(T).Name}");
     }
 
     public Obj As<T, U>() where T : Obj where U : Obj
@@ -397,7 +397,7 @@ public class Obj(string type) : IComparable<Obj>
         if (this is U obj2)
             return obj2;
 
-        throw new Error($"cannot cast {Type} to {typeof(T).Name} or {typeof(U).Name}");
+       return new Err($"cannot cast {Type} to {typeof(T).Name} or {typeof(U).Name}");
     }
 
     public T As<T>(string message) where T : Obj
@@ -405,7 +405,7 @@ public class Obj(string type) : IComparable<Obj>
         if (this is T obj)
             return obj;
 
-        throw new Error(message);
+        throw new Panic(message);
     }
 
     private bool TryMethod(string name, out Obj value, params Obj[] args)
@@ -434,16 +434,16 @@ public class Obj(string type) : IComparable<Obj>
 
     public override bool Equals(object? other) => other switch
     {
-        Obj o => Eq(o).Value,
+        Obj o => Eq(o).As<Bool>().Value,
         _ => false,
     };
     
     public int CompareTo(Obj? other)
     {
         if (other == null) return 0;
-        if (Eq(other).Value) return 0;
-        if (Lt(other).Value) return -1;
-        if (Gt(other).Value) return 1;
-        throw new Error("types that are not comparable to each other.");
+        if (Eq(other).As<Bool>().Value) return 0;
+        if (Lt(other).As<Bool>().Value) return -1;
+        if (Gt(other).As<Bool>().Value) return 1;
+        throw new Panic("types that are not comparable to each other.");
     }
 }

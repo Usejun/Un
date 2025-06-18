@@ -7,9 +7,9 @@ namespace Un;
 
 public static class Convert
 {
-    public static List ToList(Node node, Scope scope) => new([.. node.Children.Split(TokenType.Comma).Select(x => Executer.On(x, scope))]);
+    public static List ToList(Node node, Context context) => new([.. node.Children.Split(TokenType.Comma).Select(x => Executer.On(x, context))]);
 
-    public static Tup ToTuple(Node node, Scope scope)
+    public static Tup ToTuple(Node node, Context context)
     {
         var list = new List();
         var names = new List<string>();
@@ -22,12 +22,12 @@ public static class Convert
 
             if (pair.Count == 1)
             {
-                value = Executer.On(pair[0], scope);
+                value = Executer.On(pair[0], context);
             }
             else if (pair.Count == 2)
             {
                 name = pair[0].Split(TokenType.Colon)[0][0].Value;
-                value = Executer.On(pair[1], scope);
+                value = Executer.On(pair[1], context);
             }
             
             names.Add(name);
@@ -37,19 +37,19 @@ public static class Convert
         return new Tup([.. list], [.. names]);
     }
 
-    public static Tup ToIndex(Node node, Scope scope) => new([.. node.Children.Split(TokenType.Colon).Select(x => Executer.On(x, scope))], []);
+    public static Tup ToIndex(Node node, Context context) => new([.. node.Children.Split(TokenType.Colon).Select(x => Executer.On(x, context))], []);
 
-    public static Tup ToPair(Node node, Scope scope)
+    public static Tup ToPair(Node node, Context context)
     {
         var temp = node.Children.Split(TokenType.Colon).ToList();
-        return new([new Str(temp[0][0].Value), Executer.On(temp[1], scope)], []);
+        return new([new Str(temp[0][0].Value), Executer.On(temp[1], context)], []);
     }
 
-    public static Dict ToDict(Node node, Scope scope) => new(node.Children.Split(TokenType.Comma).Select(x => ToPair(new("pair", TokenType.Pair) { Children = x }, scope)).Select(y => (y[0], y[1])).ToDictionary());
+    public static Dict ToDict(Node node, Context context) => new(node.Children.Split(TokenType.Comma).Select(x => ToPair(new("pair", TokenType.Pair) { Children = x }, context)).Select(y => (y[0], y[1])).ToDictionary());
 
-    public static Set ToSet(Node node, Scope scope) => new([.. ToTuple(node, scope).Value]);
+    public static Set ToSet(Node node, Context context) => new([.. ToTuple(node, context).Value]);
 
-    public static Str ToFStr(Node node, Scope scope)
+    public static Str ToFStr(Node node, Context context)
     {
         string src = node.Value, buf = "", str = "";
         int len = src.Length, depth = 0, i = 0;
@@ -86,7 +86,7 @@ public static class Convert
         return new(str);
     }
 
-    public static Obj Auto(Node node, Scope scope)
+    public static Obj Auto(Node node, Context context)
     {
         var (value, type, _) = node;
 
@@ -101,17 +101,17 @@ public static class Convert
         else if (DateTime.TryParse(value, out var dateValue))
             return new Date(dateValue);
         else if (type == TokenType.List)
-            return ToList(node, scope);
+            return ToList(node, context);
         else if (type == TokenType.Tuple)
-            return ToTuple(node, scope);
+            return ToTuple(node, context);
         else if (type == TokenType.Dict)
-            return ToDict(node, scope);
+            return ToDict(node, context);
         else if (type == TokenType.Set)
-            return ToSet(node, scope);
+            return ToSet(node, context);
         else if (type == TokenType.FString)
-            return ToFStr(node, scope);
+            return ToFStr(node, context);
         else
-            throw new Error($"conversion for {node.Type} is not implemented.");
+            return new Err($"conversion for {node.Type} is not implemented.");
 
     }
 

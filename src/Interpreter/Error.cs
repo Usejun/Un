@@ -1,13 +1,13 @@
 namespace Un;
 
-public class Error(string message) : Exception(message)
+public class Error(string message, Context context) : Exception(message)
 {
     public override string ToString() =>
 $"""
 
-    <{Global.File.Name}>, line [{Global.File.Index}] 
-        {Global.File.Code[Global.File.Line].code}
-        {new string('^', Global.File.Code[Global.File.Line].code.Length)}
+    <{context.File.Name}>, line [{context.File.Index}] 
+        {context.File.Code[context.File.Line].code}
+        {new string('^', context.File.Code[context.File.Line].code.Length)}
 {GetType().Name} : {Message}
 """;
 }

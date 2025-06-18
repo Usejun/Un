@@ -11,7 +11,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
 {
     public Str Path { get; set; }
 
-    public override Obj Init(Tup args) => throw new Error("cannot be created. use video.new or video.load");
+    public override Obj Init(Tup args) => new Err("cannot be created. use video.new or video.load");
 
     public override int GetHashCode() => Value.GetHashCode();
 
@@ -28,7 +28,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Float(self.Value.Duration.TotalSeconds);
                 }
@@ -43,7 +43,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Int(self.Value.PrimaryVideoStream.Width);
                 }
@@ -58,7 +58,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Int(self.Value.PrimaryVideoStream.Height);
                 }
@@ -76,19 +76,19 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["width"].As<Int, Float>(out var width))
-                        throw new Error("invalid argument: width");
+                        return new Err("invalid argument: width");
                     if (!args["height"].As<Int, Float>(out var height))
-                        throw new Error("invalid argument: height");
+                        return new Err("invalid argument: height");
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     var inputPath = self.Path.Value;
                     FFMpegArguments
                         .FromFileInput(inputPath)
                         .OutputToFile(output.Value, overwrite: true, options => options
-                            .Resize((int)width.ToInt().Value, (int)height.ToInt().Value)
+                            .Resize((int)width.ToInt().As<Int>().Value, (int)height.ToInt().As<Int>().Value)
                             .WithVideoCodec("libx264")
                             .WithAudioCodec("aac")
                             .WithFramerate(self.Value.PrimaryVideoStream.FrameRate))
@@ -108,7 +108,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Float(self.Value.PrimaryVideoStream.FrameRate);
                 }
@@ -121,7 +121,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     return new Str(self.Value.PrimaryVideoStream?.CodecName);
                 }
@@ -136,9 +136,9 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     var inputPath = self.Path.Value;
                     var outputPath = output.Value[^4..] switch
@@ -170,11 +170,11 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["time"].As<Float, Int>(out var time))
-                        throw new Error("invalid argument: time");
+                        return new Err("invalid argument: time");
                     if (!args["format"].As<Str>(out var format))
-                        throw new Error("invalid argument: format");
+                        return new Err("invalid argument: format");
 
                     var output = System.IO.Path.GetTempFileName() + format.Value;
                     var input = self.Path;
@@ -182,11 +182,11 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                     FFMpegArguments
                         .FromFileInput(input.Value)
                         .OutputToFile(output, overwrite: true, options => options
-                            .WithCustomArgument($"-vf \"select='gte(n\\,{time.ToFloat().Value * self.Value.PrimaryVideoStream.FrameRate})'\" -frames:v 1"))
+                            .WithCustomArgument($"-vf \"select='gte(n\\,{time.ToFloat().As<Float>().Value * self.Value.PrimaryVideoStream.FrameRate})'\" -frames:v 1"))
                         .ProcessSynchronously();
 
                     using var stream = new SKFileStream(output);
-                    return new Image(SKBitmap.Decode(stream) ?? throw new Error("failed to load image"));
+                    return new Image(SKBitmap.Decode(stream) ?? throw new Panic("failed to load image"));
                 }
             }
         },
@@ -201,13 +201,13 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["start"].As<Int, Float>(out var start))
-                        throw new Error("invalid argument: start");
+                        return new Err("invalid argument: start");
                     if (!args["duration"].As<Int, Float>(out var duration))
-                        throw new Error("invalid argument: duration");
+                        return new Err("invalid argument: duration");
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     var inputPath = self.Path;
                     var outputPath = output.Value[^4..] switch
@@ -218,9 +218,9 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
 
                     FFMpegArguments
                         .FromFileInput(inputPath.Value, true, opt => opt
-                            .Seek(TimeSpan.FromSeconds(start.ToFloat().Value)))
+                            .Seek(TimeSpan.FromSeconds(start.ToFloat().As<Float>().Value)))
                         .OutputToFile(outputPath, overwrite: true, opt => opt
-                            .WithDuration(TimeSpan.FromSeconds(duration.ToFloat().Value))
+                            .WithDuration(TimeSpan.FromSeconds(duration.ToFloat().As<Float>().Value))
                             .WithAudioCodec("aac"))
                         .ProcessSynchronously();
 
@@ -238,9 +238,9 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     var inputPath = self.Path;
                     var outputPath = output.Value[^4..] switch
@@ -272,11 +272,11 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
                     if (!args["audio"].As<Str, Audio>(out var audio))
-                        throw new Error("invalid argument: audio");
+                        return new Err("invalid argument: audio");
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     var inputPath = self.Path;
                     var outputPath = output.Value[^4..] switch
@@ -291,7 +291,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                         {
                             Str s => s.Value,
                             Audio a => a.Path.Value,
-                            _ => throw new Error("invalid argument: audio")
+                            _ => throw new Panic("invalid argument: audio")
                         })
                         .OutputToFile(outputPath, overwrite: true, options => options
                             .WithCustomArgument("-map 0:v:0 -map 1:a:0 -c:v copy -c:a aac"))
@@ -312,7 +312,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["self"].As<Video>(out var self))
-                        throw new Error("invalid argument: self");
+                        return new Err("invalid argument: self");
 
                     var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Guid.NewGuid().ToString());
                     Directory.CreateDirectory(tempDir);
@@ -353,12 +353,12 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["path"].As<Str>(out var path))
-                        throw new Error("invalid arguments: path");
+                        return new Err("invalid arguments: path");
 
-                    var fullPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(Global.Path, path.Value));
+                    var fullPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(Environment.CurrentDirectory, path.Value));
 
                     if (!File.Exists(fullPath))
-                        throw new Error("A file that doesn't exist.");
+                        return new Err("A file that doesn't exist.");
 
                     var analysis = FFProbe.Analyse(fullPath);
 
@@ -379,9 +379,9 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                 Func = (args) =>
                 {
                     if (!args["videos"].As<List>(out var videos))
-                        throw new Error("invalid argument: videos");
+                        return new Err("invalid argument: videos");
                     if (!args["output"].As<Str>(out var output))
-                        throw new Error("invalid argument: output");
+                        return new Err("invalid argument: output");
 
                     var tempFile = System.IO.Path.GetTempFileName();
                     try
@@ -394,7 +394,7 @@ public class Video(IMediaAnalysis value) : Ref<IMediaAnalysis>(value, "video"), 
                                 {
                                     Str s => s.Value.Replace("'", "'\\''"),
                                     Video v => v.Path.Value.Replace("'", "'\\''"),
-                                    _ => throw new Error("invalid argument: videos")
+                                    _ => throw new Panic("invalid argument: videos")
                                 };
                                 writer.WriteLine($"file '{escapedPath}'");
                             }

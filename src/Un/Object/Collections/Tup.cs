@@ -48,7 +48,7 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
 
     public Obj this[int index]
     {
-        get => OutOfRange(index) ? throw new Error("tuple index out of range") : Value[index];
+        get => OutOfRange(index) ? new Err("tuple index out of range") : Value[index];
     }
 
     public override Bool Eq(Obj other)
@@ -57,7 +57,7 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
             return new(false);
 
         for (int i = 0; i < Count; i++)
-            if (Value[i].NEq(tup[i]).Value)
+            if (Value[i].NEq(tup[i]).As<Bool>().Value)
                 return new(false);
 
         return new(true);
@@ -65,15 +65,15 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Obj GetItem(Obj key) => key switch
     {
-        Int i => OutOfRange((int)i.Value) ? throw new Error("tuple index out of range") : this[(int)i.Value],
-        _ => throw new Error("invalid index type")
+        Int i => OutOfRange((int)i.Value) ? new Err("tuple index out of range") : this[(int)i.Value],
+        _ => new Err("invalid index type")
     };
 
     public override Obj In(Obj obj)
     {
         foreach (var value in Value)
         {
-            if (value.Eq(obj).Value)
+            if (value.Eq(obj).As<Bool>().Value)
                 return new Bool(true);
         }
         return new Bool(false);
@@ -83,7 +83,7 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Bool ToBool() => new(Count != 0);
 
-    public override Str ToStr() => new($"({string.Join(", ", Value.Select(v => v.ToStr().Value))})");
+    public override Str ToStr() => new($"({string.Join(", ", Value.Select(v => v.ToStr().As<Str>().Value))})");
 
     public override List ToList() => new([..Value]);
 

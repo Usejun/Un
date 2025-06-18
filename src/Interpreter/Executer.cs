@@ -7,8 +7,9 @@ namespace Un;
 
 public static class Executer
 {
-    public static Obj On(List<Node> nodes, Scope scope)
-    {              
+    public static Obj On(List<Node> nodes, Context context)
+    {
+        var scope = context.Scope;
         var postfix = GetPostfix(nodes);
         var values = new Stack<Obj>();
 
@@ -18,7 +19,7 @@ public static class Executer
 
             if (type.IsLiteral())
             {
-                var value = Convert.Auto(node, scope);
+                var value = Convert.Auto(node, context);
 
                 values.Push(value switch
                 {
@@ -29,7 +30,7 @@ public static class Executer
             else if (type == TokenType.Call)
             {
                 var value = values.Pop();
-                var args = Convert.ToTuple(node, scope);
+                var args = Convert.ToTuple(node, context);
 
                 if (value.Type.EndsWith(".__init__"))
                     values.Push(Global.Class[value.Type.Split('.')[0]].Init(args));
@@ -45,7 +46,7 @@ public static class Executer
                 else if (Global.IsClass(node.Value))
                     values.Push(new Obj($"{node.Value}.__init__"));
                 else
-                    throw new Error($"undefined variable: {node.Value}.");
+                    throw new Error($"undefined variable: {node.Value}.", context);
             }
             else if (type == TokenType.Property)
             {
@@ -65,15 +66,15 @@ public static class Executer
                 ? new PFn()
                 {
                     Name = node.Value,
-                    Args = Fn.GetArgs(node.Children[0].Children, scope),
+                    Args = Fn.GetArgs(node.Children[0].Children, context),
                     Nodes = node.Children[2..],
                     Closure = scope,
                 }
                 : new LFn()
                 {
                     Name = node.Value,
-                    Args = Fn.GetArgs(node.Children[0].Children, scope),
-                    Body = Global.File.GetBody(),
+                    Args = Fn.GetArgs(node.Children[0].Children, context),
+                    Body = context.File.GetBody(),
                     Closure = scope,
                 };
 
@@ -87,7 +88,7 @@ public static class Executer
                 var fn = values.Pop();
 
                 if (fn is not Fn function)
-                    throw new Error($"cannot call {fn.Type} as a function.");
+                    throw new Error($"cannot call {fn.Type} as a function.", context);
 
                 values.Push(new GFn()
                 {
@@ -105,7 +106,7 @@ public static class Executer
                 else if (fn is Future future)
                     values.Push(future.Wait());
                 else
-                    throw new Error($"cannot wait on {fn.Type}.");
+                    throw new Error($"cannot wait on {fn.Type}.", context);
             }
             else if (type.IsBinaryOperator())
             {
@@ -139,19 +140,19 @@ public static class Executer
                         TokenType.Xor => left.Xor(right),
                         TokenType.In => right.In(left),
                         TokenType.Is => left.Is(right),
-                        _ => throw new Error($"binary operator {type} is not implemented.")
+                        _ => throw new Error($"binary operator {type} is not implemented.", context)
                     });
                 }
                 catch (InvalidOperationException e1)
                 {
-                    throw new Error("invalid expression");
+                    throw new Error("invalid expression", context);
                 }
             }
             else if (type.IsUnaryOperator())
             {
                 var right = values.Pop();
                 var index = type == TokenType.Indexer || type == TokenType.Slicer ?
-                    Convert.ToIndex(node, scope) : new Tup([], []);
+                    Convert.ToIndex(node, context) : new Tup([], []);
 
                 values.Push(type switch
                 {
@@ -164,12 +165,12 @@ public static class Executer
                     TokenType.BNot => right.BNot(),
                     TokenType.Not => right.Not(),
                     TokenType.Spread => right.Spread(),
-                    _ => throw new Error($"unary operator {type} is not implemented.")
+                    _ => throw new Error($"unary operator {type} is not implemented.", context)
                 });
             }
         }
 
-        return values.Count == 1 ? values.Pop() : values.Count == 0 ? Obj.None : throw new Error("invalid expression");
+        return values.Count == 1 ? values.Pop() : values.Count == 0 ? Obj.None : throw new Error("invalid expression", context);
     }
 
     private static List<Node> GetPostfix(List<Node> nodes)

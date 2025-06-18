@@ -40,21 +40,21 @@ public class Std : IPack
                 Func = (args) =>
                 {
                     if (!args["stream"].As<IO.Stream>(out var stream))
-                        throw new Error("expected 'stream' argument to be of type 'stream'");
+                        throw new Panic("expected 'stream' argument to be of type 'stream'");
 
                     var cw = new StreamWriter(stream.Value)
                     {
                         AutoFlush = false
                     };
 
-                    var items = args["value"].ToTuple().Value;
+                    var items = args["value"].ToTuple().As<Tup>().Value;
                     for (int i = 0; i < items.Length; i++)
                     {
-                        cw.Write(items[i].ToStr().Value);
+                        cw.Write(items[i].ToStr().As<Str>().Value);
                         if (i != items.Length - 1)
-                            cw.Write(args["sep"].ToStr().Value);
+                            cw.Write(args["sep"].ToStr().As<Str>().Value);
                     }
-                    cw.Write(args["end"].ToStr().Value);
+                    cw.Write(args["end"].ToStr().As<Str>().Value);
                     cw.Flush();
 
                     return Obj.None;
@@ -77,8 +77,8 @@ public class Std : IPack
                 }],
                 Func = (args) =>
                 {
-                    if (!args["stream"].As<Object.IO.Stream>(out var stream))
-                        throw new Error("expected 'stream' argument to be of type 'stream'");
+                    if (!args["stream"].As<IO.Stream>(out var stream))
+                        throw new Panic("expected 'stream' argument to be of type 'stream'");
 
                     var cr = new StreamReader(stream.Value);
                     var cw = new StreamWriter(so.Value)
@@ -86,7 +86,7 @@ public class Std : IPack
                         AutoFlush = false
                     };
 
-                    cw.Write(args["prompt"].ToStr().Value);
+                    cw.Write(args["prompt"].ToStr().As<Str>().Value);
                     cw.Flush();
                     return new Str(cr.ReadLine() ?? "");
                 }
@@ -111,14 +111,14 @@ public class Std : IPack
                 }],
                 Func = (args) =>
                 {
-                    var items = args["value"].ToTuple().Value;
+                    var items = args["value"].ToTuple().As<Tup>().Value;
                     for (int i = 0; i < items.Length; i++)
                     {
-                        ew.Write(items[i].ToStr().Value);
+                        ew.Write(items[i].ToStr().As<Str>().Value);
                         if (i != items.Length - 1)
-                            ew.Write(args["sep"].ToStr().Value);
+                            ew.Write(args["sep"].ToStr().As<Str>().Value);
                     }
-                    ew.Write(args["end"].ToStr().Value);
+                    ew.Write(args["end"].ToStr().As<Str>().Value);
                     ew.Flush();
 
                     return Obj.None;
@@ -158,7 +158,7 @@ public class Std : IPack
                 }],
                 Func = (args) =>
                 {
-                    Environment.Exit((int)args["code"].ToInt().Value);
+                    Environment.Exit((int)args["code"].ToInt().As<Int>().Value);
                     return Obj.None;
                 }
             }
@@ -189,14 +189,14 @@ public class Std : IPack
                 }],
                 Func = (args) =>
                 {
-                    return Create(args["size"].ToList());
+                    return Create(args["size"].ToList().As<List>());
 
                     List Create(List lengths)
                     {
                         List list = [];
 
                         if (!lengths[0].As<Int>(out var count))
-                            throw new Error("length argument is expected an integer");
+                            throw new Panic("length argument is expected an integer");
 
                         for (int i = 0; i < count.Value; i++)
                             list.Append(lengths.Count == 1 ? args["default"].Clone() : Create([.. lengths.Value[1..]]));
@@ -228,14 +228,14 @@ public class Std : IPack
                 ],
                 Func = (args) =>
                 {
-                    long start = args["start"].ToInt().Value,
-                         count = args["count"].ToInt().Value,
-                         step  = args["step"].ToInt().Value;
+                    long start = args["start"].ToInt().As<Int>().Value,
+                         count = args["count"].ToInt().As<Int>().Value,
+                         step  = args["step"].ToInt().As<Int>().Value;
 
                     if (count == -1)
                         (start, count) = (0, start);
                     if (step == 0)
-                        throw new Error("argument 'step' must be non-zero.");
+                        throw new Panic("argument 'step' must be non-zero.");
 
                     List list = [];
 
@@ -269,8 +269,8 @@ public class Std : IPack
                 ],
                 Func = (args) => args["value"] switch
                 {
-                    Str s => File.Exists(s.Value) ? new Object.IO.Stream(File.Open(s.Value, FileMode.Open)) : throw new Error($"file {s.Value} dose not exist"),
-                    _ => throw new Error("invlid type"),
+                    Str s => File.Exists(s.Value) ? new Object.IO.Stream(File.Open(s.Value, FileMode.Open)) : throw new Panic($"file {s.Value} dose not exist"),
+                    _ => throw new Panic("invlid type"),
                 }
             }
         },
@@ -285,10 +285,10 @@ public class Std : IPack
                     }
                 ],
                 Func = (args) => {
-                    var tuple = args["value"].ToTuple();
+                    var tuple = args["value"].ToTuple().As<Tup>();
 
                     if (tuple.Count == 0)
-                        throw new Error("expected more than one argument");
+                        throw new Panic("expected more than one argument");
 
                     if (tuple.Count == 1)
                     {
@@ -319,10 +319,10 @@ public class Std : IPack
                     }
                 ],
                 Func = (args) => {
-                    var tuple = args["value"].ToTuple();
+                    var tuple = args["value"].ToTuple().As<Tup>();
 
                     if (tuple.Count == 0)
-                        throw new Error("expected more than one argument");
+                        throw new Panic("expected more than one argument");
 
                     if (tuple.Count == 1)
                     {
@@ -336,7 +336,7 @@ public class Std : IPack
 
                     Obj max = tuple[0];
                     for (int i = 1; i < tuple.Count; i++)
-                        if (max.Lt(tuple[i]).Value)
+                        if (max.Lt(tuple[i]).As<Bool>().Value)
                             max = tuple[i];
 
                     return max;
@@ -354,10 +354,10 @@ public class Std : IPack
                     }
                 ],
                 Func = (args) => {
-                    var tuple = args["value"].ToTuple();
+                    var tuple = args["value"].ToTuple().As<Tup>();
 
                     if (tuple.Count == 0)
-                        throw new Error("expected more than one argument");
+                        throw new Panic("expected more than one argument");
 
                     if (tuple.Count == 1)
                     {
@@ -371,7 +371,7 @@ public class Std : IPack
 
                     Obj min = tuple[0];
                     for (int i = 1; i < tuple.Count; i++)
-                        if (min.Gt(tuple[i]).Value)
+                        if (min.Gt(tuple[i]).As<Bool>().Value)
                             min = tuple[i];
 
                     return min;
@@ -399,11 +399,11 @@ public class Std : IPack
                     {
                         Int i => i.Value,
                         Float f => f.Value,
-                        _ => throw new Error("expected number type")
+                        _ => throw new Panic("expected number type")
                     };
 
                     if (!args["digit"].As<Int>(out var digit) || digit.Value > 15 || digit.Value < 0)
-                        throw new Error("digit is must be int and greater then 0 and less then 15");
+                        throw new Panic("digit is must be int and greater then 0 and less then 15");
 
                     int d = (int)digit.Value;
 
@@ -427,7 +427,7 @@ public class Std : IPack
                 {
                     Int i => new Int(Math.Abs(i.Value)),
                     Float f => new Float(Math.Abs(f.Value)),
-                    _ => throw new Error("expected number type"),
+                    _ => throw new Panic("expected number type"),
                 }
             }
         },
@@ -449,7 +449,7 @@ public class Std : IPack
                         double d when d == (long)d => new Int((long)d),
                         double d => new Float(d),
                     },
-                    _ => throw new Error("expected number type"),
+                    _ => throw new Panic("expected number type"),
                 }
             }
         },
@@ -467,7 +467,7 @@ public class Std : IPack
                 {
                     Int i => new Float(Math.Sqrt(i.Value)),
                     Float f => new Float(Math.Sqrt(f.Value)),
-                    _ => throw new Error("expected number type"),
+                    _ => throw new Panic("expected number type"),
                 }
             }
         },
@@ -489,7 +489,7 @@ public class Std : IPack
                         double d when d == (long)d => new Int((long)d),
                         double d => new Float(d),
                     },
-                    _ => throw new Error("expected number type"),
+                    _ => throw new Panic("expected number type"),
                 }
             }
         },
@@ -513,7 +513,7 @@ public class Std : IPack
                     if (!memo.ContainsKey(fn.Name))
                         memo.Add(fn.Name, []);
 
-                    var key = args["args"].ToTuple();
+                    var key = args["args"].ToTuple().As<Tup>();
                     var hash = key.GetHashCode();
 
                     if (!memo[fn.Name].TryGetValue(hash, out Obj? result))
@@ -544,13 +544,13 @@ public class Std : IPack
                 Func = args =>
                 {
                     if (!args["time"].As<Int, Float>(out var time))
-                        throw new Error("expected 'time' argument to be of type 'int' or 'float");
+                        throw new Panic("expected 'time' argument to be of type 'int' or 'float");
 
                     Thread.Sleep(time switch
                     {
                         Int i => (int)i.Value,
                         Float f => (int)(f.Value * 1000),
-                        _ => throw new Error("expected 'time' argument to be of type 'int' or 'float'"),
+                        _ => throw new Panic("expected 'time' argument to be of type 'int' or 'float'"),
                     });
                     return Obj.None;
                 }
@@ -580,16 +580,16 @@ public class Std : IPack
                 Func = args =>
                 {
                     if (!args["time"].As<Int, Float>(out var time))
-                        throw new Error("expected 'time' argument to be of type 'int' or 'float");
+                        throw new Panic("expected 'time' argument to be of type 'int' or 'float");
                     if (!args["fn"].As<Fn>(out var fn))
-                        throw new Error("expected 'fn' argument to be of type 'func'");
-                    var vargs = args["args"].ToTuple();
+                        throw new Panic("expected 'fn' argument to be of type 'func'");
+                    var vargs = args["args"].ToTuple().As<Tup>();
 
                     Thread.Sleep(time switch
                     {
                         Int i => (int)i.Value,
                         Float f => (int)(f.Value * 1000),
-                        _ => throw new Error("expected 'time' argument to be of type 'int' or 'float'"),
+                        _ => throw new Panic("expected 'time' argument to be of type 'int' or 'float'"),
                     });
 
                     return fn.Call(vargs);

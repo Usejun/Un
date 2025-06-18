@@ -11,40 +11,40 @@ public class Str(string value) : Ref<string>(value, "str")
     {
         { Count: 0 } => new Str(""),
         { Count: 1 } => args[0].ToStr(),
-        _ => throw new Error($"cannot convert '{args[0].Type}' to '{Type}'"),
+        _ => new Err($"too many arguments"),
     };
 
     public char this[int index] => Value[index];
 
-    public override Obj Add(Obj other) => new Str(Value + other.ToStr().Value);
+    public override Obj Add(Obj other) => new Str(Value + other.ToStr().As<Str>().Value);
 
-    public override Obj Sub(Obj other) => new Str(Value.Replace(other.ToStr().Value, ""));
+    public override Obj Sub(Obj other) => new Str(Value.Replace(other.ToStr().As<Str>().Value, ""));
 
-    public override Bool Eq(Obj other) => other switch
+    public override Obj Eq(Obj other) => other switch
     {
-        Str s => new(Value.CompareTo(s.Value) == 0),
-        _ => throw new Error($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'")
+        Str s => new Bool(Value.CompareTo(s.Value) == 0),
+        _ => new Err($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'")
     };
 
-    public override Bool Lt(Obj other) => other switch
+    public override Obj Lt(Obj other) => other switch
     {
-        Str s => new(Value.CompareTo(s.Value) < 0),
-        _ => throw new Error($"unsupported operand type(s) for <: '{Type}' and '{other.Type}'")
+        Str s => new Bool(Value.CompareTo(s.Value) < 0),
+        _ => new Err($"unsupported operand type(s) for <: '{Type}' and '{other.Type}'")
     };
 
     public override Obj GetItem(Obj other) => other switch
     {
         Int i => new Str($"{Value[(int)i.Value]}"),
-        _ => throw new Error("invalid index type"),
+        _ => new Err("invalid index type"),
     };
 
-    public override Int ToInt() => long.TryParse(Value, out var result) ? new Int(result) : throw new Error($"cannot convert '{Value}' to 'int'");
+    public override Obj ToInt() => long.TryParse(Value, out var result) ? new Int(result) : new Err($"cannot convert '{Value}' to 'int'");
 
-    public override Float ToFloat() => double.TryParse(Value, out var result) ? new Float(result) : throw new Error($"cannot convert '{Value}' to 'float'");
+    public override Obj ToFloat() => double.TryParse(Value, out var result) ? new Float(result) : new Err($"cannot convert '{Value}' to 'float'");
 
     public override Str ToStr() => this;
 
-    public override Bool ToBool() => bool.TryParse(Value, out var result) ? new Bool(result) : throw new Error($"cannot convert '{Value}' to 'bool'");
+    public override Obj ToBool() => bool.TryParse(Value, out var result) ? new Bool(result) : new Err($"cannot convert '{Value}' to 'bool'");
 
     public override List ToList()
     {
@@ -75,7 +75,7 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
 
                     return new Bool(string.IsNullOrEmpty(self.Value));
                 }
@@ -88,9 +88,9 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["value"].As<Str>(out var value))
-                        throw new Error("invalid argument: value");
+                        new Err("invalid argument: value");
 
                     return new Int(self.Value.IndexOf(value.Value));
                 }
@@ -103,9 +103,9 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["value"].As<Str>(out var value))
-                        throw new Error("invalid argument: value");
+                        new Err("invalid argument: value");
 
                     return new Bool(self.Value.Contains(value.Value));
                 }
@@ -118,9 +118,9 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["value"].As<Str>(out var value))
-                        throw new Error("invalid argument: value");
+                        new Err("invalid argument: value");
 
                     return new Bool(self.Value.StartsWith(value.Value));
                 }
@@ -133,9 +133,9 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["value"].As<Str>(out var value))
-                        throw new Error("invalid argument: value");
+                        new Err("invalid argument: value");
 
                     return new Bool(self.Value.EndsWith(value.Value));
                 }
@@ -148,7 +148,7 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
 
                     return new Str(self.Value.ToUpper());
                 }
@@ -161,7 +161,7 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
 
                     return new Str(self.Value.ToLower());
                 }
@@ -174,9 +174,9 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["sep"].As<Str>(out var sep))
-                        throw new Error("invalid argument: sep");
+                        new Err("invalid argument: sep");
 
                     var parts = self.Value.Split(sep.Value);
                     return new List([..parts.Select(p => new Str(p))]);
@@ -190,9 +190,9 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["chars"].As<Str>(out var chars))
-                        throw new Error("invalid argument: chars");
+                        new Err("invalid argument: chars");
 
                     return new Str(self.Value.Trim(chars.Value.ToCharArray()));
                 }
@@ -205,9 +205,9 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
 
-                    var parts = args["values"].Iter().Value.Select(v => v.ToStr().Value);
+                    var parts = args["values"].Iter().As<Iters>().Value.Select(v => v.ToStr().As<Str>().Value);
                     return new Str(string.Join(self.Value, parts));
                 }
             }
@@ -219,7 +219,7 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
 
                     bool result = self.Value.All(char.IsDigit);
                     return new Bool(result);
@@ -233,7 +233,7 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
 
                     bool result = self.Value.All(char.IsLetter);
                     return new Bool(result);
@@ -250,11 +250,11 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["width"].As<Int>(out var width))
-                        throw new Error("invalid argument: width");
+                        new Err("invalid argument: width");
                     if (!args["fill"].As<Str>(out var fill))
-                        throw new Error("invalid argument: fill");
+                        new Err("invalid argument: fill");
 
                     var pad = Math.Max(0, width.Value - self.Value.Length);
                     var left = pad / 2;
@@ -274,11 +274,11 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["width"].As<Int>(out var width))
-                        throw new Error("invalid argument: width");
+                        new Err("invalid argument: width");
                     if (!args["fill"].As<Str>(out var fill))
-                        throw new Error("invalid argument: fill");
+                        new Err("invalid argument: fill");
 
                     var pad = Math.Max(0, width.Value - self.Value.Length);
                     var fillChar = fill.Value.Length > 0 ? fill.Value[0] : ' ';
@@ -296,11 +296,11 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["width"].As<Int>(out var width))
-                        throw new Error("invalid argument: width");
+                        new Err("invalid argument: width");
                     if (!args["fill"].As<Str>(out var fill))
-                        throw new Error("invalid argument: fill");
+                        new Err("invalid argument: fill");
 
                     var pad = Math.Max(0, width.Value - self.Value.Length);
                     var fillChar = fill.Value.Length > 0 ? fill.Value[0] : ' ';
@@ -318,11 +318,11 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["old"].As<Str>(out var oldStr))
-                        throw new Error("invalid argument: old");
+                        new Err("invalid argument: old");
                     if (!args["new"].As<Str>(out var newStr))
-                        throw new Error("invalid argument: new");
+                        new Err("invalid argument: new");
 
                     return new Str(self.Value.Replace(oldStr.Value, newStr.Value));
                 }
@@ -337,9 +337,9 @@ public class Str(string value) : Ref<string>(value, "str")
                 Func = args =>
                 {
                     if (!args["self"].As<Str>(out var self))
-                        throw new Error("invalid argument: self");
+                        new Err("invalid argument: self");
                     if (!args["substr"].As<Str>(out var substr))
-                        throw new Error("invalid argument: substr");
+                        new Err("invalid argument: substr");
 
                     return new Int(self.Value.IndexOf(substr.Value));
                 }

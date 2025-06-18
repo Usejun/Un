@@ -97,7 +97,7 @@ public static class TokenTypeUtil
         TokenType.LParen => TokenType.RParen,
         TokenType.LBrace => TokenType.RBrace,
         TokenType.LBrack => TokenType.RBrack,
-        _ => throw new ArgumentException("Invalid token type for closer")
+        _ => throw new Panic("invalid token type for closer")
     };
 
     public static TokenType GetOpener(this TokenType type) => type switch
@@ -105,7 +105,7 @@ public static class TokenTypeUtil
         TokenType.RParen => TokenType.LParen,
         TokenType.RBrace => TokenType.LBrace,
         TokenType.RBrack => TokenType.LBrack,
-        _ => throw new Error("invalid token type for open")
+        _ => throw new Panic("invalid token type for open")
     };
 
     public static int GetPrecedence(this TokenType type) => type switch

@@ -1,5 +1,5 @@
 fn slow(x)
-    sleep(3.0)
+    sleep(1.0)
     -> x * 2
 
 a = go slow(5)
