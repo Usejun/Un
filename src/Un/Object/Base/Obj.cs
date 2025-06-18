@@ -408,6 +408,18 @@ public class Obj(string type) : IComparable<Obj>
         throw new Panic(message);
     }
 
+    public bool Ok(out Err e)
+    {
+        if (this is Err err)
+        {
+            e = err;        
+            return false;
+        }
+
+        e = new Err("");
+        return true;
+    }
+
     private bool TryMethod(string name, out Obj value, params Obj[] args)
     {
         if (Members.TryGetValue(name, out Obj? method))

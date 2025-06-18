@@ -23,6 +23,7 @@ public static class Executer
 
                 values.Push(value switch
                 {
+                    Err e => throw new Error(e.Message, context),
                     Tup t => t.Count == 1 && (t.Name.Length == 0 || string.IsNullOrEmpty(t.Name[0])) ? t[0] : t,
                     _ => value,
                 });
@@ -31,6 +32,9 @@ public static class Executer
             {
                 var value = values.Pop();
                 var args = Convert.ToTuple(node, context);
+
+                if (!args.Ok(out var e))
+                    throw new Error(e.Message, context);
 
                 if (value.Type.EndsWith(".__init__"))
                     values.Push(Global.Class[value.Type.Split('.')[0]].Init(args));
@@ -52,13 +56,17 @@ public static class Executer
             {
                 var obj = values.Pop();
                 var prop = node.Value;
-                values.Push(obj.GetAttr(prop));
+                var value = obj.GetAttr(prop);
+
+                values.Push(value.Ok(out Err e) ? value : throw new Error(e.Message, context));
             }
             else if (type == TokenType.NullableProperty)
             {
                 var obj = values.Pop();
                 var prop = node.Value;
-                values.Push(obj.Has(prop) ? obj.GetAttr(prop) : Obj.None);
+                var value = obj.Has(prop) ? obj.GetAttr(prop) : Obj.None;
+
+                values.Push(value.Ok(out Err e) ? value : throw new Error(e.Message, context));
             }
             else if (type == TokenType.Func)
             {
@@ -114,8 +122,7 @@ public static class Executer
                 {
                     var right = values.Pop();
                     var left = values.Pop();
-
-                    values.Push(type switch
+                    var value = type switch
                     {
                         TokenType.Plus => left.Add(right),
                         TokenType.Minus => left.Sub(right),
@@ -141,7 +148,10 @@ public static class Executer
                         TokenType.In => right.In(left),
                         TokenType.Is => left.Is(right),
                         _ => throw new Error($"binary operator {type} is not implemented.", context)
-                    });
+                    };
+
+                    values.Push(value.Ok(out Err e) ? value : throw new Error(e.Message, context));
+
                 }
                 catch (InvalidOperationException e1)
                 {
@@ -154,7 +164,7 @@ public static class Executer
                 var index = type == TokenType.Indexer || type == TokenType.Slicer ?
                     Convert.ToIndex(node, context) : new Tup([], []);
 
-                values.Push(type switch
+                var value = type switch
                 {
                     TokenType.Positive => right.Pos(),
                     TokenType.Negative => right.Neg(),
@@ -166,7 +176,9 @@ public static class Executer
                     TokenType.Not => right.Not(),
                     TokenType.Spread => right.Spread(),
                     _ => throw new Error($"unary operator {type} is not implemented.", context)
-                });
+                };
+
+                values.Push(value.Ok(out Err e) ? value : throw new Error(e.Message, context));
             }
         }
 
