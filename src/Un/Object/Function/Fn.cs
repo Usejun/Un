@@ -12,10 +12,10 @@ public class Fn : Obj
 
     protected void Bind(Scope scope, Tup args)
     {
-        args = UnpackArgs(args);
-
         scope["self"] = Self;
         scope["super"] = Super;
+        
+        args = UnpackArgs(args);
 
         var unnamed = new List<Obj>();
         var extraNamed = new Map();

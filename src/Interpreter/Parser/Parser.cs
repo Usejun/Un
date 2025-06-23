@@ -12,7 +12,7 @@ public class Parser(Context context)
     private Obj returned = Obj.Error;
 
     private readonly Context context = context;
-    private Scope scope => context.Scope;
+    private Scope Scope => context.Scope;
 
     private Obj Parse()
     {
@@ -63,9 +63,9 @@ public class Parser(Context context)
         {
             if (!Global.Class.ContainsKey(name))
                 Global.Import(name: name,
-                            path: path,
-                            nickname: isSpread ? "" : isNickname ? splited[1][0].Value : isPart ? modules[^2].Value : modules[^1].Value,
-                            parts: isPart ? [.. modules[^1].Children.Select(x => x.Value)] : []);
+                              path: path,
+                              nickname: isSpread ? "" : isNickname ? splited[1][0].Value : isPart ? modules[^2].Value : modules[^1].Value,
+                              parts: isPart ? [.. modules[^1].Children.Select(x => x.Value)] : []);
             else
                 Global.Include(name: name);
         }
@@ -74,10 +74,38 @@ public class Parser(Context context)
     }
     private Obj ParseClass()
     {
-        if (returned == Obj.Error)
-            throw new Error("No value returned", context);
+        var name = nodes[1].Value;
+        var isInherit = nodes.Count >= 3;
 
-        return returned;
+        var body = context.File.GetBody();
+        var members = new Map();
+
+        var runner = Runner.Load("class", body, members);
+        runner.Run();
+
+        if (isInherit)
+        {
+            var inherits = nodes.Split(TokenType.Colon);
+
+            if (inherits.Count != 2) throw new Error("invalid class syntax", context);
+
+            foreach (var super in inherits[1].Split(TokenType.Comma).Skip(1))
+                if (super is { Count: 1 } && super[0] is { Type: TokenType.Identifier })
+                {
+                    var superName = super[0].Value;
+                    foreach (var (key, value) in Global.Class[superName].Members)
+                        members.TryAdd(key, value);
+                }
+                else throw new Error("invalid class syntax", context);
+        }
+
+        Global.Class[name] = new Obj(name)
+        {
+            Super = isInherit ? Global.Class[nodes[3].Value] : Obj.None,
+            Members = members
+        };
+
+        return Obj.None;
     }
     private Obj ParseEunm()
     {
@@ -89,21 +117,26 @@ public class Parser(Context context)
     private Obj ParseReturn() => returned = Executer.On(nodes[1..], context);
     private Obj ParseUsing()
     {
-        if (!scope.TryGetValue("__using__", out var usings))
+        if (!Scope.TryGetValue("__using__", out var usings))
         {
             usings = new List();
-            scope.Add("__using__", usings);
+            Scope.Add("__using__", usings);
         }
 
         var name = nodes[1].Value;
         nodes = nodes[1..];
+        int assign = -1;
 
-        ParseExpreession();
+        for (int i = 0; assign == -1 && i < nodes.Count; i++)
+            if (nodes[i].Type.IsAssignmentOperator())
+                assign = i;
 
-        if (!scope.TryGetValue(name, out var obj))
+        if (assign == -1)
             throw new Error("'using' keyword must be followed by an assignment operator:", context);
 
-        usings.As<List>().Append(scope[name]);
+        ParseAssignment(assign);
+
+        usings.As<List>().Append(Scope[name]);
 
         return Obj.None;
     }
@@ -157,12 +190,12 @@ public class Parser(Context context)
                         break;
                     case TokenType.Identifier:
                         var name = names[i].Value;
-                        if (scope.TryGetValue(name, out Obj? value))
-                            scope[name] = AssignValue(type, value, objs[count]);
+                        if (Scope.TryGetValue(name, out Obj? value))
+                            Scope[name] = AssignValue(type, value, objs[count]);
                         else if (Global.TryGetGlobalVariable(name, out value))
                             Global.SetGlobalVariable(name, AssignValue(type, value, objs[count]));
                         else if (type == TokenType.Assign)
-                            scope.Add(name, objs[count]);
+                            Scope.Add(name, objs[count]);
                         else
                             throw new Error($"invalid assignment {names[i].Type}.", context);
                         break;
@@ -180,7 +213,7 @@ public class Parser(Context context)
                 {
                     TokenType.Indexer => variable.GetItem(Convert.Auto(names[i].Children[0], context)),
                     TokenType.Property => variable.GetAttr(names[i].Value),
-                    TokenType.Identifier => scope.TryGetValue(names[i].Value, out var obj) ? obj : throw new Error($"variable {names[i].Value} not found.", context),
+                    TokenType.Identifier => Scope.TryGetValue(names[i].Value, out var obj) ? obj : throw new Error($"variable {names[i].Value} not found.", context),
                     _ => throw new Error($"invalid assignment {names[i].Type}.", context)
                 };
         }
@@ -218,7 +251,7 @@ public class Parser(Context context)
         var vars = nodes[..inIdx][1..].Split(TokenType.Comma).Select(x => x[0]).ToList();
         var iter = Executer.On(nodes[(inIdx + 1)..], context).Iter().As<Iters>().Value.GetEnumerator();
         var body = context.File.GetBody();
-        var nscope = new Map(scope);
+        var nscope = new Map(Scope);
 
         while (iter.MoveNext())
         {
@@ -253,7 +286,7 @@ public class Parser(Context context)
         if (condition.Value)
         {
             var body = context.File.GetBody();
-            returned = Runner.Load(context.File.Name, body, new Map(scope)).Run();
+            returned = Runner.Load(context.File.Name, body, new Map(Scope)).Run();
 
             var file = context.File;
 

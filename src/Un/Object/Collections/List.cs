@@ -322,28 +322,37 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "add", new NFn
             {
                 Name = "add",
-                Args = [new Arg("values") { IsPositional = true }],
+                ReturnType = "none",
+                Args = [new Arg("values") {
+                    Type = "tuple[any]",    
+                    IsPositional = true }],
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
                         return new Err("invalid argument: self");
-                    if (!args["values"].As<List>(out var values))
+                    if (!args["values"].As<Tup>(out var values))
                         return new Err("invalid argument: values");
 
                     for (int i = 0; i < values.Count; i++)
                         self.Append(values[i]);
 
-                    return Obj.None;
+                    return None;
                 }
             }
         },
         { "insert", new NFn
             {
                 Name = "insert",
+                ReturnType = "none",
                 Args =
                 [
-                    new Arg("value") { IsEssential = true },
-                    new Arg("index") { IsEssential = true }
+                    new Arg("value") {
+                        IsEssential = true
+                    },
+                    new Arg("index") {
+                        Type = "int",
+                        IsEssential = true
+                    }
                 ],
                 Func = args =>
                 {
@@ -360,7 +369,10 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "extend", new NFn
             {
                 Name = "extend",
-                Args = [new Arg("value") { IsEssential = true }],
+                ReturnType = "none",
+                Args = [new Arg("value") {
+                    IsEssential = true
+                }],
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
@@ -374,10 +386,16 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "extend_insert", new NFn
             {
                 Name = "extend_insert",
+                ReturnType = "none",
                 Args =
                 [
-                    new Arg("value") { IsEssential = true },
-                    new Arg("index") { IsEssential = true }
+                    new Arg("value") {
+                        IsEssential = true
+                    },
+                    new Arg("index") {
+                        Type = "int",
+                        IsEssential = true
+                    }
                 ],
                 Func = args =>
                 {
@@ -394,6 +412,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "remove", new NFn
             {
                 Name = "remove",
+                ReturnType = "bool",
                 Args = [new Arg("value") { IsEssential = true }],
                 Func = args =>
                 {
@@ -407,7 +426,11 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "remove_at", new NFn
             {
                 Name = "remove_at",
-                Args = [new Arg("index") { IsEssential = true }],
+                ReturnType = "bool",
+                Args = [new Arg("index") {
+                    Type = "int",
+                    IsEssential = true
+                }],
                 Func = args =>
                 {
                     if (!args["self"].As<List>(out var self))
@@ -506,6 +529,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "hpush", new NFn
             {
                 Name = "hpush",
+                ReturnType = "none",
                 Args = [new Arg("value") { IsEssential = true }],
                 Func = args =>
                 {
@@ -533,6 +557,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "binary_search", new NFn
             {
                 Name = "binary_search",
+                ReturnType = "int",
                 Args = [new Arg("value") { IsEssential = true }],
                 Func = args =>
                 {
@@ -546,6 +571,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "lower_bound", new NFn
             {
                 Name = "lower_bound",
+                ReturnType = "int",
                 Args = [new Arg("value") { IsEssential = true }],
                 Func = args =>
                 {
@@ -559,6 +585,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         { "upper_bound", new NFn
             {
                 Name = "upper_bound",
+                ReturnType = "int",
                 Args = [new Arg("value") { IsEssential = true }],
                 Func = args =>
                 {

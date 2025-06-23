@@ -1,7 +1,6 @@
 using Un.Object;
 using Un.Object.Primitive;
 using Un.Object.Collections;
-using Un.Object.Function;
 
 namespace Un;
 
@@ -76,7 +75,8 @@ public static class Convert
                         break;
                     buf += c;
                 }
-                str += "";//Executer.On(lexer.Lex(tokenizer.Tokenize(buf)), scope).ToStr().Value;
+                str += Executer.On(lexer.Lex(tokenizer.Tokenize(new("", [buf]))), context).ToStr().As<Str>().Value;
+                buf = "";
             }
             else str += c;
 

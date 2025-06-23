@@ -36,10 +36,9 @@ public static class Executer
                 if (!args.Ok(out var e))
                     throw new Error(e.Message, context);
 
-                if (value.Type.EndsWith(".__init__"))
-                    values.Push(Global.Class[value.Type.Split('.')[0]].Init(args));
-                else
-                    values.Push(value.As<Fn>().Call(args));
+                var result = value.Type.EndsWith(".__init__") ? Global.Class[value.Type.Split('.')[0]].Init(args) : value.As<Fn>().Call(args);
+
+                values.Push(result.Ok(out e) ? result : throw new Error(e.Message, context));
             }
             else if (type == TokenType.Identifier)
             {
@@ -66,7 +65,7 @@ public static class Executer
                 var prop = node.Value;
                 var value = obj.Has(prop) ? obj.GetAttr(prop) : Obj.None;
 
-                values.Push(value.Ok(out Err e) ? value : throw new Error(e.Message, context));
+                values.Push(value.Ok(out Err e) ? value : Obj.None);
             }
             else if (type == TokenType.Func)
             {
@@ -76,14 +75,14 @@ public static class Executer
                     Name = node.Value,
                     Args = Fn.GetArgs(node.Children[0].Children, context),
                     Nodes = node.Children[2..],
-                    Closure = scope,
+                    Closure = new Map(scope),
                 }
                 : new LFn()
                 {
                     Name = node.Value,
                     Args = Fn.GetArgs(node.Children[0].Children, context),
                     Body = context.File.GetBody(),
-                    Closure = scope,
+                    Closure = new Map(scope),
                 };
 
                 if (node.Value != "fn")
@@ -116,6 +115,18 @@ public static class Executer
                 else
                     throw new Error($"cannot wait on {fn.Type}.", context);
             }
+            else if (type == TokenType.Match)
+            {
+                var value = node.Children[0];
+                var exprs = node.Children[1].Children.Split(TokenType.Comma);
+
+                foreach (var expr in exprs)
+                {
+                    var splited = expr.Split(TokenType.Colon)[0];
+                    var condition = splited[0];
+                    var result = splited[1];
+                }
+            }
             else if (type.IsBinaryOperator())
             {
                 try
@@ -138,7 +149,7 @@ public static class Executer
                         TokenType.RightShift => left.RShift(right),
                         TokenType.Equal => left.Eq(right),
                         TokenType.Unequal => left.NEq(right),
-                        TokenType.LessOrEqual => left.LtOrEq(right),
+                        TokenType.LessOrEqual => left.LtOrEq(right), 
                         TokenType.GreaterOrEqual => left.GtOrEq(right),
                         TokenType.LessThan => left.Lt(right),
                         TokenType.GreaterThan => left.Gt(right),

@@ -8,7 +8,7 @@ public class LFn : Fn
 
     public override Obj Call(Tup args)
     {
-        var scope = new Map(Closure?? new Map());
+        var scope = new Map(Closure ?? new Map());
         Bind(scope, args);
 
         var returned = Runner.Load(Name, Body, scope).Run();

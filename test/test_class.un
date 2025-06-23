@@ -1,0 +1,10 @@
+class point: a
+    x: float = 1.0
+    y: float = 2.0
+
+    __len__ = fn() -> (self.x + self.y) / 2
+    new = fn() -> point(self.x, self.y)
+
+    fn __init__(x, y)
+        self.x = x
+        self.y = y

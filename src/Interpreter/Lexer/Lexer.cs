@@ -17,7 +17,7 @@ public class Lexer()
             (var token, var type) = Next();
 
             if (type.IsLeftBracket())
-            {                
+            {
                 var (start, end) = GetBracketRange(type);
                 var children = new Lexer().Lex(tokens[(start + 1)..end]);
 
@@ -66,7 +66,7 @@ public class Lexer()
                 var lexed = new Lexer().Lex(tokens[index..]);
 
                 if (lexed.Count < 2)
-                    throw new Panic("expected function body after func keyword");
+                    throw new Panic("expected function body after 'fn' keyword");
 
                 if (lexed[0].Type == TokenType.Tuple && lexed[1].Type == TokenType.Return)
                 {
@@ -89,9 +89,21 @@ public class Lexer()
                         Children = [lexed[1]]
                     });
                 }
-                else throw new Panic("expected function body after func keyword");
+                else throw new Panic("expected function body after 'fn' keyword");
 
                 break;
+            }
+            else if (type == TokenType.Match)
+            {
+                var lexed = new Lexer().Lex(tokens[index..]);
+
+                if (lexed.Count != 2)
+                    throw new Panic("expected value and body after 'match' keyword");
+
+                nodes.Add(new Node("match", TokenType.Match)
+                {
+                    Children = lexed
+                });
             }
             else nodes.Add(new Node(token.Value, type));
         }

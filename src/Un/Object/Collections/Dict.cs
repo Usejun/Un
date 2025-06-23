@@ -67,7 +67,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
                         return new Err("invalid argument");
 
                     self.Value.Add(args["key"], args["value"]);
-                    return self;
+                    return None;
                 }
             }
         },
