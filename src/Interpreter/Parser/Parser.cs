@@ -7,9 +7,10 @@ namespace Un;
 
 public class Parser(Context context)
 {
+    public Obj ReturnValue = null!;
+
     private List<Node> nodes;
     private int index = 0;
-    private Obj returned = Obj.Error;
 
     private readonly Context context = context;
     private Scope Scope => context.Scope;
@@ -79,6 +80,7 @@ public class Parser(Context context)
 
         var body = context.File.GetBody();
         var members = new Map();
+        var types = new HashSet<string>();
 
         var runner = Runner.Load("class", body, members);
         runner.Run();
@@ -93,28 +95,59 @@ public class Parser(Context context)
                 if (super is { Count: 1 } && super[0] is { Type: TokenType.Identifier })
                 {
                     var superName = super[0].Value;
-                    foreach (var (key, value) in Global.Class[superName].Members)
+                    if (!Global.Class.TryGetValue(superName, out Obj? superObj))
+                        throw new Error($"superclass {superName} is not defined", context);
+
+                    types.Add(superName);
+                    foreach (var (key, value) in superObj.Members)
                         members.TryAdd(key, value);
                 }
                 else throw new Error("invalid class syntax", context);
         }
 
-        Global.Class[name] = new Obj(name)
+        lock (Global.SyncRoot)
         {
-            Super = isInherit ? Global.Class[nodes[3].Value] : Obj.None,
-            Members = members
-        };
+            Global.Class[name] = new Obj(name)
+            {
+                Super = isInherit ? Global.Class[nodes[3].Value] : Obj.None,
+                Types = types,
+                Members = members
+            };
+        }
 
         return Obj.None;
     }
     private Obj ParseEunm()
     {
-        if (returned == Obj.Error)
-            throw new Error("No value returned", context);
+        var name = nodes[1].Value;
+        var body = context.File.GetBody();
+        var constants = new Map();
+        var i = 0;
 
-        return returned;
+        foreach (var line in body)
+        {
+            var splited = line.Split(",");
+            foreach (var member in splited)
+                if (!string.IsNullOrWhiteSpace(member.Trim()))
+                    constants.Add(member.Trim(), new Int(i++));
+        }
+
+        lock (Global.SyncRoot)
+        {
+            Global.Class[name] = new Obj(name)
+            {
+                Members = constants
+            };
+
+            Global.SetGlobalVariable(name, new Obj(name)
+            {
+                Members = constants
+            });
+        }
+
+        return Obj.None;
     }
-    private Obj ParseReturn() => returned = Executer.On(nodes[1..], context);
+    private Obj ParseReturn() => ReturnValue = Executer.On(nodes[1..], context);
     private Obj ParseUsing()
     {
         if (!Scope.TryGetValue("__using__", out var usings))
@@ -171,7 +204,7 @@ public class Parser(Context context)
                 context.Scope[values[0].Value].ToTuple().As<Tup>().Value);
         else
             throw new Error($"invalid assignment {nodes[assign - 1].Type}.", context);
-        
+
         int count = 0;
         var type = nodes[assign].Type;
 
@@ -182,11 +215,11 @@ public class Parser(Context context)
                 switch (names[i].Type)
                 {
                     case TokenType.Indexer:
-                        var index = Convert.Auto(names[i].Children[0], context);
-                        variable.SetItem(index, AssignValue(type, variable.GetItem(index), objs[count]));
+                        var index = Executer.On(names[i].Children, context).Unwrap(context);            
+                        variable.SetItem(index, AssignValue(type, variable.GetItem(index).Unwrap(context), objs[count]));
                         break;
                     case TokenType.Property:
-                        variable.SetAttr(names[i].Value, AssignValue(type, variable.GetAttr(names[i].Value), objs[count]));
+                        variable.SetAttr(names[i].Value, AssignValue(type, variable.GetAttr(names[i].Value).Unwrap(context), objs[count]));
                         break;
                     case TokenType.Identifier:
                         var name = names[i].Value;
@@ -211,8 +244,8 @@ public class Parser(Context context)
             else
                 variable = names[i].Type switch
                 {
-                    TokenType.Indexer => variable.GetItem(Convert.Auto(names[i].Children[0], context)),
-                    TokenType.Property => variable.GetAttr(names[i].Value),
+                    TokenType.Indexer => variable.GetItem(Executer.On(names[i].Children, context).Unwrap(context)).Unwrap(context),
+                    TokenType.Property => variable.GetAttr(names[i].Value).Unwrap(context),
                     TokenType.Identifier => Scope.TryGetValue(names[i].Value, out var obj) ? obj : throw new Error($"variable {names[i].Value} not found.", context),
                     _ => throw new Error($"invalid assignment {names[i].Type}.", context)
                 };
@@ -223,7 +256,7 @@ public class Parser(Context context)
 
         bool IsEnd(int index) => index >= names.Count || names[index].Type == TokenType.Comma || names[index].Type == TokenType.Colon;
 
-        bool IsDeconstruct() => valueCount == 1 && (IsDeconstructableToken() || context.Scope[values[0].Value].As<Tup, List>(out _)) ;
+        bool IsDeconstruct() => valueCount == 1 && (IsDeconstructableToken() || context.Scope[values[0].Value].As<Tup, List>(out _));
 
         bool IsDeconstructableToken() => (values[0].Type == TokenType.List || values[0].Type == TokenType.Tuple) && nameCount == values[0].Children.Count(i => i.Type == TokenType.Comma) + 1;
 
@@ -242,7 +275,7 @@ public class Parser(Context context)
             TokenType.BXorAssign => a.BXor(b),
             TokenType.LeftShiftAssign => a.LShift(b),
             TokenType.RightShiftAssign => a.RShift(b),
-            _ => throw new Error("invalid assing operator", context),
+            _ => throw new Error("invalid assign operator", context),
         };
     }
     private Obj ParseFor()
@@ -274,10 +307,10 @@ public class Parser(Context context)
             for (int i = 0; i < vars.Count; i++)
                 nscope[vars[i].Value] = values[i];
 
-            returned = Runner.Load(context.File.Name, body, nscope).Run();
+            ReturnValue = Runner.Load(context.File.Name, body, nscope).Run();
         }
 
-        return returned.Type != "error" ? returned : Obj.None;
+        return ReturnValue.Type != "error" ? ReturnValue : Obj.None;
     }
     private Obj ParseIf()
     {
@@ -286,16 +319,17 @@ public class Parser(Context context)
         if (condition.Value)
         {
             var body = context.File.GetBody();
-            returned = Runner.Load(context.File.Name, body, new Map(Scope)).Run();
+            ReturnValue = Runner.Load(context.File.Name, body, new Map(Scope)).Run();
 
             var file = context.File;
 
-            while (!file.EOF)
+            while (file.TryPeekLine(out var code))
             {
-                var code = file.GetLine().Trim();
-
+                code = code.Trim();
                 if (code.StartsWith("elif") || code.StartsWith("else"))
+                {
                     file.GetBody();
+                }
                 else break;
             }
         }
@@ -304,7 +338,7 @@ public class Parser(Context context)
             context.File.GetBody();
         }
 
-        return returned.Type != "error" ? returned : Obj.None;
+        return ReturnValue is not null ? ReturnValue : Obj.None;
     }
     #endregion
 }

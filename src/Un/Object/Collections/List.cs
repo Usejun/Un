@@ -113,7 +113,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
 
     public override Spread Spread() => new(Value[..Count]);
 
-    private bool OutOfRange(int index) => index < 0 || index >= Value.Length;
+    private bool OutOfRange(int index) => index < 0 || index >= Count;
 
     private bool Overlap(List list)
     {

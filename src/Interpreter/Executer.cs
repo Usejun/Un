@@ -31,14 +31,11 @@ public static class Executer
             else if (type == TokenType.Call)
             {
                 var value = values.Pop();
-                var args = Convert.ToTuple(node, context);
+                var args = Convert.ToTuple(node, context).Unwrap<Tup>(context);
 
-                if (!args.Ok(out var e))
-                    throw new Error(e.Message, context);
+                var result = value.IsType() ? Global.Class[value.Type[2..^2]].Init(args) : value.As<Fn>().Call(args);
 
-                var result = value.Type.EndsWith(".__init__") ? Global.Class[value.Type.Split('.')[0]].Init(args) : value.As<Fn>().Call(args);
-
-                values.Push(result.Ok(out e) ? result : throw new Error(e.Message, context));
+                values.Push(result.Unwrap(context));
             }
             else if (type == TokenType.Identifier)
             {
@@ -47,7 +44,7 @@ public static class Executer
                 else if (Global.TryGetGlobalVariable(node.Value, out value))
                     values.Push(value);
                 else if (Global.IsClass(node.Value))
-                    values.Push(new Obj($"{node.Value}.__init__"));
+                    values.Push(new Obj($"__{node.Value}__"));
                 else
                     throw new Error($"undefined variable: {node.Value}.", context);
             }
@@ -57,7 +54,7 @@ public static class Executer
                 var prop = node.Value;
                 var value = obj.GetAttr(prop);
 
-                values.Push(value.Ok(out Err e) ? value : throw new Error(e.Message, context));
+                values.Push(value.Unwrap(context));
             }
             else if (type == TokenType.NullableProperty)
             {
@@ -65,7 +62,7 @@ public static class Executer
                 var prop = node.Value;
                 var value = obj.Has(prop) ? obj.GetAttr(prop) : Obj.None;
 
-                values.Push(value.Ok(out Err e) ? value : Obj.None);
+                values.Push(value.Unwrap(context));
             }
             else if (type == TokenType.Func)
             {
@@ -117,15 +114,34 @@ public static class Executer
             }
             else if (type == TokenType.Match)
             {
-                var value = node.Children[0];
+                var value = On([node.Children[0]], context);
                 var exprs = node.Children[1].Children.Split(TokenType.Comma);
+                var match = Obj.None;
 
                 foreach (var expr in exprs)
                 {
-                    var splited = expr.Split(TokenType.Colon)[0];
-                    var condition = splited[0];
-                    var result = splited[1];
+                    var splited = expr.Split(TokenType.Colon);
+                    var conditions = splited[0].Split(TokenType.Or);
+                    var result = On(splited[1], context);
+
+                    foreach (var condition in conditions)
+                    {
+                        if (condition is { Count: 1 } && IsType(condition[0].Value) && value.Is(new Obj(condition[0].Value)).As<Bool>(out var b) && b.Value)
+                            match = result;
+                        else if (condition is { Count: 1 } && condition[0].Value == "_" || On(condition, context).Eq(value).As<Bool>().Value)
+                            match = result;
+                        else continue;
+                        
+                        break;
+                    }
+
+                    if (!match.IsNone())
+                        break;
                 }
+
+                values.Push(match.Unwrap(context));
+
+                bool IsType(string s) => Global.Class.ContainsKey(s); 
             }
             else if (type.IsBinaryOperator())
             {
@@ -149,7 +165,7 @@ public static class Executer
                         TokenType.RightShift => left.RShift(right),
                         TokenType.Equal => left.Eq(right),
                         TokenType.Unequal => left.NEq(right),
-                        TokenType.LessOrEqual => left.LtOrEq(right), 
+                        TokenType.LessOrEqual => left.LtOrEq(right),
                         TokenType.GreaterOrEqual => left.GtOrEq(right),
                         TokenType.LessThan => left.Lt(right),
                         TokenType.GreaterThan => left.Gt(right),
@@ -157,14 +173,14 @@ public static class Executer
                         TokenType.Or => left.Or(right),
                         TokenType.Xor => left.Xor(right),
                         TokenType.In => right.In(left),
-                        TokenType.Is => left.Is(right),
+                        TokenType.Is => left.Is(right.IsType() ? new Obj(right.Type[2..^2]) : right),
                         _ => throw new Error($"binary operator {type} is not implemented.", context)
                     };
 
-                    values.Push(value.Ok(out Err e) ? value : throw new Error(e.Message, context));
+                    values.Push(value.Unwrap(context));
 
                 }
-                catch (InvalidOperationException e1)
+                catch (InvalidOperationException)
                 {
                     throw new Error("invalid expression", context);
                 }
@@ -189,7 +205,7 @@ public static class Executer
                     _ => throw new Error($"unary operator {type} is not implemented.", context)
                 };
 
-                values.Push(value.Ok(out Err e) ? value : throw new Error(e.Message, context));
+                values.Push(value.Unwrap(context));
             }
         }
 

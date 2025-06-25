@@ -15,7 +15,7 @@ public class Runner()
             var lexer = new Lexer();
             var parser = new Parser(Context);
 
-            while (!Context.File.EOF)
+            while (!Context.File.EOF && parser.ReturnValue is null)
             {
                 var tokens = tokenizer.Tokenize(Context.File);
                 var nodes = lexer.Lex(tokens);
@@ -24,6 +24,8 @@ public class Runner()
                 if (Context.File.EOL)
                     Context.File.Move(0, Context.File.Line + 1);
             }
+
+            returned = parser.ReturnValue;
 
         }
         finally

@@ -1,5 +1,4 @@
 using Un.Object.Collections;
-using Un.Object.Function;
 using Un.Object.Primitive;
 
 namespace Un.Object;
@@ -11,6 +10,7 @@ public class Obj(string type) : IComparable<Obj>
     public static Obj Null = new("null");
 
     public virtual string Type { get; protected set; } = type;
+    public virtual HashSet<string> Types { get; set; } = [];
     public virtual Obj Self { get; set; } = None;
     public virtual Obj Super { get; set; } = None;
     public virtual Attributes Members { get; set; } = [];
@@ -262,14 +262,19 @@ public class Obj(string type) : IComparable<Obj>
     {
         if (TryMethod("__is__", out Obj? value, new([obj], ["obj"])))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Is(obj) : new Bool(Type == obj.Type);
+
+        foreach (var type in Types)
+            if (type == obj.Type)
+                return new Bool(true);
+
+        return obj.Type == Type ? new Bool(true) : Super is not null && !Super.IsNone() ? Super.Is(obj) : new Err("cannot compare types");
     }
 
     public virtual Obj In(Obj obj)
     {
         if (TryMethod("__in__", out Obj? value, new([obj], [])))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.In(obj) : new Err("cannot inable object");
+        return Super is not null && !Super.IsNone() ? Super.In(obj) : new Err("cannot find object");
     }
 
     public virtual Obj ToInt()
@@ -424,6 +429,23 @@ public class Obj(string type) : IComparable<Obj>
         return true;
     }
 
+    public Obj Unwrap(Context context)
+    {
+        if (this is Err e)        
+            throw new Error(e.Message, context);
+        return this;
+    }
+
+    public T Unwrap<T>(Context context)
+        where T : Obj
+    {
+        if (this is Err e)
+            throw new Error(e.Message, context);
+        if (this is not T t)
+            throw new Error($"cannot cast {Type} to {typeof(T).Name}", context);
+        return t;
+    }
+
     private bool TryMethod(string name, out Obj value, Tup args)
     {
         if (Members.TryGetValue(name, out Obj? method))
@@ -438,6 +460,8 @@ public class Obj(string type) : IComparable<Obj>
     }
 
     public bool IsNone() => Type == "none";
+
+    public bool IsType() => Type.StartsWith("__") && Type.EndsWith("__");
 
     public bool Has(string name)
     {

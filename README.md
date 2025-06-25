@@ -1,281 +1,114 @@
-# Un
+Un 언어 공식 문서 (초안)
 
-멀티 패러다임의 인터프리터 언어
+개요
 
-## 동작 방식
+Un은 파이썬 스타일의 문법을 기반으로 하면서도 간결함과 비동기 친화성을 핵심으로 설계된 동적 스크립트 언어입니다. 기본적으로 모든 함수는 비동기 실행이 가능하며, 병렬 처리와 Future 기반 실행 모델을 직관적으로 표현할 수 있도록 구성되어 있습니다.
 
-C#으로 작성된 프로그램을 통해서 `.un`의 확장자를 가진 파일을 읽으며 동작된다.
+Un은 C#으로 구현된 인터프리터를 기반으로 하며, 직렬 AST 구조를 따릅니다. 이 언어는 포트폴리오 목적의 실험적 언어이며, 간단한 문법과 비동기 중심 실행 흐름을 지원합니다.
 
-## 구조
-기본적으로 Un은 동적 타이핑을 지원하며, 변수를 선언할 때에는 다음과 같은 형태를 따른다:
+언어 설계 철학
 
-```un
-name = value
-name1, name2, ... = value1, value2, ...
-```
+간결성: 최소한의 키워드, 콜론 없는 문법, 들여쓰기 기반 구조
 
-## 기본 자료형
+비동기 중심 구조: 모든 함수는 비동기로 실행 가능하며, go, wait 키워드로 병렬 실행 제어
 
-### int
-부호가 있는 64bit 정수형 자료형이다.
+유연한 타입 시스템: 완전 동적 타입, 타입 힌트는 선택적
 
-```un
-a = 3048275133
-b = 0b11011010
-c = 0o1274213
-d = 0xff38ab
-f = -39493
-```
+확장성: .un 스크립트와 C# 네이티브 객체를 혼합하여 사용 가능
 
-### float
-부호가 있는 64bit 부동 소수점 자료형이다.
+문법 개요
 
-```un
-a = 1937.393
-b = float("inf")
-c = -2004.22
-d = 3.34e2
-```
+1. 함수 정의
 
-### str
-문자열 자료형이다.
-문자열은 `"` 또는 `'`을 사용하며, 보간 문자열을 사용할 때에는 **백틱**(```)을 사용한다.
+fn greet(name)
+    write("Hello, " or name)
 
-```un
-a = "hello world!"
-b = 'my name is "lee"'
-c = `{a} {b}`
-```
+2. 조건문
 
-### bool
-Boolean 자료형이다.
-
-```un
-a = true
-b = false
-```
-
-### date
-날짜 자료형이다.
-
-```un
-a = date("2024.1.1")
-```
-
-### tuple
-불변 형태로 다양한 자료형을 담을 수 있다.
-
-```un
-a = (1, 2, 3)
-```
-
-### list
-다양한 자료형이 연속적으로 있는 자료형이다.
-
-```un
-a = [1, 4.3, "3", true, []]
-```
-
-#### 주요 메서드
-1. `add(value)`: 리스트 끝에 요소 추가
-2. `insert(index, value)`: 특정 위치에 요소 삽입
-3. `extend(iterable)`: 리스트 확장
-4. `remove(value)`: 특정 요소 삭제
-5. `pop(index)`: 특정 위치의 요소 제거 후 반환
-6. `sort()`: 리스트 정렬
-7. `reverse()`: 리스트 뒤집기
-
-### dict
-(키: 값)의 형태로 접근하는 자료형이다.
-
-```un
-a = {1: "one", 5: 234, "hello": true}
-```
-
-### set
-집합 형태의 자료형이다.
-
-```un
-a = {1, 2, 5.2, "hogo", ...}
-```
-
-## 함수
-함수는 `fn` 키워드를 사용하여 선언한다.
-
-```un
-fn double(a)
-    return 2 * a
-    
-fn multiple(a, b)
-    return a * b
-```
-
-## 조건문
-`if`, `elif`, `else` 키워드를 사용한다.
-
-```un
-n = int(readln())
-
-if n < 10
-    ...
-elif n < 100
-    ...
+if x > 0
+    write("Positive")
+elif x == 0
+    write("Zero")
 else
-    ...
-```
+    write("Negative")
 
-## 반복문
-### for
-`in` 키워드를 사용하며, iterable한 값이 와야 한다.
+3. 반복문
 
-```un
-for i in range(1, 100)
-    writeln(i)
-```
+for i in 1 to 5
+    write(i)
 
-### while
-조건이 `true`인 동안 실행된다.
+in 뒤에는 반드시 iterable 값이 와야 함
 
-```un
-fib = array(0, 21)
-fib[0] = 1
-fib[1] = 1
-i = 2
-while (i < 20)
-    fib[i] = fib[i - 1] + fib[i - 2]
-    i += 1
-writeln(fib)
-```
+4. 패턴 매칭
 
-## 클래스
-클래스는 `class` 키워드를 사용하여 정의한다.
-자기 자신은 `self` 키워드, 부모는 `super`를 사용한다.
+match x
+    1 or 2: write("one or two")
+    str: write("it's a string")
+    int: write("it's an integer")
+    _: write("something else")
 
-```un
-class point
-    x = 0
-    y = 0
+값 기반 + 타입 기반 매칭 모두 지원
 
-    fn print()
-        writeln(`{self.x} : {self.y}`)
+5. 비동기 실행
 
-p = point()
-p.x = 10
-p.y = -10
-p.print()
-```
+go fetchData()
+data = wait fetchData()
 
-### 오버로딩 함수
-- `__init__`: 생성자
-- `__add__`: 덧셈
-- `__sub__`: 뺄셈
-- `__mul__`: 곱셈
-- `__div__`: 나눗셈
-- `__eq__`: 비교 연산
-- `__len__`: `len()` 지원
-- `__getitem__`: 인덱싱 지원
-- `__setitem__`: 인덱스 값 변경 지원
+go는 Future(Task) 시작
 
-## lambda
-익명 함수를 생성할 때 사용한다.
+wait는 해당 Future 완료 대기 및 결과 획득
 
-```un
-f = (i) => i * i
-```
+6. 반환 문법
 
-## import
-다른 코드나 패키지를 불러오기 위한 구문이다.
+fn add(x, y)
+    -> x + y
 
-```un
-import math
-import thread as t
-```
+return 키워드 대신 -> 사용
 
-## 파일 입출력
-파일을 읽고 쓰는 기능을 제공한다.
+7. 연산자 오버로딩
 
-```un
-file = open("data.txt", "w")
-file.write("Hello, Un!")
-file.close()
-```
+class Vec2
+    fn __add__(a, b)
+        -> Vec2(a.x + b.x, a.y + b.y)
 
-## 병렬 처리
-멀티스레딩을 지원하며, `thread` 모듈을 활용할 수 있다.
+Python과 유사한 연산자 오버로딩 지원
 
-```un
-import thread
+타입 시스템
 
-fn task1(i)
-    writeln(`{i} : Running in parallel`)
+모든 값은 동적 타입
 
-fn task2()
-    writeln("Running in parallel")
+선택적으로 타입 힌트를 줄 수 있음 (fn greet(name: str))
 
-thread.foreach([1, 2, 3, 4], task1) # 4개의 스레드에서 실행
-thread.run(10, task2) # 10개의 스레드에서 실행
-```
+타입은 런타임에 검사되며, 정적 타입 체크는 하지 않음
 
-## 예외 처리
-예외를 처리하기 위해 `try`, `catch`, `fin`를 사용할 수 있다.
+모듈과 패키지
 
-```un
-try
-    a = 10 / 0
-catch e
-    writeln(`Error: {e}`)
-fin
-    write("fin")
-```
+use 키워드로 모듈 또는 네이티브 클래스 로드
 
-## using
-자동으로 자원을 관리하는 문법이다.
+use math
+use "./lib/mylib.un"
 
-```un
-using file = open(file_name)
-```
+.un 스크립트 파일 또는 C#으로 정의된 네이티브 타입 모두 로드 가능
 
-## enum
-열거형을 정의할 수 있다.
+실행 모델
 
-```un
-enum rank
-    bronze, silver, gold, diamond
-```
+인터프리터는 C# 기반으로 작성됨
 
-## slice
-리스트 등의 자료형에서 일부를 추출할 수 있다.
+AST는 직렬 형태로 구성되어 있음
 
-```un
-l = [1, 2, 3, 4, 5]
-write(l[0:3]) # [1, 2, 3]
-```
+Future는 C#의 Task를 래핑하여 구현됨
 
-## 비동기
-모든 함수는 비동기적으로 할 수 있으며, 함수 호출 끝에 '!'를 붙혀서 표현한다.
+병렬 처리는 BlockingCollection을 이용하여 비동기 이벤트 큐로 처리
 
-```un
-functions()!
-```
+C#의 기본 GC를 그대로 사용함
 
-## 보간 문자열
-문자열 내부에 변수를 포함할 수 있다.
+미구현 기능
 
-```un
-name = "usejun"
-age = 20
-s = `i am {name}, my age is {age}`
+예외 처리 (try, catch) 미지원
 
-````
-## 타입 힌트
-각 변수의 타입이나 함수의 반환값, 함수의 인자의 타입을 명시적으로 알려줄 수 있으며, 타입의 강제성은 없다.
+스레드/프로세스 수준의 병렬 처리 미지원 (비동기 이벤트 기반만 지원)
 
-```un
-a = 1
-b: int = 1
-c: str = 2
-d: my_custom_class = my_custom_class()
+라이선스
 
-fn multiply(a: int, b: int) -> int
-    return a * b 
-```
+MIT License
+

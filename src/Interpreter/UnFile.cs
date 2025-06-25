@@ -58,6 +58,20 @@ public class UnFile
         return Code[Line].code[Index++];
     }
 
+    public bool TryPeekLine(out string code)
+    {
+        if (!EOF)
+        {
+            code = PeekLine();
+            return true;
+        }
+
+        code = "";
+        return false;
+    }
+
+    public string PeekLine() => Code[Line].code;
+
     public string GetLine() => Code[Line++].code;
 
     public void Move(int index, int line)

@@ -23,13 +23,13 @@ public class Lexer()
 
                 nodes.Add(new Node(type switch
                 {
-                    TokenType.LBrack => IsSlicer(start, end) ? "indexer" : "list",
+                    TokenType.LBrack => IsIdentifier() ? IsSlicer(start, end) ? "slicer" : "indexer" : "list",
                     TokenType.LBrace => IsSet(start, end) ? "set" : "dict",
                     TokenType.LParen => IsIdentifier() ? "call" : "tuple",
                     _ => throw new Panic($"invalid left bracket type {type}")
                 }, type switch
                 {
-                    TokenType.LBrack => IsSlicer(start, end) ? TokenType.Indexer : TokenType.List,
+                    TokenType.LBrack => IsIdentifier() ? IsSlicer(start, end) ?  TokenType.Slicer : TokenType.Indexer : TokenType.List,
                     TokenType.LBrace => IsSet(start, end) ? TokenType.Set : TokenType.Dict,
                     TokenType.LParen => IsIdentifier() ? TokenType.Call : TokenType.Tuple,
                     _ => throw new Panic($"invalid left bracket type {type}")
@@ -97,13 +97,19 @@ public class Lexer()
             {
                 var lexed = new Lexer().Lex(tokens[index..]);
 
-                if (lexed.Count != 2)
+                if (lexed.Count < 2)
+                    throw new Panic("expected value and body after 'match' keyword");
+                if (lexed[0] is not { Type: TokenType.Identifier } ||
+                    lexed[1] is not { Type: TokenType.Dict })
                     throw new Panic("expected value and body after 'match' keyword");
 
                 nodes.Add(new Node("match", TokenType.Match)
                 {
-                    Children = lexed
+                    Children = [lexed[0], lexed[1]]
                 });
+
+                nodes.AddRange(lexed[2..]);
+                index = tokens.Count;
             }
             else nodes.Add(new Node(token.Value, type));
         }
@@ -112,7 +118,8 @@ public class Lexer()
 
         bool IsIdentifier() => nodes.Count > 0 && nodes[^1].Type.IsIdentifier();
 
-        bool IsUnary() => (nodes.Count == 0 || nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma) && index < tokens.Count ;
+        bool IsUnary() => (nodes.Count == 0 || nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma) &&
+                          (nodes.Count != 0 && nodes[^1].Type != TokenType.Call) && index < tokens.Count;
     }
 
     public List<Node> Lex(List<Token> tokens)
