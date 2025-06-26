@@ -8,11 +8,17 @@ public class PFn : Fn
 
     public override Obj Call(Tup args)
     {
+        if (Depth == Global.MaxDepth)
+            return new Err("maximum recursion depth");
+
         var scope = new Map(Closure?? new Map());
         Bind(scope, args);
-        
-        var parser = new Parser(new(scope, new("", [])));
+        lock (Global.SyncRoot) { Depth++; }
 
-        return parser.Parse(Nodes);
+        var parser = new Parser(new(scope, new("", [])));
+        
+        lock (Global.SyncRoot) { Depth--; }
+
+        return parser.ReturnValue ?? None;
     }
 }

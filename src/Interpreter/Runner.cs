@@ -40,8 +40,11 @@ public class Runner()
     {
         if (Context.Scope.TryGetValue("__using__", out var usings))
         {
-            foreach (var obj in usings.As<List>())
-                obj.Exit();
+            if (usings.As<List>(out var list))
+                foreach (var obj in list)
+                    obj.Exit();
+            else
+                throw new Panic("__usings__ must be list");
         }
     }
 

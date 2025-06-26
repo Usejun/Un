@@ -1,10 +1,12 @@
-dp = array(0, 51)
-dp[0] = 1
-dp[1] = 1
+class App
+    name:str=""
+    fn __init__(name)
+        self.name = name
 
-fn fib(n: int) -> int
-    if dp[n] == 0
-        dp[n] = fib(n - 2) + fib(n - 1)
-    -> dp[n]
+    fn __exit__()
+        write("exit")
+        
+    fn __entry__()
+        write("entry")
 
-write(fib(50))        
+using app = App("un.exe")

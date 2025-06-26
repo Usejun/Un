@@ -8,15 +8,26 @@ public class LFn : Fn
 
     public override Obj Call(Tup args)
     {
+        if (Depth == Global.MaxDepth)
+            return new Err("maximum recursion depth");
+
         var scope = new Map(Closure ?? new Map());
         Bind(scope, args);
 
+        lock (Global.SyncRoot) { Depth++; }
         var returned = Runner.Load(Name, Body, scope).Run();
 
         if (scope.TryGetValue("__using__", out var usings))
-            foreach (var obj in usings.As<List>())
-                obj.Exit();
+        {
+            if (usings.As<List>(out var list))
+                foreach (var obj in list)
+                    obj.Exit();
+            else
+                return new Err("__usings__ must be list");
 
-        return returned;
+        }
+        lock (Global.SyncRoot) { Depth--; }
+
+        return returned ?? None;
     }
 }

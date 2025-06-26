@@ -22,6 +22,8 @@ public static class Global
     public static readonly int BASEHASH = Math.Abs(DateTime.Now.Millisecond * 6929891 + DateTime.Now.Second * 1025957);
     public static readonly int HASHPRIME = 11;
 
+    public static int MaxDepth = 1000;
+
     public static ConcurrentDictionary<string, Obj> Scope { get; set; } = new();
     public static ConcurrentDictionary<string, Obj> Class { get; private set; } = new();
 

@@ -5,6 +5,8 @@ namespace Un.Object.Function;
 
 public class Fn : Obj
 {
+    public static int Depth = 0;
+
     public string Name { get; set; }
     public List<Arg> Args { get; set; } = [];
     public string ReturnType { get; set; } = "any";  

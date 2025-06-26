@@ -92,6 +92,8 @@ public static class Convert
 
         if (type == TokenType.Integer)
             return new Int(System.Convert.ToInt64(value));
+        else if (type == TokenType.None)
+            return Obj.None;
         else if (type == TokenType.Float)
             return new Float(System.Convert.ToDouble(value));
         else if (type == TokenType.Boolean && bool.TryParse(value, out var boolValue))

@@ -169,6 +169,7 @@ public class Parser(Context context)
 
         ParseAssignment(assign);
 
+        Scope[name].Entry();
         usings.As<List>().Append(Scope[name]);
 
         return Obj.None;
