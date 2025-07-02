@@ -3,44 +3,44 @@ namespace Un;
 public static class TokenTypeUtil
 {
     public static bool IsOperator(this TokenType type) => type switch
-        {
-            // 산술 연산자
-            TokenType.Plus or TokenType.Minus or TokenType.Asterisk or TokenType.Slash or TokenType.Percent or 
-            TokenType.DoubleAsterisk or TokenType.DoubleSlash => true,
-            
-            // 비트 연산자
-            TokenType.BAnd or TokenType.BOr or TokenType.BXor or TokenType.BNot or TokenType.LeftShift or TokenType.RightShift => true,
+    {
+        // 산술 연산자
+        TokenType.Plus or TokenType.Minus or TokenType.Asterisk or TokenType.Slash or TokenType.Percent or
+        TokenType.DoubleAsterisk or TokenType.DoubleSlash => true,
 
-            // 비교 연산자
-            TokenType.Equal or TokenType.Unequal or TokenType.LessOrEqual or TokenType.GreaterOrEqual or TokenType.LessThan or 
-            TokenType.GreaterThan => true,
+        // 비트 연산자
+        TokenType.BAnd or TokenType.BOr or TokenType.BXor or TokenType.BNot or TokenType.LeftShift or TokenType.RightShift => true,
 
-            // 논리 연산자
-            TokenType.And or TokenType.Or or TokenType.Xor or TokenType.Not => true,
+        // 비교 연산자
+        TokenType.Equal or TokenType.Unequal or TokenType.LessOrEqual or TokenType.GreaterOrEqual or TokenType.LessThan or
+        TokenType.GreaterThan => true,
 
-            // 대입 연산자
-            TokenType.Assign or TokenType.PlusAssign or TokenType.MinusAssign or TokenType.AsteriskAssign or 
-            TokenType.SlashAssign or TokenType.PercentAssign or TokenType.BAndAssign or TokenType.BOrAssign or 
-            TokenType.BXorAssign or TokenType.QuestionAssign or TokenType.DoubleQuestionAssign or
-            TokenType.RightShiftAssign or TokenType.LeftShiftAssign => true,
+        // 논리 연산자
+        TokenType.And or TokenType.Or or TokenType.Xor or TokenType.Not => true,
 
-            // 기타 연산자 
-            TokenType.DoubleQuestion or TokenType.Question or TokenType.Indexer or TokenType.Slicer or TokenType.Spread or
-            TokenType.Positive or TokenType.Negative or TokenType.QuestionDot or TokenType.In or TokenType.Is or TokenType.Go or
-            TokenType.Wait or TokenType.Call => true,
-            _ => false,
-        };
-    
+        // 대입 연산자
+        TokenType.Assign or TokenType.PlusAssign or TokenType.MinusAssign or TokenType.AsteriskAssign or
+        TokenType.SlashAssign or TokenType.PercentAssign or TokenType.BAndAssign or TokenType.BOrAssign or
+        TokenType.BXorAssign or TokenType.QuestionAssign or TokenType.DoubleQuestionAssign or
+        TokenType.RightShiftAssign or TokenType.LeftShiftAssign => true,
+
+        // 기타 연산자 
+        TokenType.DoubleQuestion or TokenType.Question or TokenType.Indexer or TokenType.Slicer or TokenType.Spread or
+        TokenType.Positive or TokenType.Negative or TokenType.QuestionDot or TokenType.In or TokenType.Is or TokenType.Go or
+        TokenType.Wait or TokenType.Call => true,
+        _ => false,
+    };
+
     public static bool IsBinaryOperator(this TokenType type) => type switch
     {
-        TokenType.Plus or TokenType.Minus or TokenType.Asterisk or TokenType.Slash or TokenType.Percent or 
+        TokenType.Plus or TokenType.Minus or TokenType.Asterisk or TokenType.Slash or TokenType.Percent or
         TokenType.BAnd or TokenType.BOr or TokenType.BXor or TokenType.DoubleAsterisk or TokenType.DoubleSlash or
-        TokenType.LeftShift or TokenType.RightShift or TokenType.And or TokenType.Or or TokenType.Xor => true,        
+        TokenType.LeftShift or TokenType.RightShift or TokenType.And or TokenType.Or or TokenType.Xor => true,
 
         TokenType.Equal or TokenType.Unequal or TokenType.LessOrEqual or TokenType.GreaterOrEqual => true,
 
         TokenType.LessThan or TokenType.GreaterThan or TokenType.In or TokenType.Is => true,
-        
+
         _ => false
     };
 
@@ -49,7 +49,7 @@ public static class TokenTypeUtil
         TokenType.Plus or TokenType.Minus or TokenType.BNot or TokenType.Not or TokenType.Indexer or TokenType.Slicer or TokenType.Asterisk => true,
         _ => false
     };
-    
+
     public static bool IsUnaryOperator(this TokenType type) => type switch
     {
         TokenType.Positive or TokenType.Negative or TokenType.BNot or TokenType.Not or TokenType.Indexer or TokenType.Slicer or TokenType.Spread => true,
@@ -90,6 +90,12 @@ public static class TokenTypeUtil
     {
         TokenType.RParen or TokenType.RBrace or TokenType.RBrack => true,
         _ => false
+    };
+
+    public static bool IsShortCircuitOperator(this TokenType type) => type switch
+    {
+        TokenType.And or TokenType.Or or TokenType.Xor => true,
+        _ => false,
     };
 
     public static TokenType GetCloser(this TokenType type) => type switch

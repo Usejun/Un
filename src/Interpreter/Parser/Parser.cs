@@ -1,5 +1,4 @@
 using Un.Object;
-using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
 
@@ -10,17 +9,15 @@ public class Parser(Context context)
     public Obj ReturnValue = null!;
 
     private List<Node> nodes;
-    private int index = 0;
-
     private readonly Context context = context;
     private Scope Scope => context.Scope;
 
     private Obj Parse()
     {
-        if (index >= nodes.Count)
+        if (nodes.Count == 0)
             return Obj.None;
 
-        (_, var type, _) = nodes[index];
+        (_, var type, _) = nodes[0];
 
         return type switch
         {
@@ -29,7 +26,10 @@ public class Parser(Context context)
             TokenType.Class => ParseClass(),
             TokenType.Enum => ParseEunm(),
             TokenType.Return => ParseReturn(),
+            TokenType.Skip => ParseSkip(),
+            TokenType.Break => ParseBreak(),
             TokenType.For => ParseFor(),
+            TokenType.While => ParseWhile(),
             TokenType.If or TokenType.ElIf or TokenType.Else => ParseIf(),
             _ => ParseExpreession(),
         };
@@ -82,8 +82,11 @@ public class Parser(Context context)
         var members = new Map();
         var types = new HashSet<string>();
 
-        var runner = Runner.Load("class", body, members);
-        runner.Run();
+        var innerContext = new Context(members, new UnFile(name, body));
+
+        innerContext.EnterBlock("class");
+        Runner.Load(innerContext).Run();
+        innerContext.ExitBlock();
 
         if (isInherit)
         {
@@ -134,20 +137,17 @@ public class Parser(Context context)
 
         lock (Global.SyncRoot)
         {
-            Global.Class[name] = new Obj(name)
+            Global.Class[name] = new Enu(name, 0)
             {
                 Members = constants
             };
-
-            Global.SetGlobalVariable(name, new Obj(name)
-            {
-                Members = constants
-            });
         }
 
         return Obj.None;
     }
     private Obj ParseReturn() => ReturnValue = Executer.On(nodes[1..], context);
+    private Obj ParseBreak() => ReturnValue = new Obj("break");
+    private Obj ParseSkip() => ReturnValue = new Obj("skip");
     private Obj ParseUsing()
     {
         if (!Scope.TryGetValue("__using__", out var usings))
@@ -285,7 +285,8 @@ public class Parser(Context context)
         var vars = nodes[..inIdx][1..].Split(TokenType.Comma).Select(x => x[0]).ToList();
         var iter = Executer.On(nodes[(inIdx + 1)..], context).Iter().As<Iters>().Value.GetEnumerator();
         var body = context.File.GetBody();
-        var nscope = new Map(Scope);
+        var innerScope = new Map(Scope);
+        var innerContext = new Context(innerScope, new("for", body));
 
         while (iter.MoveNext())
         {
@@ -306,12 +307,46 @@ public class Parser(Context context)
             };
 
             for (int i = 0; i < vars.Count; i++)
-                nscope[vars[i].Value] = values[i];
+                innerScope[vars[i].Value] = values[i];
 
-            ReturnValue = Runner.Load(context.File.Name, body, nscope).Run();
+            innerContext.EnterBlock("loop");
+            ReturnValue = Runner.Load(innerContext).Run();
+            innerContext.ExitBlock();
+
+            if (ReturnValue?.Type == "break")
+            {
+                ReturnValue = null!;
+                break;
+            }
+            else if (ReturnValue?.Type == "skip")
+                ReturnValue = null!;
         }
 
-        return ReturnValue.Type != "error" ? ReturnValue : Obj.None;
+        return ReturnValue ?? Obj.None;
+    }
+    private Obj ParseWhile()
+    {
+        var expr = nodes[1..];
+        var body = context.File.GetBody();
+        var innerScope = new Map(Scope);
+        var innerContext = new Context(innerScope, new("while", body));
+
+        while (Executer.On(expr, innerContext).As<Bool>("while keyword only boolearn").Value)
+        {
+            innerContext.EnterBlock("loop");
+            ReturnValue = Runner.Load(innerContext).Run();
+            innerContext.ExitBlock();
+
+            if (ReturnValue?.Type == "break")
+            {
+                ReturnValue = null!;
+                break;
+            }
+            else if (ReturnValue?.Type == "skip")
+                ReturnValue = null!;
+        }   
+
+        return ReturnValue ?? Obj.None;
     }
     private Obj ParseIf()
     {
@@ -320,7 +355,11 @@ public class Parser(Context context)
         if (condition.Value)
         {
             var body = context.File.GetBody();
-            ReturnValue = Runner.Load(context.File.Name, body, new Map(Scope)).Run();
+            var innerContext = new Context(new Map(Scope), new ("while", body));
+
+            innerContext.EnterBlock("if");
+            ReturnValue = Runner.Load(innerContext).Run();
+            innerContext.ExitBlock();
 
             var file = context.File;
 
@@ -339,7 +378,7 @@ public class Parser(Context context)
             context.File.GetBody();
         }
 
-        return ReturnValue is not null ? ReturnValue : Obj.None;
+        return ReturnValue ?? Obj.None;
     }
     #endregion
 }

@@ -9,6 +9,47 @@ public static class Executer
 {
     public static Obj On(List<Node> nodes, Context context)
     {
+        var buf = new List<Node>();
+        Obj? left = null;
+        int i = 0;
+
+        while (i < nodes.Count)
+        {
+            var node = nodes[i];
+
+            if (node.Type.IsShortCircuitOperator())
+            {
+                var op = node.Type;
+
+                left = Expr(buf, context);
+                buf.Clear();
+
+                var right = CollectUntilNextOperator(nodes, ref i);
+
+                var cond = left.ToBool().Unwrap(context).As<Bool>().Value;
+
+                left = op switch
+                {
+                    TokenType.And when !cond => left,
+                    TokenType.And => Expr(right, context),
+                    TokenType.Or when cond => left,
+                    TokenType.Or => Expr(right, context),
+                    _ => throw new Error($"unsupported operator {op}", context)
+                };
+            }
+            else
+            {
+                buf.Add(node);
+                i++;
+            }
+        }
+
+        return left ?? Expr(buf, context);
+    }
+
+
+    private static Obj Expr(List<Node> nodes, Context context)
+    {
         var scope = context.Scope;
         var postfix = GetPostfix(nodes);
         var values = new Stack<Obj>();
@@ -52,7 +93,7 @@ public static class Executer
             {
                 var obj = values.Pop();
                 var prop = node.Value;
-                var value = obj.GetAttr(prop);
+                var value = obj.IsType() ? Global.Class[obj.Type[2..^2]].GetAttr(prop) : obj.GetAttr(prop);
 
                 values.Push(value.Unwrap(context));
             }
@@ -126,22 +167,29 @@ public static class Executer
 
                     foreach (var condition in conditions)
                     {
-                        if (condition is { Count: 1 } && IsType(condition[0].Value) && value.Is(new Obj(condition[0].Value)).As<Bool>(out var b) && b.Value)
+                        if (condition is { Count: 1 } && IsType(condition[0].Value) && value.Type == condition[0].Value)
                             match = result;
-                        else if (condition is { Count: 1 } && condition[0].Value == "_" || On(condition, context).Eq(value).As<Bool>().Value)
+                        else if (condition is { Count: 1 } && condition[0].Value == "_")
                             match = result;
-                        else continue;
-                        
+                        else if (On(condition, context).Eq(value).Unwrap(context).As<Bool>().Value)
+                            match = result;
+                        else
+                            continue;
+
                         break;
+
                     }
 
                     if (!match.IsNone())
                         break;
                 }
 
+                if (match.IsNone())
+                    match = new Err("no match found.");
+
                 values.Push(match.Unwrap(context));
 
-                bool IsType(string s) => Global.Class.ContainsKey(s); 
+                bool IsType(string s) => Global.Class.ContainsKey(s);
             }
             else if (type.IsBinaryOperator())
             {
@@ -169,8 +217,6 @@ public static class Executer
                         TokenType.GreaterOrEqual => left.GtOrEq(right),
                         TokenType.LessThan => left.Lt(right),
                         TokenType.GreaterThan => left.Gt(right),
-                        TokenType.And => left.And(right),
-                        TokenType.Or => left.Or(right),
                         TokenType.Xor => left.Xor(right),
                         TokenType.In => right.In(left),
                         TokenType.Is => left.Is(right.IsType() ? new Obj(right.Type[2..^2]) : right),
@@ -221,11 +267,11 @@ public static class Executer
         {
             if (node.Type.IsOperator())
             {
-                while (operators.Count > 0 && operators.Peek().Type.IsOperator() && 
-                       operators.Peek().Type.GetPrecedence() <= node.Type.GetPrecedence())                
+                while (operators.Count > 0 && operators.Peek().Type.IsOperator() &&
+                       operators.Peek().Type.GetPrecedence() <= node.Type.GetPrecedence())
                     postfix.Add(operators.Pop());
                 operators.Push(node);
-            }           
+            }
             else postfix.Add(node);
         }
 
@@ -234,4 +280,14 @@ public static class Executer
         return postfix;
     }
 
+    private static List<Node> CollectUntilNextOperator(List<Node> nodes, ref int index)
+    {
+        var collected = new List<Node>();
+        index++; 
+
+        while (index < nodes.Count && !nodes[index].Type.IsShortCircuitOperator())
+            collected.Add(nodes[index++]);
+
+        return collected;
+    }
 }

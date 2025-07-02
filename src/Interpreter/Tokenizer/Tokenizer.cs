@@ -224,6 +224,8 @@ public class Tokenizer()
             case '-':
                 if (Now('>'))
                     return new Token($"{chr}{Read()}", TokenType.Return);
+                if (Now('='))
+                    return new Token($"{chr}{Read()}", TokenType.MinusAssign);
                 return new Token($"{chr}", TokenType.Minus);
             case '=':
             case '+':

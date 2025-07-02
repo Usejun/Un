@@ -13,9 +13,12 @@ public class LFn : Fn
 
         var scope = new Map(Closure ?? new Map());
         Bind(scope, args);
+        var context = new Context(scope, new(Name, Body));
 
         lock (Global.SyncRoot) { Depth++; }
-        var returned = Runner.Load(Name, Body, scope).Run();
+        context.EnterBlock("fn");
+        var returned = Runner.Load(context).Run();
+        context.ExitBlock();
 
         if (scope.TryGetValue("__using__", out var usings))
         {

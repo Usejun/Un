@@ -28,7 +28,7 @@ public static class Convert
                 name = pair[0].Split(TokenType.Colon)[0][0].Value;
                 value = Executer.On(pair[1], context);
             }
-            
+
             names.Add(name);
             list.Append(value);
         }
@@ -125,6 +125,27 @@ public static class Convert
         while (end < nodes.Count)
         {
             if (nodes[end].Type == type)
+            {
+                splited.Add(nodes[start..end]);
+                start = end + 1;
+            }
+            end++;
+        }
+
+        if (start != end)
+            splited.Add(nodes[start..end]);
+
+        return splited;
+    }
+
+    public static List<List<Node>> Split(this List<Node> nodes, params TokenType[] types)
+    {
+        List<List<Node>> splited = [];
+        int start = 0, end = 0;
+
+        while (end < nodes.Count)
+        {
+            if (types.Contains(nodes[end].Type))
             {
                 splited.Add(nodes[start..end]);
                 start = end + 1;

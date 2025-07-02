@@ -13,10 +13,6 @@ public class Bool(bool value) : Val<bool>(value, "bool")
         _ => new Bool(false)
     };
 
-    public override Obj And(Obj other) => Value ? other : this;
-
-    public override Obj Or(Obj other) => Value ? this : other;
-
     public override Obj Not() => Value ? new Bool(false) : new(true);
 
     public override Obj Xor(Obj other) => Value ? other.Not() : this;

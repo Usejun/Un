@@ -98,10 +98,10 @@ public class Lexer()
                 var lexed = new Lexer().Lex(tokens[index..]);
 
                 if (lexed.Count < 2)
-                    throw new Panic("expected value and body after 'match' keyword");
+                    throw new Panic("expected key and body after 'match' keyword");
                 if (lexed[0] is not { Type: TokenType.Identifier } ||
                     lexed[1] is not { Type: TokenType.Dict })
-                    throw new Panic("expected value and body after 'match' keyword");
+                    throw new Panic("expected key and body after 'match' keyword");
 
                 nodes.Add(new Node("match", TokenType.Match)
                 {

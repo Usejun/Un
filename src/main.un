@@ -1,12 +1,1 @@
-class App
-    name:str=""
-    fn __init__(name)
-        self.name = name
-
-    fn __exit__()
-        write("exit")
-        
-    fn __entry__()
-        write("entry")
-
-using app = App("un.exe")
+skip

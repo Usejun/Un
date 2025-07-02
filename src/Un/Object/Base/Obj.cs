@@ -76,18 +76,6 @@ public class Obj(string type) : IComparable<Obj>
         return Super is not null && !Super.IsNone() ? Super.Pow(other) : new Err($"unsupported operand type(s) for **: '{Type}' and '{other.Type}'");
     }
 
-    public virtual Obj And(Obj other)
-    {
-        if (ToBool().As<Bool>().Value) return other;
-        return other;
-    }
-
-    public virtual Obj Or(Obj other)
-    {
-        if (ToBool().As<Bool>().Value) return this;
-        return other;
-    }
-
     public virtual Obj Xor(Obj other)
     {
         if (ToBool().As<Bool>().Value ^ other.ToBool().As<Bool>().Value) return new Bool(true);
@@ -396,7 +384,7 @@ public class Obj(string type) : IComparable<Obj>
         if (this is T obj)
             return obj;
 
-        throw new Panic($"cannot cast {Type} to {typeof(T).Name}");
+        throw new Panic($"cannot cast {Type} to {typeof(T).Name.ToLower()}");
     }
 
     public Obj As<T, U>() where T : Obj where U : Obj
@@ -406,7 +394,7 @@ public class Obj(string type) : IComparable<Obj>
         if (this is U obj2)
             return obj2;
 
-       return new Err($"cannot cast {Type} to {typeof(T).Name} or {typeof(U).Name}");
+       return new Err($"cannot cast {Type} to {typeof(T).Name.ToLower()} or {typeof(U).Name.ToLower()}");
     }
 
     public T As<T>(string message) where T : Obj
@@ -442,7 +430,7 @@ public class Obj(string type) : IComparable<Obj>
         if (this is Err e)
             throw new Error(e.Message, context);
         if (this is not T t)
-            throw new Error($"cannot cast {Type} to {typeof(T).Name}", context);
+            throw new Error($"cannot cast {Type} to {typeof(T).Name.ToLower()}", context);
         return t;
     }
 

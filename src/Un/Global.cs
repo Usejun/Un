@@ -1,15 +1,14 @@
 global using Scope = System.Collections.Generic.IDictionary<string, Un.Object.Obj>;
 global using Attributes = System.Collections.Generic.Dictionary<string, Un.Object.Obj>;
-global using Context = (System.Collections.Generic.IDictionary<string, Un.Object.Obj> Scope, Un.UnFile File);
 global using Map = System.Collections.Generic.Dictionary<string, Un.Object.Obj>;
 
 using Un.Object;
+using Un.Object.Flow;
+using Un.Object.Util;
+using Un.Object.Media;
 using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
-using Un.Object.Media;
-using Un.Object.Util;
-using Un.Object.Flow;
 using System.Collections.Concurrent;
 
 namespace Un;

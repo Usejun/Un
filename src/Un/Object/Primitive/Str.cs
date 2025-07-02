@@ -44,7 +44,7 @@ public class Str(string value) : Ref<string>(value, "str")
 
     public override Str ToStr() => this;
 
-    public override Obj ToBool() => bool.TryParse(Value, out var result) ? new Bool(result) : new Err($"cannot convert '{Value}' to 'bool'");
+    public override Obj ToBool() => bool.TryParse(Value, out var result) ? new Bool(result) : string.IsNullOrEmpty(Value) ? new Bool(false) : new Bool(true);
 
     public override List ToList()
     {

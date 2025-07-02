@@ -33,6 +33,9 @@ public class Runner()
             Free();
         }
 
+        if ((returned?.Type == "skip" || returned?.Type == "break") && !Context.InLoop)
+            throw new Panic($"'{returned?.Type}' keyword can only be used inside a loop");
+
         return returned;
     }
 
@@ -63,8 +66,8 @@ public class Runner()
         };
     }
 
-    public static Runner Load(string name, string[] body, Scope scope) => new()
+    public static Runner Load(Context context) => new()
     {
-        Context = (scope,  new UnFile(name, body))
+        Context = context
     };
 }
