@@ -27,7 +27,7 @@ public static class TokenTypeUtil
         // 기타 연산자 
         TokenType.DoubleQuestion or TokenType.Question or TokenType.Indexer or TokenType.Slicer or TokenType.Spread or
         TokenType.Positive or TokenType.Negative or TokenType.QuestionDot or TokenType.In or TokenType.Is or TokenType.Go or
-        TokenType.Wait or TokenType.Call => true,
+        TokenType.Wait or TokenType.Call or TokenType.Property or TokenType.NullableProperty => true,
         _ => false,
     };
 
@@ -69,7 +69,7 @@ public static class TokenTypeUtil
     {
         TokenType.Identifier or TokenType.Indexer or TokenType.Slicer or TokenType.Property or TokenType.NullableProperty or TokenType.Call or
         TokenType.Integer or TokenType.Float or TokenType.String or TokenType.FString or TokenType.Boolean or TokenType.List or TokenType.Dict or
-        TokenType.Set => true,
+        TokenType.Set or TokenType.Tuple => true,
         _ => false
     };
 
@@ -98,6 +98,12 @@ public static class TokenTypeUtil
         _ => false,
     };
 
+    public static bool IsRightAssociative(this TokenType type) => type switch
+    {
+        TokenType.Go or TokenType.Wait => true,
+        _ => false,
+    };
+
     public static TokenType GetCloser(this TokenType type) => type switch
     {
         TokenType.LParen => TokenType.RParen,
@@ -118,8 +124,8 @@ public static class TokenTypeUtil
     {
         TokenType.LParen => -1,
         TokenType.Indexer or TokenType.Slicer or TokenType.NullableProperty or TokenType.Property => 0,
-        TokenType.Go or TokenType.Wait => 1,
-        TokenType.Call => 2,
+        TokenType.Call or TokenType.Go => 1,
+        TokenType.Wait => 2,
         TokenType.BNot or TokenType.Positive or TokenType.Negative or TokenType.Spread => 3,
         TokenType.Asterisk or TokenType.Slash or TokenType.DoubleSlash or TokenType.Percent => 4,
         TokenType.Plus or TokenType.Minus => 5,
@@ -146,7 +152,7 @@ public static class TokenTypeUtil
 
         TokenType.DoubleQuestion => 17,
 
-        TokenType.RParen => 18,
+        TokenType.RParen => 19,
         _ => 0,
     };
 }

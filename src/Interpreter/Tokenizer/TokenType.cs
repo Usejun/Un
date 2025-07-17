@@ -57,15 +57,16 @@ public enum TokenType
     Use, Using,
     Comment,
 
-
     Identifier,
 
     Integer, Float, String, FString, Boolean,
-    List, Dict, Set, Tuple, Pair,
+    List, Dict, Set, Tuple,
+
+    Pair, Annotation,
 
     Call,
 
     Go, Wait,
 
-    Try, Catch, Fin,
+    Try, Defer,
 }

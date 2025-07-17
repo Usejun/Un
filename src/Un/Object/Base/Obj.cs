@@ -378,7 +378,6 @@ public class Obj(string type) : IComparable<Obj>
         return false;
     }
 
-
     public T As<T>() where T : Obj
     {
         if (this is T obj)
@@ -405,21 +404,19 @@ public class Obj(string type) : IComparable<Obj>
         throw new Panic(message);
     }
 
-    public bool Ok(out Err e)
+    public Obj As<T, U>(string message) where T : Obj where U : Obj
     {
-        if (this is Err err)
-        {
-            e = err;        
-            return false;
-        }
+        if (this is T obj1)
+            return obj1;
+        if (this is U obj2)
+            return obj2;
 
-        e = new Err("");
-        return true;
+       return new Err(message);
     }
 
     public Obj Unwrap(Context context)
     {
-        if (this is Err e)        
+        if (this is Err e)
             throw new Error(e.Message, context);
         return this;
     }

@@ -1,11 +1,11 @@
-global using Scope = System.Collections.Generic.IDictionary<string, Un.Object.Obj>;
 global using Attributes = System.Collections.Generic.Dictionary<string, Un.Object.Obj>;
 global using Map = System.Collections.Generic.Dictionary<string, Un.Object.Obj>;
+global using IMap = System.Collections.Generic.IDictionary<string, Un.Object.Obj>;
 
 using Un.Object;
+using Un.Object.IO;
 using Un.Object.Flow;
 using Un.Object.Util;
-using Un.Object.Media;
 using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
@@ -23,16 +23,12 @@ public static class Global
 
     public static int MaxDepth = 1000;
 
-    public static ConcurrentDictionary<string, Obj> Scope { get; set; } = new();
+    public static Scope Scope { get; set; } = new Scope(new ConcurrentDictionary<string, Obj>(), null!);
     public static ConcurrentDictionary<string, Obj> Class { get; private set; } = new();
 
     static Global()
     {
-        Class["video"] = new Video(null!);
-        Class["audio"] = new Audio(null!);
-        Class["image"] = new Image(null!);
         Class["time"] = new Time();
-        Class["long"] = new Long();
         Class["flow"] = new Flow();
     }
 
@@ -52,14 +48,15 @@ public static class Global
         InitTypeByName<Set>();
         InitTypeByName<Dict>();
         InitTypeByName<Iters>("iter");
+        InitTypeByName<Future>();
 
-        Scope["__name__"] = new Str("__main__");
+        Scope.Set("__name__", new Str("__main__"));
 
         foreach (var (key, value) in std.GetOriginalMembers())
-            Scope[key] = value;
+            Scope.Set(key, value);
 
         foreach (var (key, value) in std.GetOriginalMethods())
-            Scope[key] = value;
+            Scope.Set(key, value);
 
         WriteLog = writeLog;
     }
@@ -74,15 +71,15 @@ public static class Global
         if (obj is IPack pack)
         {
             foreach (var (key, value) in pack.GetOriginalMembers())
-                Scope[key] = value; ;
+                Scope.Set(key, value);
 
             var group = pack.GetOriginalMethods();
 
             if (group.Count != 0)
-                Scope[name] = new Obj(name)
+                Scope.Set(name, new Obj(name)
                 {
                     Members = group,
-                };
+                });
         }
     }
 
@@ -111,18 +108,18 @@ public static class Global
 
         var scope = new Map();
 
-        Runner.Load(name, scope, fullPath);
+        Runner.Load(name, new Scope(scope), fullPath);
 
         if (!string.IsNullOrEmpty(nickname))
         {
             Obj module = new(nickname);
             CreateNamespace(module.Members);
-            Scope[nickname] = module;
+            Scope.Set(nickname, module);
         }
         else
-            CreateNamespace(Scope);
+            CreateNamespace(Scope.GetScope());
 
-        void CreateNamespace(Scope destination)
+        void CreateNamespace(IMap destination)
         {
             if (parts.Length != 0)
                 foreach (var part in parts)
@@ -148,9 +145,9 @@ public static class Global
         return false;
     }
 
-    public static Obj GetGlobalVariable(string name) => Scope[name];
+    public static Obj GetGlobalVariable(string name) => Scope.Get(name, out var value) ? value : throw new Panic($"global variable '{name}' not found");
 
-    public static Obj SetGlobalVariable(string name, Obj obj) => Scope[name] = obj;
+    public static void SetGlobalVariable(string name, Obj obj) => Scope.Set(name, obj);
 
-    public static bool TryGetGlobalVariable(string name, out Obj obj) => Scope.TryGetValue(name, out obj!); 
+    public static bool TryGetGlobalVariable(string name, out Obj obj) => Scope.Get(name, out obj!); 
 }

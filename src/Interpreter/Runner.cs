@@ -1,6 +1,6 @@
 using Un;
 using Un.Object;
-using Un.Object.Collections;
+using Un.Object.Primitive;
 
 public class Runner()
 {
@@ -28,12 +28,25 @@ public class Runner()
             returned = parser.ReturnValue;
 
         }
+        catch (Exception e)
+        {
+            if (Context.InBlock("try"))
+            {
+                throw new Error(e.Message, Context);
+            }
+            else
+            {
+                var error = new Error(e.Message, Context); 
+                Context.Scope["log"].Call(new ([new Str(error.ToString())], [""]));
+            }
+        }
         finally
         {
             Free();
+            Defer();
         }
 
-        if ((returned?.Type == "skip" || returned?.Type == "break") && !Context.InLoop)
+        if ((returned?.Type == "skip" || returned?.Type == "break") && Context.CurrentBlock != "loop")
             throw new Panic($"'{returned?.Type}' keyword can only be used inside a loop");
 
         return returned;
@@ -41,13 +54,18 @@ public class Runner()
 
     private void Free()
     {
-        if (Context.Scope.TryGetValue("__using__", out var usings))
+        foreach (var obj in Context.Usings)
         {
-            if (usings.As<List>(out var list))
-                foreach (var obj in list)
-                    obj.Exit();
-            else
-                throw new Panic("__usings__ must be list");
+            obj.Exit();
+        }
+    }
+
+    private void Defer()
+    {
+        foreach (var nodes in Context.Defers)
+        {
+            var parser = new Parser(new Context(Context.Scope, new("defer", []), []));
+            parser.Parse(nodes);
         }
     }
 
@@ -62,7 +80,7 @@ public class Runner()
 
         return new()
         {
-            Context = new(scope,  new UnFile(name, File.ReadAllLines(allPath)))
+            Context = new(scope, new UnFile(name, File.ReadAllLines(allPath)), [])
         };
     }
 

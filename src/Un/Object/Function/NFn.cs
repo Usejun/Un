@@ -18,7 +18,7 @@ public class NFn : Fn
         if (Depth == Global.MaxDepth)
             return new Err("maximum recursion depth");
 
-        var scope = new Map(Closure ?? new Map());    
+        var scope = new Scope(new Map(), Closure); 
         Bind(scope, args);        
         lock (Global.SyncRoot) { Depth++; }
 

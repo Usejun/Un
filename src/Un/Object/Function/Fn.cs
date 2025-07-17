@@ -3,7 +3,7 @@ using Un.Object.Collections;
 
 namespace Un.Object.Function;
 
-public class Fn : Obj
+public class Fn() : Obj("fn")
 {
     public static int Depth = 0;
 
@@ -137,6 +137,25 @@ public class Fn : Obj
                 throw new Panic($"unexpected keyword argument: '{unexpected}'");
             }
         }
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            int hash = Global.BASEHASH;
+            hash = hash * Global.HASHPRIME + (Name?.GetHashCode() ?? 0);
+            hash = hash * Global.HASHPRIME + Args.Count;
+            return hash;
+        }
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not Fn other)
+            return false;
+
+        return ReferenceEquals(this, other);
     }
 
     public static Tup UnpackArgs(Tup rawArgs)

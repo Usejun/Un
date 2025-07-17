@@ -24,12 +24,15 @@ public class Parser(Context context)
             TokenType.Use => ParseUse(),
             TokenType.Using => ParseUsing(),
             TokenType.Class => ParseClass(),
+            TokenType.At => ParseAnotation(),
             TokenType.Enum => ParseEunm(),
             TokenType.Return => ParseReturn(),
             TokenType.Skip => ParseSkip(),
             TokenType.Break => ParseBreak(),
             TokenType.For => ParseFor(),
             TokenType.While => ParseWhile(),
+            TokenType.Try => ParseTry(),
+            TokenType.Defer => ParseDefer(),
             TokenType.If or TokenType.ElIf or TokenType.Else => ParseIf(),
             _ => ParseExpreession(),
         };
@@ -82,11 +85,9 @@ public class Parser(Context context)
         var members = new Map();
         var types = new HashSet<string>();
 
-        var innerContext = new Context(members, new UnFile(name, body));
+        var innerContext = new Context(new(members), new UnFile(name, body), context.BlockStack);
 
-        innerContext.EnterBlock("class");
         Runner.Load(innerContext).Run();
-        innerContext.ExitBlock();
 
         if (isInherit)
         {
@@ -148,32 +149,6 @@ public class Parser(Context context)
     private Obj ParseReturn() => ReturnValue = Executer.On(nodes[1..], context);
     private Obj ParseBreak() => ReturnValue = new Obj("break");
     private Obj ParseSkip() => ReturnValue = new Obj("skip");
-    private Obj ParseUsing()
-    {
-        if (!Scope.TryGetValue("__using__", out var usings))
-        {
-            usings = new List();
-            Scope.Add("__using__", usings);
-        }
-
-        var name = nodes[1].Value;
-        nodes = nodes[1..];
-        int assign = -1;
-
-        for (int i = 0; assign == -1 && i < nodes.Count; i++)
-            if (nodes[i].Type.IsAssignmentOperator())
-                assign = i;
-
-        if (assign == -1)
-            throw new Error("'using' keyword must be followed by an assignment operator:", context);
-
-        ParseAssignment(assign);
-
-        Scope[name].Entry();
-        usings.As<List>().Append(Scope[name]);
-
-        return Obj.None;
-    }
     private Obj ParseExpreession()
     {
         for (int i = 0; i < nodes.Count; i++)
@@ -202,7 +177,7 @@ public class Parser(Context context)
             objs.AddRange(IsDeconstructableToken() ?
                 Convert.ToTuple(values[0], context).Value
             :
-                context.Scope[values[0].Value].ToTuple().As<Tup>().Value);
+                Scope.Get(values[0].Value).ToTuple().As<Tup>().Value);
         else
             throw new Error($"invalid assignment {nodes[assign - 1].Type}.", context);
 
@@ -216,7 +191,7 @@ public class Parser(Context context)
                 switch (names[i].Type)
                 {
                     case TokenType.Indexer:
-                        var index = Executer.On(names[i].Children, context).Unwrap(context);            
+                        var index = Executer.On(names[i].Children, context).Unwrap(context);
                         variable.SetItem(index, AssignValue(type, variable.GetItem(index).Unwrap(context), objs[count]));
                         break;
                     case TokenType.Property:
@@ -224,12 +199,12 @@ public class Parser(Context context)
                         break;
                     case TokenType.Identifier:
                         var name = names[i].Value;
-                        if (Scope.TryGetValue(name, out Obj? value))
-                            Scope[name] = AssignValue(type, value, objs[count]);
+                        if (Scope.Get(name, out Obj? value))
+                            Scope.Set(name, AssignValue(type, value, objs[count]));
                         else if (Global.TryGetGlobalVariable(name, out value))
                             Global.SetGlobalVariable(name, AssignValue(type, value, objs[count]));
                         else if (type == TokenType.Assign)
-                            Scope.Add(name, objs[count]);
+                            Scope.Set(name, objs[count]);
                         else
                             throw new Error($"invalid assignment {names[i].Type}.", context);
                         break;
@@ -247,7 +222,7 @@ public class Parser(Context context)
                 {
                     TokenType.Indexer => variable.GetItem(Executer.On(names[i].Children, context).Unwrap(context)).Unwrap(context),
                     TokenType.Property => variable.GetAttr(names[i].Value).Unwrap(context),
-                    TokenType.Identifier => Scope.TryGetValue(names[i].Value, out var obj) ? obj : throw new Error($"variable {names[i].Value} not found.", context),
+                    TokenType.Identifier => Scope.Get(names[i].Value, out var obj) ? obj : throw new Error($"variable {names[i].Value} not found.", context),
                     _ => throw new Error($"invalid assignment {names[i].Type}.", context)
                 };
         }
@@ -257,7 +232,7 @@ public class Parser(Context context)
 
         bool IsEnd(int index) => index >= names.Count || names[index].Type == TokenType.Comma || names[index].Type == TokenType.Colon;
 
-        bool IsDeconstruct() => valueCount == 1 && (IsDeconstructableToken() || context.Scope[values[0].Value].As<Tup, List>(out _));
+        bool IsDeconstruct() => valueCount == 1 && (IsDeconstructableToken() || Scope.Get(values[0].Value).As<Tup, List>(out _));
 
         bool IsDeconstructableToken() => (values[0].Type == TokenType.List || values[0].Type == TokenType.Tuple) && nameCount == values[0].Children.Count(i => i.Type == TokenType.Comma) + 1;
 
@@ -285,14 +260,14 @@ public class Parser(Context context)
         var vars = nodes[..inIdx][1..].Split(TokenType.Comma).Select(x => x[0]).ToList();
         var iter = Executer.On(nodes[(inIdx + 1)..], context).Iter().As<Iters>().Value.GetEnumerator();
         var body = context.File.GetBody();
-        var innerScope = new Map(Scope);
-        var innerContext = new Context(innerScope, new("for", body));
+        var innerScope = new Scope(new Map(), Scope);
 
         while (iter.MoveNext())
         {
             var current = iter.Current;
+            var innerContext = new Context(innerScope, new("for", body), context.BlockStack);
 
-            if (vars.Count != current switch
+            if (vars.Count != 1 && vars.Count != current switch
             {
                 List or Tup => current.Len().As<Int>().Value,
                 _ => 1
@@ -301,13 +276,13 @@ public class Parser(Context context)
 
             var values = current switch
             {
-                List l => l,
-                Tup t => [.. t],
+                List l when vars.Count != 1 => l,
+                Tup t when vars.Count != 1 => [.. t],
                 _ => new([current])
             };
 
             for (int i = 0; i < vars.Count; i++)
-                innerScope[vars[i].Value] = values[i];
+                innerScope.Set(vars[i].Value, values[i]);
 
             innerContext.EnterBlock("loop");
             ReturnValue = Runner.Load(innerContext).Run();
@@ -328,8 +303,8 @@ public class Parser(Context context)
     {
         var expr = nodes[1..];
         var body = context.File.GetBody();
-        var innerScope = new Map(Scope);
-        var innerContext = new Context(innerScope, new("while", body));
+        var innerScope = new Scope(new Map(), Scope);
+        var innerContext = new Context(innerScope, new("while", body), context.BlockStack);
 
         while (Executer.On(expr, innerContext).As<Bool>("while keyword only boolearn").Value)
         {
@@ -344,22 +319,21 @@ public class Parser(Context context)
             }
             else if (ReturnValue?.Type == "skip")
                 ReturnValue = null!;
-        }   
+        }
 
         return ReturnValue ?? Obj.None;
     }
     private Obj ParseIf()
     {
         Bool condition = nodes[0].Type == TokenType.Else ? new(true) : Executer.On(nodes[1..], context).ToBool().As<Bool>();
+        var innerScope = new Scope(new Map(), Scope);
 
         if (condition.Value)
         {
             var body = context.File.GetBody();
-            var innerContext = new Context(new Map(Scope), new ("while", body));
+            var innerContext = new Context(innerScope, new("if", body), context.BlockStack);
 
-            innerContext.EnterBlock("if");
             ReturnValue = Runner.Load(innerContext).Run();
-            innerContext.ExitBlock();
 
             var file = context.File;
 
@@ -367,9 +341,7 @@ public class Parser(Context context)
             {
                 code = code.Trim();
                 if (code.StartsWith("elif") || code.StartsWith("else"))
-                {
                     file.GetBody();
-                }
                 else break;
             }
         }
@@ -380,5 +352,89 @@ public class Parser(Context context)
 
         return ReturnValue ?? Obj.None;
     }
+    private Obj ParseTry()
+    {
+        var body = context.File.GetBody();
+        var innerScope = new Scope(new Map(), Scope);
+        var innerContext = new Context(innerScope, new("try", body), context.BlockStack);
+
+        innerContext.EnterBlock("try");
+
+        try
+        {
+            ReturnValue = Runner.Load(innerContext).Run();
+            innerContext.ExitBlock();
+        }
+        catch (Exception e)
+        {
+            innerContext.ExitBlock();
+
+            if (!context.File.EOL && context.File.PeekLine().StartsWith("catch"))
+            {
+                var parts = context.File.PeekLine().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var name = parts.Length > 1 ? parts[1] : null;
+                body = context.File.GetBody();
+                innerContext = new Context(innerScope, new("catch", body), context.BlockStack);
+
+                if (name is not null)
+                    innerContext.Scope.Set(name, new Err(e.Message));
+
+                Runner.Load(innerContext).Run();
+            }
+        }
+        finally
+        {
+            if (!context.File.EOL && context.File.PeekLine().StartsWith("fin"))
+            {
+                body = context.File.GetBody();
+                innerContext = new Context(innerScope, new("fin", body), context.BlockStack);
+
+                Runner.Load(innerContext).Run();
+            }
+        }
+
+        return ReturnValue ?? Obj.None;
+    }
+    private Obj ParseUsing()
+    {
+        var name = nodes[1].Value;
+        nodes = nodes[1..];
+        int assign = -1;
+
+        for (int i = 0; assign == -1 && i < nodes.Count; i++)
+            if (nodes[i].Type.IsAssignmentOperator())
+                assign = i;
+
+        if (assign == -1)
+            throw new Error("'using' keyword must be followed by an assignment operator:", context);
+
+        ParseAssignment(assign);
+
+        Scope.Get(name, out var obj);
+        obj.Entry();
+        context.Usings.Push(obj);
+
+        return Obj.None;
+    }
+    private Obj ParseDefer()
+    {
+        context.Defers.Push(nodes[1..]);
+        return Obj.None;
+    }
+    private Obj ParseAnotation()
+    {
+        if (nodes.Count <= 1 || nodes.Count >= 3)
+            throw new Error("invalid annotation syntax", context);
+
+        var annotation = new Node(nodes[1].Value, TokenType.Annotation)
+        {
+            Children = nodes[1..]
+        };
+        
+        context.Annotations.Add(annotation);
+        return Obj.None;
+    }
     #endregion
+
+
 }

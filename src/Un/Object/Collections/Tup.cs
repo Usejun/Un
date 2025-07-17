@@ -127,10 +127,10 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
         foreach (var value in Value)
         {
             hash <<= Global.HASHPRIME;
-            hash ^= value.GetHashCode();
+            hash *= value.GetHashCode();
             hash >>= Global.HASHPRIME;
         }
-        return hash;
+        return Math.Abs(hash);
     }
 
     private bool OutOfRange(int index) => index < 0 || index >= Count;

@@ -298,7 +298,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         foreach (var item in this)
         {
             hash <<= Global.HASHPRIME;
-            hash ^= value.GetHashCode();
+            hash *= value.GetHashCode();
             hash >>= Global.HASHPRIME;
         }
 

@@ -198,8 +198,6 @@ public class Tokenizer()
             "in" => TokenType.In,
             "is" => TokenType.Is,
             "try" => TokenType.Try,
-            "catch" => TokenType.Catch,
-            "fin" => TokenType.Fin,
             "and" => TokenType.And,
             "or" => TokenType.Or,
             "not" => TokenType.Not,
@@ -208,6 +206,7 @@ public class Tokenizer()
             "as" => TokenType.As,
             "go" => TokenType.Go,
             "wait" => TokenType.Wait,
+            "defer" => TokenType.Defer,
             _ => TokenType.Identifier
         });
     }

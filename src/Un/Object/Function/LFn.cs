@@ -11,24 +11,24 @@ public class LFn : Fn
         if (Depth == Global.MaxDepth)
             return new Err("maximum recursion depth");
 
-        var scope = new Map(Closure ?? new Map());
+        var scope = new Scope(new Map(), Closure);
         Bind(scope, args);
-        var context = new Context(scope, new(Name, Body));
+        var context = new Context(scope, new(Name, Body), []);
 
         lock (Global.SyncRoot) { Depth++; }
-        context.EnterBlock("fn");
         var returned = Runner.Load(context).Run();
-        context.ExitBlock();
 
-        if (scope.TryGetValue("__using__", out var usings))
+        foreach (var nodes in context.Defers)
         {
-            if (usings.As<List>(out var list))
-                foreach (var obj in list)
-                    obj.Exit();
-            else
-                return new Err("__usings__ must be list");
-
+            var parser = new Parser(new Context(context.Scope, new("defer", []), []));
+            parser.Parse(nodes);
         }
+
+        foreach (var obj in context.Usings)
+        {
+            obj.Exit();
+        }
+
         lock (Global.SyncRoot) { Depth--; }
 
         return returned ?? None;
