@@ -15,17 +15,28 @@ public class NFn : Fn
 
     public override Obj Call(Tup args)
     {
-        if (Depth == Global.MaxDepth)
+        if (Depth == Global.MAXRECURSIONDEPTH)
             return new Err("maximum recursion depth");
 
-        var scope = new Scope(new Map(), Closure); 
-        Bind(scope, args);        
+        var scope = new Scope(new Map(), Closure);
+        Bind(scope, args);
         lock (Global.SyncRoot) { Depth++; }
 
         var returned = Func(scope);
-        
+
         lock (Global.SyncRoot) { Depth--; }
 
         return returned ?? None;
     }
+    
+    public override Obj Clone() => new NFn()
+    {
+        Name = Name,
+        Args = [..Args],
+        ReturnType = ReturnType,
+        Closure = Closure,
+        Func = Func,
+        Self = Self,
+        Super = Super?.Clone(),
+    };
 }

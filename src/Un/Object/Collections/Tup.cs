@@ -37,13 +37,20 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
 
     public Tup() : this([], []) {}
 
-    public Tup(Obj[] values, string[] names) : base(values, "tuple") 
+    public Tup(Obj[] values) : base(values, "tuple")
+    {
+        Name = new string[values.Length];
+        for (int i = 0; i < values.Length; i++)
+            Name[i] = string.Empty;
+    }
+
+    public Tup(Obj[] values, string[] names) : base(values, "tuple")
     {
         Name = names;
-        
+
         for (int i = 0; i < Name.Length; i++)
             if (!string.IsNullOrEmpty(Name[i]))
-                    Members.Add(Name[i], values[i]);
+                Members[Name[i]] = values[i];
     }
 
     public Obj this[int index]

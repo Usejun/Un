@@ -23,15 +23,15 @@ public class Lexer()
 
                 nodes.Add(new Node(type switch
                 {
-                    TokenType.LBrack => IsIdentifier() ? IsSlicer(start, end) ? "slicer" : "indexer" : "list",
+                    TokenType.LBrack => IsVariable() ? IsSlicer(start, end) ? "slicer" : "indexer" : "list",
                     TokenType.LBrace => IsSet(start, end) ? "set" : "dict",
-                    TokenType.LParen => IsIdentifier() ? "call" : "tuple",
+                    TokenType.LParen => IsVariable() ? "call" : "tuple",
                     _ => throw new Panic($"invalid left bracket type {type}")
                 }, type switch
                 {
-                    TokenType.LBrack => IsIdentifier() ? IsSlicer(start, end) ?  TokenType.Slicer : TokenType.Indexer : TokenType.List,
+                    TokenType.LBrack => IsVariable() ? IsSlicer(start, end) ? TokenType.Slicer : TokenType.Indexer : TokenType.List,
                     TokenType.LBrace => IsSet(start, end) ? TokenType.Set : TokenType.Dict,
-                    TokenType.LParen => IsIdentifier() ? TokenType.Call : TokenType.Tuple,
+                    TokenType.LParen => IsVariable() ? TokenType.Call : TokenType.Tuple,
                     _ => throw new Panic($"invalid left bracket type {type}")
                 })
                 {
@@ -54,12 +54,21 @@ public class Lexer()
             }
             else if (type == TokenType.Dot)
             {
-                if (!IsIdentifier())
+                if (!IsVariable())
                     throw new Panic("expected identifier after dot");
 
                 (var property, _) = Next();
 
                 nodes.Add(new Node(property.Value, TokenType.Property));
+            }
+            else if (type == TokenType.QuestionDot)
+            {
+                if (!IsVariable())
+                    throw new Panic("expected identifier after question-dot");
+
+                (var property, _) = Next();
+
+                nodes.Add(new Node(property.Value, TokenType.NullableProperty));
             }
             else if (type == TokenType.Func)
             {
@@ -111,12 +120,30 @@ public class Lexer()
                 nodes.AddRange(lexed[2..]);
                 index = tokens.Count;
             }
+            else if (type == TokenType.FString)
+            {
+                if (IsIdentifier())
+                {
+                    var name = nodes[^1];
+                    nodes.RemoveAt(nodes.Count - 1);
+                    nodes.Add(new Node(token.Value, TokenType.FString)
+                    {
+                        Children = [name]
+                    });
+                }
+                else
+                {
+                    nodes.Add(new Node(token.Value, TokenType.FString));
+                }
+            }
             else nodes.Add(new Node(token.Value, type));
         }
 
         return nodes;
 
-        bool IsIdentifier() => nodes.Count > 0 && nodes[^1].Type.IsIdentifier();
+        bool IsIdentifier() => nodes.Count > 0 && nodes[^1].Type == TokenType.Identifier;
+
+        bool IsVariable() => nodes.Count > 0 && nodes[^1].Type.IsVariable();
 
         bool IsUnary() => (nodes.Count == 0 || nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma) &&
                           (nodes.Count != 0 && nodes[^1].Type != TokenType.Call) && index < tokens.Count;

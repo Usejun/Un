@@ -16,25 +16,26 @@ namespace Un;
 public static class Global
 {
     public static object SyncRoot = new();
-    public static bool WriteLog { get; private set; }
+
+    public static string PATH => "/workspaces/Un/src/";
 
     public static readonly int BASEHASH = Math.Abs(DateTime.Now.Millisecond * 6929891 + DateTime.Now.Second * 1025957);
     public static readonly int HASHPRIME = 11;
+    public static int MAXRECURSIONDEPTH = 1000;
 
-    public static int MaxDepth = 1000;
-
-    public static Scope Scope { get; set; } = new Scope(new ConcurrentDictionary<string, Obj>(), null!);
-    public static ConcurrentDictionary<string, Obj> Class { get; private set; } = new();
+    private static Scope scope = new(new ConcurrentDictionary<string, Obj>(), null!);
+    private static ConcurrentDictionary<string, Obj> classes = new();
 
     static Global()
     {
-        Class["time"] = new Time();
-        Class["flow"] = new Flow();
+        classes["time"] = new Time();
+        classes["flow"] = new Flow();
+        classes["json"] = new Json(Obj.None);
     }
 
     public static Attributes Package { get; private set; } = [];
 
-    public static void Init(bool writeLog = false)
+    public static void Init()
     {
         var std = new Std();
 
@@ -50,15 +51,13 @@ public static class Global
         InitTypeByName<Iters>("iter");
         InitTypeByName<Future>();
 
-        Scope.Set("__name__", new Str("__main__"));
+        scope.Set("__name__", new Str("__main__"));
 
         foreach (var (key, value) in std.GetOriginalMembers())
-            Scope.Set(key, value);
+            scope.Set(key, value);
 
         foreach (var (key, value) in std.GetOriginalMethods())
-            Scope.Set(key, value);
-
-        WriteLog = writeLog;
+            scope.Set(key, value);
     }
 
     public static void InitTypeFromInstance<T>(T obj)
@@ -66,17 +65,17 @@ public static class Global
     {
         var name = obj.Type;
 
-        Class[name].Members = obj.GetOriginal();
+        classes[name].Members = obj.GetOriginal();
 
         if (obj is IPack pack)
         {
             foreach (var (key, value) in pack.GetOriginalMembers())
-                Scope.Set(key, value);
+                scope.Set(key, value);
 
             var group = pack.GetOriginalMethods();
 
             if (group.Count != 0)
-                Scope.Set(name, new Obj(name)
+                scope.Set(name, new Obj(name)
                 {
                     Members = group,
                 });
@@ -88,7 +87,7 @@ public static class Global
     {
         var t = new T();
 
-        Class.TryAdd(name ?? typeof(T).Name.ToLower(), new T
+        classes.TryAdd(name ?? typeof(T).Name.ToLower(), new T
         {
             Members = t.GetOriginal()
         });
@@ -96,28 +95,28 @@ public static class Global
 
     public static void Include(string name)
     {
-        InitTypeFromInstance(Class[name]);
+        InitTypeFromInstance(classes[name]);
     }
 
     public static void Import(string name, string path, string nickname, string[] parts)
     {
-        var fullPath = Path.Combine(path, name);
+        var fullPath = Path.Combine(path.StartsWith(PATH) ? "" : PATH, path);
 
         if (!Path.Exists(fullPath))
             throw new Panic($"file {name} not found in {path}");
 
         var scope = new Map();
 
-        Runner.Load(name, new Scope(scope), fullPath);
+        Runner.Load(name, new Scope(scope), fullPath).Run();
 
         if (!string.IsNullOrEmpty(nickname))
         {
             Obj module = new(nickname);
             CreateNamespace(module.Members);
-            Scope.Set(nickname, module);
+            Global.scope.Set(nickname, module);
         }
         else
-            CreateNamespace(Scope.GetScope());
+            CreateNamespace(Global.scope.GetScope());
 
         void CreateNamespace(IMap destination)
         {
@@ -134,20 +133,57 @@ public static class Global
         }
     }
 
-    public static bool IsClass(string name) => Class.ContainsKey(name);
+    public static bool IsClass(string name) => classes.ContainsKey(name);
+
+    public static Obj GetClass(string name)
+    {
+        if (classes.TryGetValue(name, out var obj))
+            return obj;
+
+        throw new Panic($"class '{name}' not found");
+    }
+
+    public static bool TryGetClass(string name, out Obj? obj)
+    {
+        if (classes.TryGetValue(name, out obj))
+            return true;
+
+        obj = null;
+        return false;
+    }
+
+    public static void SetClass(string name, Obj obj)
+    {
+        classes[name] = obj;
+    }
+
 
     public static bool TryGetOriginalValue(string type, string name, out Obj value)
     {
-        if (Class.TryGetValue(type, out var original))
+        if (classes.TryGetValue(type, out var original))
             return original.Members.TryGetValue(name, out value);
 
         value = Obj.Error;
         return false;
     }
 
-    public static Obj GetGlobalVariable(string name) => Scope.Get(name, out var value) ? value : throw new Panic($"global variable '{name}' not found");
 
-    public static void SetGlobalVariable(string name, Obj obj) => Scope.Set(name, obj);
+    public static Obj GetGlobalVariable(string name) => scope.Get(name, out var value) ? value : throw new Panic($"global variable '{name}' not found");
 
-    public static bool TryGetGlobalVariable(string name, out Obj obj) => Scope.Get(name, out obj!); 
+    public static void SetGlobalVariable(string name, Obj obj) => scope.Set(name, obj);
+
+    public static bool TryGetGlobalVariable(string name, out Obj obj) => scope.Get(name, out obj!);
+
+
+    public static Scope GetScope() => scope;
+
+
+    public static Map New(this Map map)
+    {
+        Map newMap = [];
+        foreach (var (key, value) in map)
+            if (value is Obj obj)
+                newMap[key] = obj.Clone();
+        return newMap;
+    }
 }

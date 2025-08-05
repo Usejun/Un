@@ -48,12 +48,15 @@ public static class Convert
 
     public static Set ToSet(Node node, Context context) => new([.. ToTuple(node, context).Value]);
 
-    public static Str ToFStr(Node node, Context context)
+    public static Obj ToFStr(Node node, Context context)
     {
-        string src = node.Value, buf = "", str = "";
-        int len = src.Length, depth = 0, i = 0;
+        var src = node.Value;
+        int len = src.Length, depth = 0, i = 0, j = 0;
         var tokenizer = new Tokenizer();
         var lexer = new Lexer();
+
+        List<string> raw = [""];
+        List values = [];
 
         while (i < len)
         {
@@ -61,6 +64,7 @@ public static class Convert
 
             if (c == '{')
             {
+                var expr = "";
                 depth++;
                 while (i < len)
                 {
@@ -71,19 +75,23 @@ public static class Convert
                         '}' => depth - 1,
                         _ => depth
                     };
+
                     if (depth == 0)
                         break;
-                    buf += c;
+                        
+                    expr += c;
                 }
-                str += Executer.On(lexer.Lex(tokenizer.Tokenize(new("", [buf]))), context).ToStr().As<Str>().Value;
-                buf = "";
+                values.Append(Executer.On(lexer.Lex(tokenizer.Tokenize(new("", [expr]))), context));
+                raw.Add("");
+                j++;
             }
-            else str += c;
+            else raw[j] += c;
 
             i++;
         }
 
-        return new(str);
+        return node.Children.Count == 0 ? Mix(raw, values) 
+            : context.Scope[$"{node.Children[0].Value}"].Call(new Tup([new Tup([..raw.Select(x => new Str(x))], [""]), ..values.Value[..values.Count]], ["", .. new string(' ', values.Count).Split()]));
     }
 
     public static Obj Auto(Node node, Context context)
@@ -115,6 +123,21 @@ public static class Convert
         else
             return new Err($"conversion for {node.Type} is not implemented.");
 
+    }
+
+    private static Str Mix(List<string> raw, List values)
+    {
+        if (raw.Count == 1) return new Str(raw[0]);
+
+        string mixed = "";
+
+        for (int i = 0; i < raw.Count - 1; i++)
+        {
+            mixed += raw[i];
+            mixed += values[i].ToStr().As<Str>().Value;
+        }
+
+        return new Str(mixed += raw[^1]);
     }
 
     public static List<List<Node>> Split(this List<Node> nodes, TokenType type)

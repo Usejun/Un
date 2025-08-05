@@ -28,6 +28,29 @@ public class Runner()
             returned = parser.ReturnValue;
 
         }
+        catch (Panic panic)
+        {
+            if (Context.InBlock("try"))
+            {
+                throw new Panic(panic.Message, panic.Name);
+            }
+            else
+            {
+                var error = new Panic(panic.Message, panic.Name);
+                Context.Scope["log"].Call(new ([new Str(error.ToString())], [""]));
+            }
+        }
+        catch (Error error)
+        {
+            if (Context.InBlock("try"))
+            {
+                throw new Error(error.Message, Context, error.Header);
+            }
+            else
+            {
+                Context.Scope["log"].Call(new ([new Str(error.ToString())], [""]));
+            }
+        }
         catch (Exception e)
         {
             if (Context.InBlock("try"))
@@ -36,8 +59,8 @@ public class Runner()
             }
             else
             {
-                var error = new Error(e.Message, Context); 
-                Context.Scope["log"].Call(new ([new Str(error.ToString())], [""]));
+                var error = new Error(e.Message, Context);
+                Context.Scope["log"].Call(new([new Str(error.ToString())], [""]));
             }
         }
         finally
@@ -69,14 +92,13 @@ public class Runner()
         }
     }
 
-    public static Runner Load(string file, Scope scope, string path = "/src/")
+    public static Runner Load(string file, Scope scope, string path = "")
     {
-        var topPath = Path.Combine("/workspaces/Un/" + path);
-        var allPath = Path.Combine(topPath, file);
+        var allPath = Path.Combine(path.StartsWith(Global.PATH) ? "" : Global.PATH, path);
         var name = file[..^3];
 
         if (!Path.Exists(allPath))
-            throw new Panic($"file {file} not found in {topPath}");
+            throw new Panic($"file {file} not found in {allPath}");
 
         return new()
         {

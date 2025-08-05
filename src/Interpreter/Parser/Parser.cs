@@ -65,7 +65,7 @@ public class Parser(Context context)
 
         lock (Global.SyncRoot)
         {
-            if (!Global.Class.ContainsKey(name))
+            if (!Global.IsClass(name))
                 Global.Import(name: name,
                               path: path,
                               nickname: isSpread ? "" : isNickname ? splited[1][0].Value : isPart ? modules[^2].Value : modules[^1].Value,
@@ -95,11 +95,13 @@ public class Parser(Context context)
 
             if (inherits.Count != 2) throw new Error("invalid class syntax", context);
 
+            types.Add(nodes[3].Value);
+
             foreach (var super in inherits[1].Split(TokenType.Comma).Skip(1))
                 if (super is { Count: 1 } && super[0] is { Type: TokenType.Identifier })
                 {
                     var superName = super[0].Value;
-                    if (!Global.Class.TryGetValue(superName, out Obj? superObj))
+                    if (!Global.TryGetClass(superName, out Obj? superObj))
                         throw new Error($"superclass {superName} is not defined", context);
 
                     types.Add(superName);
@@ -111,12 +113,14 @@ public class Parser(Context context)
 
         lock (Global.SyncRoot)
         {
-            Global.Class[name] = new Obj(name)
+            Global.SetClass(name, new Obj(name)
             {
-                Super = isInherit ? Global.Class[nodes[3].Value] : Obj.None,
+                Annotations = context.Annotations,
+                Super = isInherit ? Global.GetClass(nodes[3].Value) : Obj.None,
                 Types = types,
                 Members = members
-            };
+                
+            });
         }
 
         return Obj.None;
@@ -138,10 +142,10 @@ public class Parser(Context context)
 
         lock (Global.SyncRoot)
         {
-            Global.Class[name] = new Enu(name, 0)
+            Global.SetClass(name, new Enu(name, 0)
             {
                 Members = constants
-            };
+            });
         }
 
         return Obj.None;
@@ -423,15 +427,12 @@ public class Parser(Context context)
     }
     private Obj ParseAnotation()
     {
-        if (nodes.Count <= 1 || nodes.Count >= 3)
+        if (nodes.Count <= 1 || nodes.Count >= 4)
             throw new Error("invalid annotation syntax", context);
 
-        var annotation = new Node(nodes[1].Value, TokenType.Annotation)
-        {
-            Children = nodes[1..]
-        };
-        
-        context.Annotations.Add(annotation);
+        var name = nodes[1].Value;
+
+        context.Annotations.Add(name, nodes.Count == 2 ? new Tup([], []) : Convert.ToTuple(nodes[2], context));
         return Obj.None;
     }
     #endregion

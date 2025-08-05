@@ -14,8 +14,9 @@ public class Obj(string type) : IComparable<Obj>
     public virtual Obj Self { get; set; } = None;
     public virtual Obj Super { get; set; } = None;
     public virtual Attributes Members { get; set; } = [];
+    public virtual Attributes Annotations { get; set; } = [];
 
-    public Obj() : this("obj") {}
+    public Obj() : this("obj") { }
 
     public virtual Obj Init(Tup args)
     {
@@ -142,11 +143,11 @@ public class Obj(string type) : IComparable<Obj>
         return Super is not null && !Super.IsNone() ? Super.Lt(other) : new Err($"unsupported operand type(s) for <: '{Type}' and '{other.Type}'");
     }
 
-    public virtual Obj Gt(Obj other) => new Bool(!other.Lt(other).As<Bool>().Value && !other.Eq(other).As<Bool>().Value);
+    public virtual Obj Gt(Obj other) => new Bool(!Lt(other).As<Bool>().Value && !Eq(other).As<Bool>().Value);
 
-    public virtual Obj LtOrEq(Obj other) => new Bool(other.Lt(other).As<Bool>().Value || other.Eq(other).As<Bool>().Value);
+    public virtual Obj LtOrEq(Obj other) => new Bool(Lt(other).As<Bool>().Value || Eq(other).As<Bool>().Value);
 
-    public virtual Obj GtOrEq(Obj other) => new Bool(!other.Lt(other).As<Bool>().Value);
+    public virtual Obj GtOrEq(Obj other) => new Bool(!Lt(other).As<Bool>().Value);
 
     public virtual Obj Slicer(Int to, Int from, Int step)
     {
@@ -196,17 +197,26 @@ public class Obj(string type) : IComparable<Obj>
 
     public virtual Obj GetAttr(string name)
     {
-        if (TryMethod("__getattr__", out Obj? value, new([new Str(name)], []))) {}
-        else if (Global.TryGetOriginalValue(Type, name, out value)) {}
-        else if (Members.TryGetValue(name, out value)) {}
-        else if (Super is not null && !Super.IsNone())
+        if (TryMethod("__getattr__", out Obj? value, new([new Str(name)], [])))
+            goto Found;
+        if (Members.TryGetValue(name, out value))
+            goto Found;
+        if (Super is not null && !Super.IsNone() && Super.Has(name))
+        {
             value = Super.GetAttr(name);
-        else return new Err($"'{Type}' object has no attribute '{name}'");
+            goto Found;
+        }
+        if (Global.TryGetOriginalValue(Type, name, out value))
+            goto Found;
 
+        return new Err($"'{Type}' object has no attribute '{name}'");
+
+    Found:
         value.Self = this;
         value.Super = Super;
         return value;
     }
+
 
     public virtual void SetItem(Obj key, Obj value)
     {
@@ -255,7 +265,7 @@ public class Obj(string type) : IComparable<Obj>
             if (type == obj.Type)
                 return new Bool(true);
 
-        return obj.Type == Type ? new Bool(true) : Super is not null && !Super.IsNone() ? Super.Is(obj) : new Err("cannot compare types");
+        return obj.Type == Type ? new Bool(true) : Super is not null && !Super.IsNone() ? Super.Is(obj) : new Bool(false);
     }
 
     public virtual Obj In(Obj obj)
@@ -274,7 +284,7 @@ public class Obj(string type) : IComparable<Obj>
 
     public virtual Obj ToFloat()
     {
-        if (TryMethod("__tuple__", out Obj? value, []))
+        if (TryMethod("__float__", out Obj? value, []))
             return value;
         return Super is not null && !Super.IsNone() ? Super.ToFloat() : new Err("cannot floatable object");
     }
@@ -346,7 +356,14 @@ public class Obj(string type) : IComparable<Obj>
     {
         if (TryMethod("__clone__", out Obj? value, []))
             return value;
-        return Super is not null && !Super.IsNone() ? Super.Clone() : new Err("cannot cloneable object");
+        return Super is not null && !Super.IsNone() && Super.Has("__clone__") ? Super.Clone() : new Obj(Type)
+        {
+            Types = Types,
+            Members = Members.New(),
+            Annotations = Annotations,
+            Self = Self,
+            Super = Super?.Clone()!,
+        };
     }
 
     public bool As<T>(out T value) where T : Obj

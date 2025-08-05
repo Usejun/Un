@@ -75,7 +75,7 @@ public static class Executer
                     var value = values.Pop();
                     var args = Convert.ToTuple(node, context).Unwrap<Tup>(context);
 
-                    var result = value.IsType() ? Global.Class[value.Type[2..^2]].Init(args) : value.As<Fn>().Call(args);
+                    var result = value.IsType() ? Global.GetClass(value.Type[2..^2]).Clone().Init(args) : value.As<Fn>().Call(args);
 
                     values.Push(result.Unwrap(context));
                 }
@@ -94,7 +94,7 @@ public static class Executer
                 {
                     var obj = values.Pop();
                     var prop = node.Value;
-                    var value = obj.IsType() ? Global.Class[obj.Type[2..^2]].GetAttr(prop) : obj.GetAttr(prop);
+                    var value = obj.IsType() ? Global.GetClass(obj.Type[2..^2]).GetAttr(prop) : obj.GetAttr(prop);
 
                     values.Push(value.Unwrap(context));
                 }
@@ -115,6 +115,7 @@ public static class Executer
                         Args = Fn.GetArgs(node.Children[0].Children, context),
                         Nodes = node.Children[2..],
                         Closure = scope,
+                        Annotations = context.Annotations,
                     }
                     : new LFn()
                     {
@@ -122,10 +123,13 @@ public static class Executer
                         Args = Fn.GetArgs(node.Children[0].Children, context),
                         Body = context.File.GetBody(),
                         Closure = scope,
+                        Annotations = context.Annotations,
                     };
 
                     if (node.Value != "fn")
                         scope.Set(node.Value, fn);
+
+                    context.Annotations = [];
 
                     values.Push(fn);
                 }
@@ -190,7 +194,7 @@ public static class Executer
 
                     values.Push(match.Unwrap(context));
 
-                    bool IsType(string s) => Global.Class.ContainsKey(s);
+                    bool IsType(string s) => Global.IsClass(s);
                 }
                 else if (type.IsBinaryOperator())
                 {
@@ -257,6 +261,14 @@ public static class Executer
             }
 
             return values.Count == 1 ? values.Pop() : values.Count == 0 ? Obj.None : throw new Error("invalid expression", context);
+        }
+        catch (Panic panic)
+        {
+            throw new Panic(panic.Message, panic.Name);
+        }
+        catch (Error error)
+        {
+            throw new Error(error.Message, context, error.Header);
         }
         catch (Exception e)
         {

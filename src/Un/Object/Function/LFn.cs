@@ -8,7 +8,7 @@ public class LFn : Fn
 
     public override Obj Call(Tup args)
     {
-        if (Depth == Global.MaxDepth)
+        if (Depth == Global.MAXRECURSIONDEPTH)
             return new Err("maximum recursion depth");
 
         var scope = new Scope(new Map(), Closure);
@@ -33,4 +33,15 @@ public class LFn : Fn
 
         return returned ?? None;
     }
+
+    public override Obj Clone() => new LFn()
+    {
+        Name = Name,
+        Args = [..Args],
+        ReturnType = ReturnType,
+        Closure = Closure,
+        Body = Body,
+        Self = Self,
+        Super = Super?.Clone(),
+    };
 }

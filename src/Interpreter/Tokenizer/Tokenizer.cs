@@ -216,6 +216,10 @@ public class Tokenizer()
 
         switch (chr)
         {
+            case '?':
+                if (Now('.'))
+                    return new Token($"{chr}{Read()}", TokenType.QuestionDot);
+                return new Token($"{chr}", TokenType.Question);
             case '|':
                 if (Now('='))
                     return new Token($"{chr}{Read()}", TokenType.BOrAssign);
@@ -259,8 +263,7 @@ public class Tokenizer()
                     });
             case '/':
             case '<':
-            case '>':
-            case '?':
+            case '>':            
             case '*':
                 if (Now(chr))
                 {
@@ -313,6 +316,7 @@ public class Tokenizer()
             case ':':
             case ',':
             case '.':
+            case '@':
                 return new Token($"{chr}", chr switch
                 {
                     '(' => TokenType.LParen,
@@ -324,6 +328,7 @@ public class Tokenizer()
                     ':' => TokenType.Colon,
                     ',' => TokenType.Comma,
                     '.' => TokenType.Dot,
+                    '@' => TokenType.At,
                     _ => TokenType.Error
                 }); 
             default:

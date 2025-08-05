@@ -65,7 +65,7 @@ public static class TokenTypeUtil
         _ => false
     };
 
-    public static bool IsIdentifier(this TokenType type) => type switch
+    public static bool IsVariable(this TokenType type) => type switch
     {
         TokenType.Identifier or TokenType.Indexer or TokenType.Slicer or TokenType.Property or TokenType.NullableProperty or TokenType.Call or
         TokenType.Integer or TokenType.Float or TokenType.String or TokenType.FString or TokenType.Boolean or TokenType.List or TokenType.Dict or
@@ -122,10 +122,9 @@ public static class TokenTypeUtil
 
     public static int GetPrecedence(this TokenType type) => type switch
     {
-        TokenType.LParen => -1,
-        TokenType.Indexer or TokenType.Slicer or TokenType.NullableProperty or TokenType.Property => 0,
-        TokenType.Call or TokenType.Go => 1,
-        TokenType.Wait => 2,
+        TokenType.LParen => 0,
+        TokenType.Indexer or TokenType.Slicer or TokenType.NullableProperty or TokenType.Property or TokenType.Call => 1,
+        TokenType.Go or TokenType.Wait => 2,
         TokenType.BNot or TokenType.Positive or TokenType.Negative or TokenType.Spread => 3,
         TokenType.Asterisk or TokenType.Slash or TokenType.DoubleSlash or TokenType.Percent => 4,
         TokenType.Plus or TokenType.Minus => 5,

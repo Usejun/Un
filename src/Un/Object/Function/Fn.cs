@@ -200,9 +200,7 @@ public class Fn() : Obj("fn")
         {
             (_, var type, _) = args[i];
 
-            if (hasDefault)
-                buf.Add(args[i]);
-            else if (type == TokenType.Comma)
+            if (type == TokenType.Comma)
             {
                 result.Add(new Arg(name)
                 {
@@ -219,7 +217,9 @@ public class Fn() : Obj("fn")
 
                 buf.Clear();
             }
-            else if (type == TokenType.Asterisk)
+            else if (hasDefault)
+                buf.Add(args[i]);
+            else if (type == TokenType.Spread)
                 isPositional = true;
             else if (type == TokenType.DoubleAsterisk)
                 isKeyword = true;

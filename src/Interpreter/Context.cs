@@ -7,12 +7,11 @@ public class Context(Scope scope, UnFile file, Stack<string> blockStack)
     public Scope Scope { get; set; } = scope;
     public UnFile File { get; set; } = file;
     public Stack<string> BlockStack = blockStack;
-    public List<Node> Annotations { get; set; } = [];
+    public Map Annotations { get; set; } = [];
     public Stack<List<Node>> Defers { get; set; } = [];
     public Stack<Obj> Usings { get; set; } = [];
 
     public string? CurrentBlock => BlockStack.TryPeek(out var top) ? top : null;
-
 
     public void EnterBlock(string type) => BlockStack.Push(type);
 

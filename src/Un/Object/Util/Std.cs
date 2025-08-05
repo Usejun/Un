@@ -266,7 +266,7 @@ public class Std : IPack
                     for (int i = 0; i < list.Count; i++)
                         enumerate.Append(new Tup([new Int(i), list[i]], ["index", "value"]));
 
-                    return enumerate;    
+                    return enumerate;
                 }
             }
         },
@@ -285,8 +285,8 @@ public class Std : IPack
                     if (!args["arrays"].ToList().As<List, Tup>(out var arrays))
                         return new Err("expected 'array' argument to be of type 'list' or 'tuple'");
 
-                    List source = arrays.ToList().As<List>();                             
-    
+                    List source = arrays.ToList().As<List>();
+
                     int length = source.Max(a => (int)a.Len().As<Int>().Value);
                     List list = [];
 
@@ -294,11 +294,11 @@ public class Std : IPack
                     {
                         List tuple = [];
                         foreach (var array in source)
-                            tuple.Append(array.Len().As<Int>().Value <= i ? Obj.None : array.GetItem(new Int(i)));                   
+                            tuple.Append(array.Len().As<Int>().Value <= i ? Obj.None : array.GetItem(new Int(i)));
                         list.Append(new Tup([..tuple], [.. new string(' ', tuple.Count).Split()]));
                     }
 
-                    return list;    
+                    return list;
                 }
             }
         },
@@ -326,7 +326,7 @@ public class Std : IPack
                 Func = (args) => args["value"] switch
                 {
                     Str s => File.Exists(s.Value) ? new Object.IO.Stream(File.Open(s.Value, FileMode.Open)) : throw new Panic($"file {s.Value} dose not exist"),
-                    _ => throw new Panic("invlid type"),
+                    _ => throw new Panic("invalid type"),
                 }
             }
         },
@@ -656,11 +656,40 @@ public class Std : IPack
                     new Arg("message") {
                         Type = "str",
                         IsEssential = true
+                    },
+                    new Arg("name") {
+                        Type = "str",
+                        IsOptional = true,
+                        DefaultValue = new Str("panic")
+                    },
+                ],
+                Func = (args) =>
+                {
+                    throw new Panic(args["message"].ToStr().As<Str>().Value, args["name"].ToStr().As<Str>().Value);
+                }
+            }
+        },
+        { "meta", new NFn()
+            {
+                Name = "meta",
+                ReturnType = "none",
+                Args = [
+                    new Arg("value") {
+                        Type = "any",
+                        IsEssential = true
+                    },
+                    new Arg("name") {
+                        Type = "str",
+                        IsEssential = true
                     }
                 ],
                 Func = (args) =>
                 {
-                    throw new Panic(args["message"].ToStr().As<Str>().Value);
+                    var name = args["name"].ToStr().As<Str>().Value;
+
+                    if (args["value"].Annotations.TryGetValue(name, out var annotation))
+                        return annotation;
+                    return Obj.None;
                 }
             }
         }

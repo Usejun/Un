@@ -10,4 +10,15 @@ public class GFn : Fn
     {
         State = Task.Run(() => Func.Call(args))
     };
+
+    public override Obj Clone() => new GFn()
+    {
+        Name = Name,
+        Args = Args.Select(arg => arg.Clone() as Arg).ToList(),
+        ReturnType = ReturnType,
+        Closure = Closure,
+        Func = Func.Clone() as Fn,
+        Self = Self,
+        Super = Super?.Clone(),
+    };
 }
