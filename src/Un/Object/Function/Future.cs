@@ -3,14 +3,16 @@ using Un.Object.Primitive;
 
 namespace Un.Object.Function;
 
-public class Future() : Obj("future")
+public class Future(Task<Obj> state) : Obj("future")
 {
-    public Task<Obj> State { get; set; }
+    public Future() : this(new Task<Obj>(() => None)) { }
+
+    private Task<Obj> state { get; set; } = state;
 
     public void Run()
     {
-        State.Start();
+        state.Start();
     }
 
-    public Obj Wait() => State.Result;
+    public Obj Wait() => state.Result;
 }

@@ -17,7 +17,7 @@ public static class Global
 {
     public static object SyncRoot = new();
 
-    public static string PATH => "/workspaces/Un/src/";
+    public static string PATH { get; private set; } = "";
 
     public static readonly int BASEHASH = Math.Abs(DateTime.Now.Millisecond * 6929891 + DateTime.Now.Second * 1025957);
     public static readonly int HASHPRIME = 11;
@@ -35,8 +35,10 @@ public static class Global
 
     public static Attributes Package { get; private set; } = [];
 
-    public static void Init()
+    public static void Init(string path)
     {
+        PATH = path;
+
         var std = new Std();
 
         InitTypeByName<Int>();
@@ -100,14 +102,14 @@ public static class Global
 
     public static void Import(string name, string path, string nickname, string[] parts)
     {
-        var fullPath = Path.Combine(path.StartsWith(PATH) ? "" : PATH, path);
+        var fullPath = Path.Combine(PATH, path);
 
         if (!Path.Exists(fullPath))
             throw new Panic($"file {name} not found in {path}");
 
         var scope = new Map();
 
-        Runner.Load(name, new Scope(scope), fullPath).Run();
+        Runner.Load(name, new Scope(scope)).Run();
 
         if (!string.IsNullOrEmpty(nickname))
         {
@@ -158,12 +160,12 @@ public static class Global
     }
 
 
-    public static bool TryGetOriginalValue(string type, string name, out Obj value)
+    public static bool TryGetOriginalValue(string type, string name, out Obj? value)
     {
         if (classes.TryGetValue(type, out var original))
             return original.Members.TryGetValue(name, out value);
 
-        value = Obj.Error;
+        value = null!;
         return false;
     }
 

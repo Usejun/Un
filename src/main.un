@@ -1,2 +1,9 @@
-a = { "hello":1 }
-write(json(a))
+@doc(```
+이 함수는 아무런 쓸모도 없는 함수입니다.
+```)
+fn bruh()
+    -> 1 / 0
+
+write(*meta(bruh, "doc"))
+
+bruh()

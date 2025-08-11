@@ -29,12 +29,12 @@ public class UnFile
     public char Peek()
     {
         if (EOF)
-            throw new Exception($"end of file {Name} reached");
+            throw new Panic($"end of file {Name} reached");
         if (EOL)
         {
             if (Line + 1 < Code.Count)
                 return Code[Line + 1].code[0];
-            throw new Exception($"end of line {Name} reached");
+            throw new Panic($"end of line {Name} reached");
         }
         
         return Code[Line].code[Index];
@@ -43,7 +43,7 @@ public class UnFile
     public char Read()
     {
         if (EOF)
-            throw new Exception($"end of file {Name} reached");
+            throw new Panic($"end of file {Name} reached");
         if (EOL)
         {
             if (Line + 1 < Code.Count)
@@ -52,7 +52,7 @@ public class UnFile
                 Index = 0;
             }
             else
-                throw new Exception($"end of line {Name} reached");
+                throw new Panic($"end of line {Name} reached");
         }
 
         return Code[Line].code[Index++];

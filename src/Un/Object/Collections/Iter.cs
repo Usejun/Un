@@ -14,7 +14,7 @@ public class Iters(IEnumerable<Obj> value) : Ref<IEnumerable<Obj>>(value, "iter"
 
     public IEnumerator<Obj> Enumerator { get; private set; } = null!;
 
-    public override Obj Len() => new Int(value.Count());
+    public override Obj Len() => new Int(Value.Count());
 
     public override Obj Iter() => this;
 

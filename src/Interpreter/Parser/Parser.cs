@@ -12,8 +12,10 @@ public class Parser(Context context)
     private readonly Context context = context;
     private Scope Scope => context.Scope;
 
-    private Obj Parse()
+    public Obj Parse(List<Node> nodes)
     {
+        this.nodes = nodes;
+
         if (nodes.Count == 0)
             return Obj.None;
 
@@ -39,11 +41,6 @@ public class Parser(Context context)
 
     }
 
-    public Obj Parse(List<Node> nodes)
-    {
-        this.nodes = nodes;
-        return Parse();
-    }
     #region Parser
     private Obj ParseUse()
     {
@@ -87,7 +84,7 @@ public class Parser(Context context)
 
         var innerContext = new Context(new(members), new UnFile(name, body), context.BlockStack);
 
-        Runner.Load(innerContext).Run();
+        Runner.Load(innerContext, context).Run();
 
         if (isInherit)
         {
@@ -105,7 +102,7 @@ public class Parser(Context context)
                         throw new Error($"superclass {superName} is not defined", context);
 
                     types.Add(superName);
-                    foreach (var (key, value) in superObj.Members)
+                    foreach (var (key, value) in superObj?.Members ?? [])
                         members.TryAdd(key, value);
                 }
                 else throw new Error("invalid class syntax", context);
@@ -150,7 +147,7 @@ public class Parser(Context context)
 
         return Obj.None;
     }
-    private Obj ParseReturn() => ReturnValue = Executer.On(nodes[1..], context);
+    private Obj ParseReturn() => ReturnValue = Executor.On(nodes[1..], context);
     private Obj ParseBreak() => ReturnValue = new Obj("break");
     private Obj ParseSkip() => ReturnValue = new Obj("skip");
     private Obj ParseExpreession()
@@ -158,7 +155,7 @@ public class Parser(Context context)
         for (int i = 0; i < nodes.Count; i++)
             if (nodes[i].Type.IsAssignmentOperator())
                 return ParseAssignment(i);
-        return Executer.On(nodes, context);
+        return Executor.On(nodes, context);
     }
     private Obj ParseAssignment(int assign)
     {
@@ -195,7 +192,7 @@ public class Parser(Context context)
                 switch (names[i].Type)
                 {
                     case TokenType.Indexer:
-                        var index = Executer.On(names[i].Children, context).Unwrap(context);
+                        var index = Executor.On(names[i].Children, context).Unwrap(context);
                         variable.SetItem(index, AssignValue(type, variable.GetItem(index).Unwrap(context), objs[count]));
                         break;
                     case TokenType.Property:
@@ -224,7 +221,7 @@ public class Parser(Context context)
             else
                 variable = names[i].Type switch
                 {
-                    TokenType.Indexer => variable.GetItem(Executer.On(names[i].Children, context).Unwrap(context)).Unwrap(context),
+                    TokenType.Indexer => variable.GetItem(Executor.On(names[i].Children, context).Unwrap(context)).Unwrap(context),
                     TokenType.Property => variable.GetAttr(names[i].Value).Unwrap(context),
                     TokenType.Identifier => Scope.Get(names[i].Value, out var obj) ? obj : throw new Error($"variable {names[i].Value} not found.", context),
                     _ => throw new Error($"invalid assignment {names[i].Type}.", context)
@@ -262,7 +259,7 @@ public class Parser(Context context)
     {
         var inIdx = nodes.FindIndex(x => x.Type == TokenType.In);
         var vars = nodes[..inIdx][1..].Split(TokenType.Comma).Select(x => x[0]).ToList();
-        var iter = Executer.On(nodes[(inIdx + 1)..], context).Iter().As<Iters>().Value.GetEnumerator();
+        var iter = Executor.On(nodes[(inIdx + 1)..], context).Iter().As<Iters>().Value.GetEnumerator();
         var body = context.File.GetBody();
         var innerScope = new Scope(new Map(), Scope);
 
@@ -289,7 +286,7 @@ public class Parser(Context context)
                 innerScope.Set(vars[i].Value, values[i]);
 
             innerContext.EnterBlock("loop");
-            ReturnValue = Runner.Load(innerContext).Run();
+            ReturnValue = Runner.Load(innerContext, context).Run();
             innerContext.ExitBlock();
 
             if (ReturnValue?.Type == "break")
@@ -310,10 +307,10 @@ public class Parser(Context context)
         var innerScope = new Scope(new Map(), Scope);
         var innerContext = new Context(innerScope, new("while", body), context.BlockStack);
 
-        while (Executer.On(expr, innerContext).As<Bool>("while keyword only boolearn").Value)
+        while (Executor.On(expr, innerContext).As<Bool>("while keyword only boolearn").Value)
         {
             innerContext.EnterBlock("loop");
-            ReturnValue = Runner.Load(innerContext).Run();
+            ReturnValue = Runner.Load(innerContext, context).Run();
             innerContext.ExitBlock();
 
             if (ReturnValue?.Type == "break")
@@ -329,7 +326,7 @@ public class Parser(Context context)
     }
     private Obj ParseIf()
     {
-        Bool condition = nodes[0].Type == TokenType.Else ? new(true) : Executer.On(nodes[1..], context).ToBool().As<Bool>();
+        Bool condition = nodes[0].Type == TokenType.Else ? new(true) : Executor.On(nodes[1..], context).ToBool().As<Bool>();
         var innerScope = new Scope(new Map(), Scope);
 
         if (condition.Value)
@@ -337,7 +334,7 @@ public class Parser(Context context)
             var body = context.File.GetBody();
             var innerContext = new Context(innerScope, new("if", body), context.BlockStack);
 
-            ReturnValue = Runner.Load(innerContext).Run();
+            ReturnValue = Runner.Load(innerContext, context).Run();
 
             var file = context.File;
 
@@ -366,7 +363,7 @@ public class Parser(Context context)
 
         try
         {
-            ReturnValue = Runner.Load(innerContext).Run();
+            ReturnValue = Runner.Load(innerContext, context).Run();
             innerContext.ExitBlock();
         }
         catch (Exception e)
@@ -383,7 +380,7 @@ public class Parser(Context context)
                 if (name is not null)
                     innerContext.Scope.Set(name, new Err(e.Message));
 
-                Runner.Load(innerContext).Run();
+                Runner.Load(innerContext, context).Run();
             }
         }
         finally
@@ -393,7 +390,7 @@ public class Parser(Context context)
                 body = context.File.GetBody();
                 innerContext = new Context(innerScope, new("fin", body), context.BlockStack);
 
-                Runner.Load(innerContext).Run();
+                Runner.Load(innerContext, context).Run();
             }
         }
 

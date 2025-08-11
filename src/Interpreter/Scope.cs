@@ -2,9 +2,9 @@ using Un.Object;
 
 namespace Un;
 
-public class Scope(IMap scope, Scope parentscope = null)
+public class Scope(IMap scope, Scope parentscope = null!)
 {
-    private static readonly Scope Empty = new(new Map(), null);
+    public static readonly Scope Empty = new(new Map(), null!);
 
     private readonly Scope parentScope = parentscope ?? Empty;
     private readonly IMap scope = scope;
@@ -17,7 +17,7 @@ public class Scope(IMap scope, Scope parentscope = null)
 
     public bool Get(string key, out Obj value)
     {
-        if (scope.TryGetValue(key, out value))
+        if (scope.TryGetValue(key, out value!))
             return true;
         if (parentScope != null && parentScope.Get(key, out value))
             return true;

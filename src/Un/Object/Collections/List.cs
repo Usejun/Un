@@ -4,8 +4,13 @@ using Un.Object.Primitive;
 
 namespace Un.Object.Collections;
 
-public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
+public class List : Ref<Obj[]>, IEnumerable<Obj>
 {
+    public List(Obj[] value) : base(value, "list")
+    {
+        Count = value.Length;
+    }
+
     public struct Enumerator(List list) : IEnumerator<Obj>
     {
         private readonly List list = list;
@@ -40,7 +45,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         set => Value[index] = value;
     }
 
-    public int Count { get; protected set; } = value.Length;
+    public int Count { get; private set; }
 
     public bool IsFull => Count == Value.Length;
 
@@ -298,7 +303,7 @@ public class List(Obj[] value) : Ref<Obj[]>(value, "list"), IEnumerable<Obj>
         foreach (var item in this)
         {
             hash <<= Global.HASHPRIME;
-            hash *= value.GetHashCode();
+            hash *= item.GetHashCode();
             hash >>= Global.HASHPRIME;
         }
 

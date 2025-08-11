@@ -69,10 +69,7 @@ public class Pool : Obj
                     if (!args["fn"].As<Fn>(out var fn))
                         return new Err("expected 'fn' argument to be of type 'func'");
 
-                    var future = new Future()
-                    {
-                        State = new Task<Obj>(() => fn.Call(args["args"].As<Tup>()))
-                    };
+                    var future = new Future(new Task<Obj>(() => fn.Call(args["args"].As<Tup>())));
                     queue.Add(future);
                     return future;
                 }
@@ -105,9 +102,7 @@ public class Pool : Obj
 
                     foreach (var varg in vargs.Value)
                     {
-                        queue.Add(new Future()
-                        {
-                            State = new Task<Obj>(() =>
+                        queue.Add(new Future(new Task<Obj>(() =>
                             {
                                 var res = fn.Call(varg is Tup t ? t : new([varg], [""]));
                                 lock (result)
@@ -116,8 +111,7 @@ public class Pool : Obj
                                 }
                                 countdown.Signal();
                                 return None;
-                            })
-                        });
+                            })));
                     }
 
                     countdown.Wait();

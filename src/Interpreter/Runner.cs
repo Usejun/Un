@@ -1,10 +1,12 @@
+using System.Diagnostics;
 using Un;
 using Un.Object;
 using Un.Object.Primitive;
 
-public class Runner()
+public class Runner(Context context, Context? parentContext = null!)
 {
-    public Context Context { get; private set; }
+    public Context Context { get; private set; } = context;
+    public Context? ParentContext { get; private set; } = parentContext;
 
     public Obj Run()
     {
@@ -25,43 +27,15 @@ public class Runner()
                     Context.File.Move(0, Context.File.Line + 1);
             }
 
-            returned = parser.ReturnValue;
+            returned = parser.ReturnValue!;
 
         }
-        catch (Panic panic)
+        catch
         {
-            if (Context.InBlock("try"))
-            {
-                throw new Panic(panic.Message, panic.Name);
-            }
-            else
-            {
-                var error = new Panic(panic.Message, panic.Name);
-                Context.Scope["log"].Call(new ([new Str(error.ToString())], [""]));
-            }
-        }
-        catch (Error error)
-        {
-            if (Context.InBlock("try"))
-            {
-                throw new Error(error.Message, Context, error.Header);
-            }
-            else
-            {
-                Context.Scope["log"].Call(new ([new Str(error.ToString())], [""]));
-            }
-        }
-        catch (Exception e)
-        {
-            if (Context.InBlock("try"))
-            {
-                throw new Error(e.Message, Context);
-            }
-            else
-            {
-                var error = new Error(e.Message, Context);
-                Context.Scope["log"].Call(new([new Str(error.ToString())], [""]));
-            }
+            if (ParentContext is not null)
+                foreach (var block in Context.BlockStack)
+                    ParentContext.BlockStack.Add(block);
+            throw;
         }
         finally
         {
@@ -69,10 +43,10 @@ public class Runner()
             Defer();
         }
 
-        if ((returned?.Type == "skip" || returned?.Type == "break") && Context.CurrentBlock != "loop")
+        if ((returned?.Type == "skip" || returned?.Type == "break") && Context.CurrentBlock?.Type != "loop")
             throw new Panic($"'{returned?.Type}' keyword can only be used inside a loop");
 
-        return returned;
+        return returned ?? Obj.None;
     }
 
     private void Free()
@@ -92,22 +66,16 @@ public class Runner()
         }
     }
 
-    public static Runner Load(string file, Scope scope, string path = "")
+    public static Runner Load(string path, Scope scope)
     {
-        var allPath = Path.Combine(path.StartsWith(Global.PATH) ? "" : Global.PATH, path);
-        var name = file[..^3];
+        var allPath = Path.Combine(Global.PATH, path) + (path.EndsWith(".un") ? "" : ".un");
+        var name = path.EndsWith(".un") ? path[..^3] : path;
 
         if (!Path.Exists(allPath))
-            throw new Panic($"file {file} not found in {allPath}");
+            throw new Panic($"file {name} not found in {allPath}");
 
-        return new()
-        {
-            Context = new(scope, new UnFile(name, File.ReadAllLines(allPath)), [])
-        };
+        return new(new(scope, new UnFile(name, File.ReadAllLines(allPath)), []));
     }
 
-    public static Runner Load(Context context) => new()
-    {
-        Context = context
-    };
+    public static Runner Load(Context context, Context parentContext) => new(context, parentContext);
 }

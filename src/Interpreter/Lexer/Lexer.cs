@@ -6,9 +6,11 @@ public class Lexer()
 {
     private List<Token> tokens;
     private int index = 0;
-
-    private List<Node> Lex()
+    
+    public List<Node> Lex(List<Token> tokens)
     {
+        this.tokens = tokens;
+
         index = 0;
         List<Node> nodes = [];
 
@@ -145,16 +147,8 @@ public class Lexer()
 
         bool IsVariable() => nodes.Count > 0 && nodes[^1].Type.IsVariable();
 
-        bool IsUnary() => (nodes.Count == 0 || nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma) &&
-                          (nodes.Count != 0 && nodes[^1].Type != TokenType.Call) && index < tokens.Count;
+        bool IsUnary() => nodes.Count == 0 || nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma;
     }
-
-    public List<Node> Lex(List<Token> tokens)
-    {
-        this.tokens = tokens;
-        return Lex();
-    }
-
 
     #region Node Reader
     private TokenInfo Next()

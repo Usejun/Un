@@ -7,16 +7,33 @@ public class Fn() : Obj("fn")
 {
     public static int Depth = 0;
 
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public List<Arg> Args { get; set; } = [];
     public string ReturnType { get; set; } = "any";  
-    public Scope Closure { get; set; }
+    public Scope? Closure { get; set; }
 
+    protected Context? context;
+
+    public Obj Invoke(Tup args, Context context)
+    {
+        if (Depth > Global.MAXRECURSIONDEPTH)
+            throw new Panic("maximum recursion depth exceeded.");
+
+        this.context = context;
+
+        context.EnterBlock("fn");
+
+        var result = Call(args);
+
+        context.ExitBlock();
+
+        return result;
+    }
     protected void Bind(Scope scope, Tup args)
     {
         scope["self"] = Self;
         scope["super"] = Super;
-        
+
         args = UnpackArgs(args);
 
         var unnamed = new List<Obj>();
@@ -41,8 +58,8 @@ public class Fn() : Obj("fn")
 
         int unnamedIndex = 0;
         var argNames = new HashSet<string>();
-        Arg positionalArg = null;
-        Arg keywordArg = null;
+        Arg positionalArg = null!;
+        Arg keywordArg = null!;
 
         bool positionalReached = false;
 
@@ -92,7 +109,7 @@ public class Fn() : Obj("fn")
                 }
                 else
                 {
-                    scope[arg.Name] = arg.DefaultValue;
+                    scope[arg.Name] = arg.DefaultValue!;
                 }
             }
             else if (extraNamed.TryGetValue(arg.Name, out var val))
@@ -102,7 +119,7 @@ public class Fn() : Obj("fn")
             }
             else
             {
-                scope[arg.Name] = arg.DefaultValue;
+                scope[arg.Name] = arg.DefaultValue!;
             }
         }
 
@@ -113,7 +130,7 @@ public class Fn() : Obj("fn")
             if (positionalArg != null)
             {
                 var rest = unnamed.Skip(unnamedIndex);
-                scope[positionalArg.Name] = new Tup([..rest], new string[rest.Count()]);
+                scope[positionalArg.Name] = new Tup([.. rest], new string[rest.Count()]);
             }
             else
             {
@@ -209,7 +226,7 @@ public class Fn() : Obj("fn")
                     IsOptional = isOptional,
                     IsPositional = isPositional,
                     IsKeyword = isKeyword,
-                    DefaultValue = hasDefault ? Executer.On(buf, context) : Null,
+                    DefaultValue = hasDefault ? Executor.On(buf, context) : Null,
                 });
 
                 (argType, name) = ("", "");
@@ -245,7 +262,7 @@ public class Fn() : Obj("fn")
                 IsOptional = isOptional,
                 IsPositional = isPositional,
                 IsKeyword = isKeyword,
-                DefaultValue = hasDefault ? Executer.On(buf, context) : Null,
+                DefaultValue = hasDefault ? Executor.On(buf, context) : Null,
             });
 
         return result;

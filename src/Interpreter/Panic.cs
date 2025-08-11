@@ -6,6 +6,6 @@ public class Panic(string message, string name = "panic") : Exception(message)
     public override string ToString() =>
 $"""
 
-{name} : {Message}
+{Name} : {Message}
 """;
 }

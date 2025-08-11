@@ -12,6 +12,8 @@ public class Std : IPack
 
     private static readonly Dictionary<Fn, Dictionary<int, Obj>> memo = []; 
 
+    private static readonly Random random = new();
+
     public Attributes GetOriginalMembers() => [];
 
     public Attributes GetOriginalMethods() => new()
@@ -325,7 +327,7 @@ public class Std : IPack
                 ],
                 Func = (args) => args["value"] switch
                 {
-                    Str s => File.Exists(s.Value) ? new Object.IO.Stream(File.Open(s.Value, FileMode.Open)) : throw new Panic($"file {s.Value} dose not exist"),
+                    Str s => File.Exists(s.Value) ? new IO.Stream(File.Open(s.Value, FileMode.Open)) : throw new Panic($"file {s.Value} dose not exist"),
                     _ => throw new Panic("invalid type"),
                 }
             }
@@ -691,6 +693,14 @@ public class Std : IPack
                         return annotation;
                     return Obj.None;
                 }
+            }
+        },
+        { "random", new NFn()
+            {
+                Name = "random",
+                ReturnType = "float",
+                Args = [],
+                Func = (args) => new Float(random.NextDouble())
             }
         }
     };

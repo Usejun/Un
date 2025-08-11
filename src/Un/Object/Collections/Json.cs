@@ -8,9 +8,13 @@ public class Json(Obj obj) : Ref<Obj>(obj, "json")
 {
     private static readonly Tokenizer tokenizer = new();
     private static readonly Lexer lexer = new();
+    private static readonly Scope scope = new(new Map()
+    {
+        ["null"] = None,
+    }, Global.GetScope());
     private static UnFile buf = new("json", []);
 
-    public int Count => obj switch
+    public int Count => Value switch
     {
         Dict dict => dict.Value.Count,
         List list => list.Count,
@@ -34,7 +38,17 @@ public class Json(Obj obj) : Ref<Obj>(obj, "json")
             if (lexed.Count != 1)
                 return new Err($"invalid json: expected 1 expression, got {lexed.Count}");
 
-            return new Json(Convert.Auto(lexed[0], new(Global.GetScope(), new UnFile("json", []), new())));
+            Obj? json;
+            try
+            {
+                json = Convert.Auto(lexed[0], new(scope, new UnFile("json", []), new()));
+            }
+            catch
+            {
+                return new Err("invalid json: parsing error");
+            }
+
+            return new Json(json);
         }
         if (args[0] is Dict d)
             return new Json(d);
@@ -46,17 +60,11 @@ public class Json(Obj obj) : Ref<Obj>(obj, "json")
 
     public override Int Len() => new(Count);
 
-    public override Obj GetItem(Obj key)
+    public override Obj GetItem(Obj key) => Value.GetItem(key);
+
+    public override void SetItem(Obj key, Obj value)
     {
-        if (Value is Dict dict)
-            return dict.GetItem(key);
-        if (Value is List list && key is Int index)
-        {
-            if (index.Value < 0 || index.Value >= list.Count)
-                return new Err($"index {index.Value} out of range for list of length {list.Count}");
-            return list.Value[index.Value];
-        }
-        return new Err($"cannot get item from {obj.Type} with key {key.Type}");
+        Value.SetItem(key, value);
     }
 
     public override Str ToStr() => new(Stringfy(Value));
@@ -65,8 +73,6 @@ public class Json(Obj obj) : Ref<Obj>(obj, "json")
 
     public static string Stringfy(Obj obj, int depth = 0)
     {
-        if (obj is Json json)
-            return Stringfy(json.Value, depth);
         if (obj is Dict dict)
         {
             string buf = "{\n";
@@ -77,10 +83,16 @@ public class Json(Obj obj) : Ref<Obj>(obj, "json")
             buf += $"\n{new string(' ', 3 * depth)}}}";
             return buf;
         }
-        if (obj is List list)
-            return "[" + string.Join(", ", list.Value.Select(v => Stringfy(v, depth + 1))) + "]";
-        if (obj is Str str)
-            return $"\"{str.Value}\"";
-        return obj.ToStr().As<Str>().Value;
+
+        return obj switch
+        {
+            Obj o when o.IsNone() => "null",
+            Json json => Stringfy(json.Value, depth),
+            Int i => i.Value.ToString(),
+            Float f => f.Value.ToString(),
+            Bool b => b.Value ? "true" : "false",
+            List list => "[" + string.Join(", ", list.Value.Select(v => Stringfy(v, depth + 1))) + "]",
+            _ => $"\"{obj.ToStr().As<Str>().Value}\""
+        };
     }
 }

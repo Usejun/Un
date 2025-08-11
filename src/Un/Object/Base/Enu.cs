@@ -9,8 +9,8 @@ public class Enu(string type, int n) : Obj(type)
 
     public override Obj Init(Tup args) => args switch
     {
-        { Count: 0 } => new Enu(type, 0),
-        { Count: 1 } when args[0] is Int i => new Enu(type, (int)i.Value),
+        { Count: 0 } => new Enu(Type, 0),
+        { Count: 1 } when args[0] is Int i => new Enu(Type, (int)i.Value),
         _ => new Err($"'{Type}' takes at most 1 argument, {args.Count} given")
     };
 

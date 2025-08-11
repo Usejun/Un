@@ -2,23 +2,18 @@ using Un.Object.Collections;
 
 namespace Un.Object.Function;
 
-public class GFn : Fn
+public class GFn(Fn func) : Fn
 {
-    public Fn Func { get; set; }
+    public Fn func = func;
 
-    public override Obj Call(Tup args) => new Future()
-    {
-        State = Task.Run(() => Func.Call(args))
-    };
+    public override Obj Call(Tup args) => new Future(Task.Run(() => func.Call(args)));
 
-    public override Obj Clone() => new GFn()
+    public override Obj Clone() => new GFn(func)
     {
         Name = Name,
-        Args = Args.Select(arg => arg.Clone() as Arg).ToList(),
+        Args = [..Args.Select(arg => arg.Clone() as Arg ?? throw new Panic("failed to clone argument"))],
         ReturnType = ReturnType,
-        Closure = Closure,
-        Func = Func.Clone() as Fn,
         Self = Self,
-        Super = Super?.Clone(),
+        Super = Super?.Clone()!,
     };
 }

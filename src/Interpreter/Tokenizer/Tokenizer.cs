@@ -3,11 +3,13 @@ namespace Un;
 public class Tokenizer()
 {
     private UnFile code;
-    private List<Token> tokens;
+    private List<Token> tokens = [];
 
-    private List<Token> Tokenize()
+    public List<Token> Tokenize(UnFile code)
     {
-        tokens = [];
+        this.code = code;
+
+        tokens.Clear();
 
         while (!code.EOF && !code.EOL)
         {
@@ -40,12 +42,6 @@ public class Tokenizer()
         }
 
         return tokens;
-    }
-
-    public List<Token> Tokenize(UnFile code)
-    {
-        this.code = code;
-        return Tokenize();
     }
 
     #region Reader
@@ -92,16 +88,51 @@ public class Tokenizer()
     #region Get Token
     private Token GetStringToken()
     {
-        string buffer = new(Read(), 1);
+        List<char> buffer = [Read()];
+        var next = Read();
+        var isMultiLine = false;
+
+        if (!IsEnd() && next == buffer[0] && next == Peek())
+        {
+            isMultiLine = true;
+            buffer.Add(next);
+            buffer.Add(Read());
+        }
+        else buffer.Add(next);
+        
+        if (!isMultiLine && buffer[0] == buffer[^1])
+            return new Token(string.Join("", buffer[1..^1]), TokenType.String);
 
         while (!code.EOF)
         {
-            buffer += Read();
+            buffer.Add(Read());
             if (buffer[^1] == '\\')
-                buffer += Read();
+                buffer[^1] = Read() switch
+                {
+                    'n' => '\n',
+                    't' => '\t',
+                    'r' => '\r',
+                    '\\' => '\\',
+                    '\'' => '\'',
+                    '"' => '"',
+                    '`' => '`',
+                    _ => throw new Panic("unexpected escape character: " + buffer[^1])
+                };
+
+            if (code.EOL && isMultiLine)
+                buffer.Add('\n');
 
             if (buffer[0] == buffer[^1])
-                return new Token(buffer[1..^1], TokenType.String);
+            {
+                if (!isMultiLine)
+                    return new Token(string.Join("", buffer[1..^1]), TokenType.String);
+                next = Read();
+                if (!IsEnd() && buffer[0] == next && next == Peek())
+                {
+                    Read();
+                    return new Token(string.Join("", buffer[3..^1]), TokenType.String);
+                }
+            }
         }
 
         return new Token("unclosed string literal", TokenType.Error);
@@ -403,6 +434,7 @@ public class Tokenizer()
     #endregion
 
     #region Is
+    private bool IsEnd() => code.EOF && code.EOL;
     private bool IsComment(char c) => c == '#';
     private bool IsString(char c) => c == '\'' || c == '"';
     private bool IsFString(char c) => c == '`';

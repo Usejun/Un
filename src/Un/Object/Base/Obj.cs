@@ -212,8 +212,11 @@ public class Obj(string type) : IComparable<Obj>
         return new Err($"'{Type}' object has no attribute '{name}'");
 
     Found:
+        if (value is null)
+            return new Err($"'{Type}' object has no attribute '{name}'");
+            
         value.Self = this;
-        value.Super = Super;
+        value.Super = Super!;
         return value;
     }
 
@@ -481,6 +484,8 @@ public class Obj(string type) : IComparable<Obj>
         Obj o => Eq(o).As<Bool>().Value,
         _ => false,
     };
+
+    public override int GetHashCode() => Hash().As<Int>().Value.GetHashCode();
     
     public int CompareTo(Obj? other)
     {

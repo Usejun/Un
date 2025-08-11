@@ -5,7 +5,7 @@ using Un.Object.Function;
 
 namespace Un;
 
-public static class Executer
+public static class Executor
 {
     public static Obj On(List<Node> nodes, Context context)
     {
@@ -26,7 +26,7 @@ public static class Executer
 
                 var right = CollectUntilNextOperator(nodes, ref i);
 
-                var cond = left.ToBool().Unwrap(context).As<Bool>().Value;
+                var cond = left?.ToBool().Unwrap(context).As<Bool>().Value ?? false;
 
                 left = op switch
                 {
@@ -75,7 +75,7 @@ public static class Executer
                     var value = values.Pop();
                     var args = Convert.ToTuple(node, context).Unwrap<Tup>(context);
 
-                    var result = value.IsType() ? Global.GetClass(value.Type[2..^2]).Clone().Init(args) : value.As<Fn>().Call(args);
+                    var result = value.IsType() ? Global.GetClass(value.Type[2..^2]).Clone().Init(args) : value.As<Fn>().Invoke(args, context);
 
                     values.Push(result.Unwrap(context));
                 }
@@ -109,19 +109,17 @@ public static class Executer
                 else if (type == TokenType.Func)
                 {
                     Fn fn = node.Value == "fn"
-                    ? new PFn()
+                    ? new PFn(node.Children[2..])
                     {
                         Name = node.Value,
                         Args = Fn.GetArgs(node.Children[0].Children, context),
-                        Nodes = node.Children[2..],
                         Closure = scope,
                         Annotations = context.Annotations,
                     }
-                    : new LFn()
+                    : new LFn(context.File.GetBody())
                     {
                         Name = node.Value,
                         Args = Fn.GetArgs(node.Children[0].Children, context),
-                        Body = context.File.GetBody(),
                         Closure = scope,
                         Annotations = context.Annotations,
                     };
@@ -140,10 +138,9 @@ public static class Executer
                     if (fn is not Fn function)
                         throw new Error($"cannot call {fn.Type} as a function.", context);
 
-                    values.Push(new GFn()
+                    values.Push(new GFn(function)
                     {
                         Name = function.Name,
-                        Func = function,
                         Args = function.Args,
                         Closure = function.Closure,
                     });
@@ -231,9 +228,9 @@ public static class Executer
                         values.Push(value.Unwrap(context));
 
                     }
-                    catch (InvalidOperationException)
+                    catch (InvalidOperationException e)
                     {
-                        throw new Error("invalid expression", context);
+                        throw new Error("invalid operations", context, inner: e);
                     }
                 }
                 else if (type.IsUnaryOperator())
@@ -262,17 +259,17 @@ public static class Executer
 
             return values.Count == 1 ? values.Pop() : values.Count == 0 ? Obj.None : throw new Error("invalid expression", context);
         }
-        catch (Panic panic)
+        catch (Panic)
         {
-            throw new Panic(panic.Message, panic.Name);
+            throw;
         }
-        catch (Error error)
+        catch (Error)
         {
-            throw new Error(error.Message, context, error.Header);
+            throw;
         }
         catch (Exception e)
         {
-            throw new Error(e.Message, context);
+            throw new Error(e.Message, context, inner: e);
         }
     }
 
