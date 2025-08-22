@@ -104,6 +104,7 @@ public class Int(long value) : Val<long>(value, "int")
     {
         Int i => new Bool(Value == i.Value),
         Float f => new Bool(Value == f.Value),
+        Obj o when o.IsNone() => new Bool(false),
         _ => new Err($"unsupported operand type(s) for ==: 'int' and '{other.Type}'")
     };
 
@@ -139,6 +140,7 @@ public class Int(long value) : Val<long>(value, "int")
     {
         Int i => new Bool(Value != i.Value),
         Float f => new Bool(Value != f.Value),
+        Obj o when o.IsNone() => new Bool(true),
         _ => new Err($"unsupported operand type(s) for !=: 'int' and '{other.Type}'")
     };
 
@@ -152,7 +154,13 @@ public class Int(long value) : Val<long>(value, "int")
 
     public override Bool ToBool() => new(Value != 0);
 
-    public override Obj Copy() => new Int(Value);
+    public override Obj Copy() => new Int(Value)
+    {
+        Annotations = Annotations
+    };
 
-    public override Obj Clone() => new Int(Value);
+    public override Obj Clone() => new Int(Value)
+    {
+        Annotations = Annotations
+    };
 }

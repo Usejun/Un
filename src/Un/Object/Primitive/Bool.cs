@@ -21,5 +21,15 @@ public class Bool(bool value) : Val<bool>(value, "bool")
 
     public override Str ToStr() => new(Value ? "true" : "false");
 
+    public override Obj Copy() => new Bool(Value)
+    {
+        Annotations = Annotations
+    };
+
+    public override Obj Clone() => new Bool(Value)
+    {
+        Annotations = Annotations
+    };
+
     public override Bool ToBool() => new(Value);
 }

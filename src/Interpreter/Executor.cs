@@ -86,7 +86,10 @@ public static class Executor
                     else if (Global.TryGetGlobalVariable(node.Value, out value))
                         values.Push(value);
                     else if (Global.IsClass(node.Value))
-                        values.Push(new Obj($"__{node.Value}__"));
+                        values.Push(new Obj($"__{node.Value}__")
+                        {
+                            Annotations = Global.GetClass(node.Value).Annotations,
+                        });
                     else
                         throw new Error($"undefined variable: {node.Value}.", context);
                 }
@@ -256,7 +259,7 @@ public static class Executor
                     values.Push(value.Unwrap(context));
                 }
             }
-
+            
             return values.Count == 1 ? values.Pop() : values.Count == 0 ? Obj.None : throw new Error("invalid expression", context);
         }
         catch (Panic)

@@ -16,11 +16,11 @@ public class PFn(List<Node> nodes) : Fn
         lock (Global.SyncRoot) { Depth++; }
 
         var parser = new Parser(new(scope, new("", []), []));
-        parser.Parse(nodes);
+        var returned = parser.Parse(nodes);
 
         lock (Global.SyncRoot) { Depth--; }
 
-        return parser.ReturnValue ?? None;
+        return returned ?? None;
     }
     
     public override Obj Clone() => new PFn([..nodes])

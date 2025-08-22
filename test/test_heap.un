@@ -1,0 +1,62 @@
+# 최소 힙(Heap) 자료구조 구현
+
+class Heap
+    data = 0
+
+    fn __init__()
+        self.data = []
+
+    parent = fn(i) -> int((i - 1) / 2)
+
+    left = fn(i) -> 2 * i + 1
+
+    right = fn(i) -> 2 * i + 2
+
+    fn swap(i, j)
+        tmp = self.data[i]
+        self.data[i] = self.data[j]
+        self.data[j] = tmp
+
+    fn up(i)
+        if i == 0
+            -> 0
+        p = self.parent(i)
+        if self.data[i] < self.data[p]
+            self.swap(i, p)
+            self.up(p)
+
+    fn push(x)
+        self.data.add(x)
+        self.up(len(self.data) - 1)
+
+    fn down(i)
+        l = self.left(i)
+        r = self.right(i)
+        n = len(self.data)
+        smallest = i
+        if l < n and self.data[l] < self.data[smallest]
+            smallest = l
+        if r < n and self.data[r] < self.data[smallest]
+            smallest = r
+        if smallest != i
+            self.swap(i, smallest)
+            self.down(smallest)
+
+    fn pop()
+        n = len(self.data)
+        if n == 0
+            -> 0
+        top = self.data[0]
+        self.data[0] = self.data[n-1]
+        self.data.pop()
+        self.down(0)
+        -> top
+
+h = Heap()
+h.push(5)
+h.push(3)
+h.push(7)
+write(h.pop())
+write(h.pop())
+write(h.pop())
+

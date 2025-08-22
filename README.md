@@ -53,7 +53,7 @@ fn(a, b) -> a + b
 
 ## 4. 비동기 프로그래밍
 
-Un의 함수는 기본적으로 비동기이며, 실행 결과를 기다리기 위해 `await`를 사용합니다.
+Un의 함수는 기본적으로 비동기이며, 실행 결과를 기다리기 위해 `wait`를 사용합니다.
 `go` 키워드를 사용하면 함수를 백그라운드에서 실행할 수 있습니다.
 
 예시:
@@ -160,9 +160,8 @@ class Person
 예시:
 
 ```
-fn greet(name = "World") {
+fn greet(name = "World") 
     write(`Hello, {name}`)
-}
 
 greet()                 // Hello, World
 greet(name = "Un")      // Hello, Un

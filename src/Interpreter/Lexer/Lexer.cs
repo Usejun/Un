@@ -147,7 +147,9 @@ public class Lexer()
 
         bool IsVariable() => nodes.Count > 0 && nodes[^1].Type.IsVariable();
 
-        bool IsUnary() => nodes.Count == 0 || nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma;
+        bool IsUnary() => nodes.Count == 0 ||
+        ((nodes[^1].Type != TokenType.Call && nodes[^1].Type != TokenType.Indexer && nodes[^1].Type != TokenType.Slicer)
+        && (nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma));
     }
 
     #region Node Reader

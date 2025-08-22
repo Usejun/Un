@@ -50,7 +50,7 @@ public class Fn() : Obj("fn")
             }
             else
             {
-                if (scope.ContainsKey(name))
+                if (scope.ContainsKeyInTop(name))
                     throw new Panic($"argument '{name}' provided multiple times.");
                 extraNamed[name] = val;
             }

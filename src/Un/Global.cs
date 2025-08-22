@@ -100,38 +100,97 @@ public static class Global
         InitTypeFromInstance(classes[name]);
     }
 
-    public static void Import(string name, string path, string nickname, string[] parts)
+    public static void Import(string[] path, string nickname, string[] parts)
     {
-        var fullPath = Path.Combine(PATH, path);
+        var fullPath = Path.Combine(Global.PATH, Path.Join(path));
+        bool isSpread = nickname == "*";
+        bool isNickname = !string.IsNullOrEmpty(nickname);
 
-        if (!Path.Exists(fullPath))
-            throw new Panic($"file {name} not found in {path}");
-
-        var scope = new Map();
-
-        Runner.Load(name, new Scope(scope)).Run();
-
-        if (!string.IsNullOrEmpty(nickname))
+        if (isSpread || isNickname)
         {
-            Obj module = new(nickname);
-            CreateNamespace(module.Members);
-            Global.scope.Set(nickname, module);
+            var map = Merge();
+            var nameSet = parts.ToHashSet();
+
+            map = nameSet.Count != 0 ? map.Where(x => nameSet.Contains(x.Key)).ToDictionary() : map;
+
+            if (isSpread)
+            {
+                foreach (var (key, value) in map)               
+                    if (value is Obj obj)
+                        scope.Set(key, obj);
+            }
+            else
+            {
+                if (scope.ContainsKey(nickname))
+                    throw new Panic($"'{nickname}' already exists in the global scope");
+
+                var obj = new Obj(nickname)
+                {
+                    Members = map
+                };
+                scope.Set(nickname, obj);
+            }
         }
         else
-            CreateNamespace(Global.scope.GetScope());
-
-        void CreateNamespace(IMap destination)
         {
-            if (parts.Length != 0)
-                foreach (var part in parts)
+            var scope = GetGlobalScope();
+            Obj top = scope.Get(path[0], out var existing) ? existing : new Obj(path[0]);
+            
+            if (existing == null)
+                scope.Set(path[0], top);            
+
+            for (int i = 1; i < path.Length; i++)
+            {
+                if (top.Members.TryGetValue(path[i], out var existingObj))
+                    top = existingObj;
+                else
                 {
-                    if (!scope.TryGetValue(part, out Obj? value))
-                        throw new Panic($"module: {name} doesn't have {part}");
-                    destination.Add(part, value);
+                    Obj obj = new(path[i]);
+                    top.Members[path[i]] = obj;
+                    top = obj;
                 }
+            }
+
+            var nameSet = parts.ToHashSet();
+
+            top.Members = Merge();
+            top.Members = nameSet.Count != 0 ? top.Members.Where(x => nameSet.Contains(x.Key)).ToDictionary() : top.Members;
+        }
+
+        Map Merge()
+        {
+            var topMap = new Map();
+            if (Directory.Exists(fullPath))
+            {
+                foreach (var file in Directory.GetFiles(fullPath, "*.un"))
+                {
+                    var map = new Map();
+                    var inner = new Scope(map, GetGlobalScope());
+
+                    Runner.Load(file, inner).Run();
+
+                    foreach (var (key, value) in map)
+                        if (value is Obj obj)
+                            topMap.Add(key, obj);
+                }
+            }
+            else if (File.Exists(fullPath.EndsWith(".un") ? fullPath : fullPath + ".un"))
+            {
+                var map = new Map();
+                var inner = new Scope(map, GetGlobalScope());
+
+                Runner.Load(fullPath.EndsWith(".un") ? fullPath : fullPath + ".un", inner).Run();
+
+                foreach (var (key, value) in map)
+                    if (value is Obj obj)
+                        topMap.Add(key, obj);
+            }
             else
-                foreach (var (key, value) in scope)
-                    destination.Add(key, value);
+            {
+                throw new Panic($"file or directory '{fullPath}' not found");
+            }
+
+            return topMap;
         }
     }
 
@@ -177,7 +236,7 @@ public static class Global
     public static bool TryGetGlobalVariable(string name, out Obj obj) => scope.Get(name, out obj!);
 
 
-    public static Scope GetScope() => scope;
+    public static Scope GetGlobalScope() => scope;
 
 
     public static Map New(this Map map)

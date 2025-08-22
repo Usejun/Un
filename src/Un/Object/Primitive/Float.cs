@@ -71,6 +71,7 @@ public class Float(double value) : Val<double>(value, "float")
     {
         Int i => new Bool(Value == i.Value),
         Float f => new Bool(Value == f.Value),
+        Obj o when o.IsNone() => new Bool(false),
         _ => new Err($"unsupported operand type(s) for ==: 'float' and '{other.Type}'")
     };
 
@@ -78,6 +79,7 @@ public class Float(double value) : Val<double>(value, "float")
     {
         Int i => new Bool(Value != i.Value),
         Float f => new Bool(Value != f.Value),
+        Obj o when o.IsNone() => new Bool(true),
         _ => new Err($"unsupported operand type(s) for !=: 'float' and '{other.Type}'")
     };
 
@@ -114,6 +116,13 @@ public class Float(double value) : Val<double>(value, "float")
     public override Str ToStr() => new(Value.ToString());
     public override Bool ToBool() => new(Value != 0);
 
-    public override Obj Copy() => new Float(Value);
-    public override Obj Clone() => new Float(Value);
+    public override Obj Copy() => new Float(Value)
+    {
+        Annotations = Annotations
+    };
+    
+    public override Obj Clone() => new Float(Value)
+    {
+        Annotations = Annotations
+    };
 }

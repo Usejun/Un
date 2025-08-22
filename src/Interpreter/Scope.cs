@@ -46,5 +46,7 @@ public class Scope(IMap scope, Scope parentscope = null!)
 
     public bool ContainsKey(string key) => scope.ContainsKey(key) || (parentScope != null && parentScope.ContainsKey(key));
 
+    public bool ContainsKeyInTop(string key) => scope.ContainsKey(key);
+
     public IMap GetScope() => scope;
 }

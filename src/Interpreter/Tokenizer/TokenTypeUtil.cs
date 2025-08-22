@@ -76,7 +76,7 @@ public static class TokenTypeUtil
     public static bool IsLiteral(this TokenType type) => type switch
     {
         TokenType.Integer or TokenType.Float or TokenType.String or TokenType.FString or TokenType.Boolean or
-        TokenType.List or TokenType.Tuple or TokenType.Dict or TokenType.Set => true,
+        TokenType.List or TokenType.Tuple or TokenType.Dict or TokenType.Set or TokenType.None => true,
         _ => false
     };
 

@@ -1,0 +1,29 @@
+# 플루이드-와샬 알고리즘 (Floyd-Warshall Algorithm) in Un (유사 파이썬 문법 가정)
+
+# n: 노드 개수
+# graph: n x n 인접 행렬 (없으면 무한대, 자기 자신은 0)
+
+n = 4
+INF = 99999999
+
+graph = [
+    [0,   5, INF, 10],
+    [INF, 0,   3, INF],
+    [INF, INF, 0,   1],
+    [INF, INF, INF, 0]
+]
+
+for k in range(0, n-1)
+    for i in range(0, n-1)
+        for j in range(0, n-1)
+            if graph[i][j] > graph[i][k] + graph[k][j]
+                graph[i][j] = graph[i][k] + graph[k][j]
+
+# 결과 출력
+for i in range(0, n-1)
+    for j in range(0, n-1)
+        if graph[i][j] == INF
+            write("INF", end=" ")
+        else
+            write(graph[i][j], end=" ")
+    write()

@@ -23,6 +23,14 @@ public class Str(string value) : Ref<string>(value, "str")
     public override Obj Eq(Obj other) => other switch
     {
         Str s => new Bool(Value.CompareTo(s.Value) == 0),
+        Obj o when o.IsNone() => new Bool(false),
+        _ => new Err($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'")
+    };
+
+    public override Obj NEq(Obj other) => other switch
+    {
+        Str s => new Bool(Value.CompareTo(s.Value) != 0),
+        Obj o when o.IsNone() => new Bool(true),
         _ => new Err($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'")
     };
 
@@ -56,9 +64,15 @@ public class Str(string value) : Ref<string>(value, "str")
 
     public override Tup ToTuple() => ToList().ToTuple();
 
-    public override Obj Copy() => new Str(Value);
+    public override Obj Copy() => new Str(Value)
+    {
+        Annotations = Annotations
+    };
 
-    public override Obj Clone() => new Str(Value);
+    public override Obj Clone() => new Str(Value)
+    {
+        Annotations = Annotations
+    };
 
     public override int GetHashCode() => Value.GetHashCode();
 

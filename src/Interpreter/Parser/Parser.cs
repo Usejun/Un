@@ -46,7 +46,6 @@ public class Parser(Context context)
     {
         var splited = nodes.Split(TokenType.As);
         var modules = splited[0][1..];
-        var name = modules[0].Value;
 
         bool isNickname = splited is { Count: 2 } &&
                           splited[1] is { Count: 1 } &&
@@ -58,17 +57,16 @@ public class Parser(Context context)
 
         bool isPart = modules[^1].Type == TokenType.Set;
 
-        var path = $"{string.Join("/", modules[..^(isPart ? 1 : 0)].Select(x => x.Value))}.un";
+        string[] path = [..modules[..^(isPart ? 1 : 0)].Select(x => x.Value)];
 
         lock (Global.SyncRoot)
         {
-            if (!Global.IsClass(name))
-                Global.Import(name: name,
-                              path: path,
-                              nickname: isSpread ? "" : isNickname ? splited[1][0].Value : isPart ? modules[^2].Value : modules[^1].Value,
-                              parts: isPart ? [.. modules[^1].Children.Select(x => x.Value)] : []);
+            if (!Global.IsClass(path[^1]))
+                Global.Import(path: path,
+                              nickname: isSpread ? "*" : isNickname ? splited[1][0].Value : "",
+                              parts: isPart ? [.. modules[^1].Children.Where(x => x.Type != TokenType.Comma).Select(x => x.Value)] : []);
             else
-                Global.Include(name: name);
+                Global.Include(name: path[^1]);
         }
 
         return Obj.None;
@@ -82,7 +80,7 @@ public class Parser(Context context)
         var members = new Map();
         var types = new HashSet<string>();
 
-        var innerContext = new Context(new(members), new UnFile(name, body), context.BlockStack);
+        var innerContext = new Context(new(members), new UnFile(name, body), []);
 
         Runner.Load(innerContext, context).Run();
 
@@ -182,6 +180,12 @@ public class Parser(Context context)
         else
             throw new Error($"invalid assignment {nodes[assign - 1].Type}.", context);
 
+        if (context.Annotations.Count != 0)
+            foreach (var obj in objs)
+                foreach (var (key, value) in context.Annotations)
+                    if (!obj.Annotations.TryAdd(key, value))
+                        obj.Annotations[key] = value;
+
         int count = 0;
         var type = nodes[assign].Type;
 
@@ -266,7 +270,7 @@ public class Parser(Context context)
         while (iter.MoveNext())
         {
             var current = iter.Current;
-            var innerContext = new Context(innerScope, new("for", body), context.BlockStack);
+            var innerContext = new Context(innerScope, new("for", body), []);
 
             if (vars.Count != 1 && vars.Count != current switch
             {
@@ -305,13 +309,12 @@ public class Parser(Context context)
         var expr = nodes[1..];
         var body = context.File.GetBody();
         var innerScope = new Scope(new Map(), Scope);
-        var innerContext = new Context(innerScope, new("while", body), context.BlockStack);
+        var innerContext = new Context(innerScope, new("while", body), []);
+        innerContext.EnterBlock("loop");
 
         while (Executor.On(expr, innerContext).As<Bool>("while keyword only boolearn").Value)
         {
-            innerContext.EnterBlock("loop");
             ReturnValue = Runner.Load(innerContext, context).Run();
-            innerContext.ExitBlock();
 
             if (ReturnValue?.Type == "break")
             {
@@ -321,6 +324,8 @@ public class Parser(Context context)
             else if (ReturnValue?.Type == "skip")
                 ReturnValue = null!;
         }
+        
+        innerContext.ExitBlock();
 
         return ReturnValue ?? Obj.None;
     }
@@ -332,7 +337,7 @@ public class Parser(Context context)
         if (condition.Value)
         {
             var body = context.File.GetBody();
-            var innerContext = new Context(innerScope, new("if", body), context.BlockStack);
+            var innerContext = new Context(innerScope, new("if", body), []);
 
             ReturnValue = Runner.Load(innerContext, context).Run();
 
@@ -357,7 +362,7 @@ public class Parser(Context context)
     {
         var body = context.File.GetBody();
         var innerScope = new Scope(new Map(), Scope);
-        var innerContext = new Context(innerScope, new("try", body), context.BlockStack);
+        var innerContext = new Context(innerScope, new("try", body), []);
 
         innerContext.EnterBlock("try");
 
@@ -429,7 +434,7 @@ public class Parser(Context context)
 
         var name = nodes[1].Value;
 
-        context.Annotations.Add(name, nodes.Count == 2 ? new Tup([], []) : Convert.ToTuple(nodes[2], context));
+        context.Annotations[name] = nodes.Count == 2 ? new Tup([], []) : Convert.ToTuple(nodes[2], context);
         return Obj.None;
     }
     #endregion

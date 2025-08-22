@@ -46,7 +46,7 @@ public class Runner(Context context, Context? parentContext = null!)
         if ((returned?.Type == "skip" || returned?.Type == "break") && Context.CurrentBlock?.Type != "loop")
             throw new Panic($"'{returned?.Type}' keyword can only be used inside a loop");
 
-        return returned ?? Obj.None;
+        return returned!;
     }
 
     private void Free()

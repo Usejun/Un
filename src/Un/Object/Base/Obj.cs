@@ -129,6 +129,10 @@ public class Obj(string type) : IComparable<Obj>
 
     public virtual Obj Eq(Obj other)
     {
+        if (IsNone() && other.IsNone())
+            return new Bool(true);
+        if (IsType() || other.IsType())
+            return new Bool(false);
         if (TryMethod("__eq__", out Obj? value, new([other], ["other"])))
             return value;
         return Super is not null && !Super.IsNone() ? Super.Eq(other) : new Err($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'");

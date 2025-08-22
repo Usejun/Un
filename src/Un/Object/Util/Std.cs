@@ -41,15 +41,16 @@ public class Std : IPack
                 }],
                 Func = (args) =>
                 {
-                   if (!args["stream"].As<IO.Stream>(out var stream))
+                    if (!args["stream"].As<IO.Stream>(out var stream))
                         return new Err("expected 'stream' argument to be of type 'stream'");
+
+                    var items = args["value"].ToTuple().As<Tup>().Value ;
 
                     var cw = new StreamWriter(stream.Value)
                     {
                         AutoFlush = false
                     };
 
-                    var items = args["value"].ToTuple().As<Tup>().Value;
                     for (int i = 0; i < items.Length; i++)
                     {
                         cw.Write(items[i].ToStr().As<Str>().Value);
@@ -701,6 +702,19 @@ public class Std : IPack
                 ReturnType = "float",
                 Args = [],
                 Func = (args) => new Float(random.NextDouble())
+            }
+        },
+        { "breakpoint", new NFn()
+            {
+                Name = "breakpoint",
+                ReturnType = "none",
+                Args = [],
+                Func = (args) =>
+                {
+                    Console.WriteLine("Breakpoint hit. Press Enter to continue...");
+                    Console.Read();
+                    return Obj.None;
+                }
             }
         }
     };

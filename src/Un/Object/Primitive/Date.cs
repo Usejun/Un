@@ -33,9 +33,15 @@ public class Date(DateTime value) : Val<DateTime>(value, "date")
 
     public override Str ToStr() => new(Value.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
-    public override Obj Copy() => new Date(Value);
+    public override Obj Copy() => new Date(Value)
+    {
+        Annotations = Annotations
+    };
 
-    public override Obj Clone() => new Date(Value);
+    public override Obj Clone() => new Date(Value)
+    {
+        Annotations = Annotations
+    };
 
     public override Attributes GetOriginal() => new()
     {

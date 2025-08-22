@@ -11,7 +11,7 @@ public class Json(Obj obj) : Ref<Obj>(obj, "json")
     private static readonly Scope scope = new(new Map()
     {
         ["null"] = None,
-    }, Global.GetScope());
+    }, Global.GetGlobalScope());
     private static UnFile buf = new("json", []);
 
     public int Count => Value switch
