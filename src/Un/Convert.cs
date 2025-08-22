@@ -78,7 +78,7 @@ public static class Convert
 
                     if (depth == 0)
                         break;
-                        
+
                     expr += c;
                 }
                 values.Append(Executor.On(lexer.Lex(tokenizer.Tokenize(new("", [expr]))), context));
@@ -90,8 +90,8 @@ public static class Convert
             i++;
         }
 
-        return node.Children.Count == 0 ? Mix(raw, values) 
-            : context.Scope[$"{node.Children[0].Value}"].Call(new Tup([new Tup([..raw.Select(x => new Str(x))], [""]), ..values.Value[..values.Count]], ["", .. new string(' ', values.Count).Split()]));
+        return node.Children.Count == 0 ? Mix(raw, values)
+            : context.Scope[$"{node.Children[0].Value}"].Call(new Tup([new Tup([.. raw.Select(x => new Str(x))], [""]), .. values.Value[..values.Count]], ["", .. new string(' ', values.Count).Split()]));
     }
 
     public static Obj Auto(Node node, Context context)
@@ -180,5 +180,24 @@ public static class Convert
             splited.Add(nodes[start..end]);
 
         return splited;
+    }
+
+    public static string ToCode(this List<Node> nodes)
+    {
+        List<char> code = [];
+
+        foreach (var node in nodes)
+        {
+            if (node.Type == TokenType.String)
+            {
+                code.Add('"');
+                code.AddRange(node.Value.ToCharArray());
+                code.Add('"');
+            }
+            else
+                code.AddRange(node.Value.ToCharArray());
+        }
+
+        return string.Join("", code);
     }
 }

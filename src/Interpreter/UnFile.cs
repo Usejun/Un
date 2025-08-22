@@ -98,7 +98,7 @@ public class UnFile
         int nesting = Code[Line].nesting;
         int start = Line + 1, end = Line + 1;
 
-        while (end < Code.Count && Code[end].nesting > nesting)
+        while (end < Code.Count && (Code[end].nesting > nesting || string.IsNullOrEmpty(Code[end].code)))
             end++;
 
         return (start, end);

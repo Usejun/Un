@@ -138,6 +138,8 @@ public class Fn() : Obj("fn")
             }
         }
 
+        if (positionalArg != null && !scope.ContainsKeyInTop(positionalArg.Name))
+            scope[positionalArg.Name] = new Tup([], []);
 
         if (extraNamed.Count > 0)
         {

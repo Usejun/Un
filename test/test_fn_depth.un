@@ -1,13 +1,6 @@
-fn fib(n: int) -> int
-    if dp[n] == 0
-        dp[n] = fib(n - 2) + fib(n - 1)
-    -> dp[n]
+fn fib(x)
+    if x < 2
+        -> 1
+    -> fib(x - 1) + fib(x - 2)
 
-dp = []
-
-for k in range(3, 100)
-    dp = array(0, k + 1)
-    dp[0] = 1
-    dp[1] = 1 
-
-    write(`{k}번째 {fib(k)}`)    
+write(fib(32))

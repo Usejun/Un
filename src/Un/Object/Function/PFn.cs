@@ -15,7 +15,7 @@ public class PFn(List<Node> nodes) : Fn
         Bind(scope, args);
         lock (Global.SyncRoot) { Depth++; }
 
-        var parser = new Parser(new(scope, new("", []), []));
+        var parser = new Parser(new(scope, new("lambda", [nodes.ToCode()]), []));
         var returned = parser.Parse(nodes);
 
         lock (Global.SyncRoot) { Depth--; }
