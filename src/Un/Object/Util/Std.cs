@@ -1,6 +1,7 @@
 using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
+using Un.Object.Iter;
 
 namespace Un.Object.Util;
 
@@ -262,12 +263,13 @@ public class Std : IPack
                 {
                     if (!args["array"].As<List, Tup>(out var array))
                         return new Err("expected 'array' argument to be of type 'list' or 'tuple'");
-                    var list = array.ToList().As<List>();
+                    var iter = array.Iter().As<Iters>();
+                    var len = iter.Len().As<Int>().Value;
 
                     List enumerate = [];
 
-                    for (int i = 0; i < list.Count; i++)
-                        enumerate.Append(new Tup([new Int(i), list[i]], ["index", "value"]));
+                    for (int i = 0; i < len; i++)
+                        enumerate.Append(new Tup([new Int(i), iter.Next()], ["index", "value"]));
 
                     return enumerate;
                 }
@@ -288,15 +290,14 @@ public class Std : IPack
                     if (!args["arrays"].ToList().As<List, Tup>(out var arrays))
                         return new Err("expected 'array' argument to be of type 'list' or 'tuple'");
 
-                    List source = arrays.ToList().As<List>();
-
-                    int length = source.Max(a => (int)a.Len().As<Int>().Value);
+                    var source = arrays.Iter().As<Iters>();
+                    int length = source.Value.Max(a => (int)a.Len().As<Int>().Value);
                     List list = [];
 
                     for (int i = 0; i < length; i++)
                     {
                         List tuple = [];
-                        foreach (var array in source)
+                        foreach (var array in source.Value)
                             tuple.Append(array.Len().As<Int>().Value <= i ? Obj.None : array.GetItem(new Int(i)));
                         list.Append(new Tup([..tuple], [.. new string(' ', tuple.Count).Split()]));
                     }

@@ -6,6 +6,7 @@ using Un.Object;
 using Un.Object.IO;
 using Un.Object.Flow;
 using Un.Object.Util;
+using Un.Object.Iter;
 using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
@@ -31,6 +32,8 @@ public static class Global
         classes["time"] = new Time();
         classes["flow"] = new Flow();
         classes["json"] = new Json(Obj.None);
+        classes["counter"] = new Counter();
+        classes["reverse"] = new Reverse([]);
     }
 
     public static Attributes Package { get; private set; } = [];

@@ -6,8 +6,6 @@ try
 {
     if (args.Length < 2)
         throw new Panic("not enough arguments");
-    
-
     Global.Init(args[0]);
     runner = Runner.Load(args[1], Global.GetGlobalScope());
     runner.Run();

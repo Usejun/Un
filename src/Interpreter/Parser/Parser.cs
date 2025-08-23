@@ -1,4 +1,5 @@
 using Un.Object;
+using Un.Object.Iter;
 using Un.Object.Primitive;
 using Un.Object.Collections;
 
@@ -263,14 +264,15 @@ public class Parser(Context context)
     {
         var inIdx = nodes.FindIndex(x => x.Type == TokenType.In);
         var vars = nodes[..inIdx][1..].Split(TokenType.Comma).Select(x => x[0]).ToList();
-        var iter = Executor.On(nodes[(inIdx + 1)..], context).Iter().As<Iters>().Value.GetEnumerator();
-        var body = context.File.GetBody();
+        var iter = Executor.On(nodes[(inIdx + 1)..], context).Iter().As<Iters>().Value;
         var innerScope = new Scope(new Map(), Scope);
+        var innerContext = new Context(innerScope, new("for", context.File.GetBody()), []);
 
-        while (iter.MoveNext())
+        innerContext.EnterBlock("loop");
+
+        foreach (var current in iter)
         {
-            var current = iter.Current;
-            var innerContext = new Context(innerScope, new("for", body), []);
+            innerContext.File.Move(0, 0);
 
             if (vars.Count != 1 && vars.Count != current switch
             {
@@ -289,9 +291,7 @@ public class Parser(Context context)
             for (int i = 0; i < vars.Count; i++)
                 innerScope.Set(vars[i].Value, values[i]);
 
-            innerContext.EnterBlock("loop");
             ReturnValue = Runner.Load(innerContext, context).Run();
-            innerContext.ExitBlock();
 
             if (ReturnValue?.Type == "break")
             {
@@ -301,6 +301,8 @@ public class Parser(Context context)
             else if (ReturnValue?.Type == "skip")
                 ReturnValue = null!;
         }
+
+        innerContext.ExitBlock();
 
         return ReturnValue ?? Obj.None;
     }
@@ -334,10 +336,11 @@ public class Parser(Context context)
         Bool condition = nodes[0].Type == TokenType.Else ? new(true) : Executor.On(nodes[1..], context).ToBool().As<Bool>();
         var innerScope = new Scope(new Map(), Scope);
 
+
         if (condition.Value)
         {
             var body = context.File.GetBody();
-            var innerContext = new Context(innerScope, new("if", body), []);
+            var innerContext = new Context(innerScope, new("if", body), [.. context.BlockStack]);
 
             ReturnValue = Runner.Load(innerContext, context).Run();
 

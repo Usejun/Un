@@ -41,7 +41,7 @@ public class Json(Obj obj) : Ref<Obj>(obj, "json")
             Obj? json;
             try
             {
-                json = Convert.Auto(lexed[0], new(scope, new UnFile("json", []), new()));
+                json = Convert.Auto(lexed[0], new(scope, new UnFile("json", []), []));
             }
             catch
             {

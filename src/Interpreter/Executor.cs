@@ -180,9 +180,7 @@ public static class Executor
                                 match = result;
                             else
                                 continue;
-
                             break;
-
                         }
 
                         if (!match.IsNone())

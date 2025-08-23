@@ -1,9 +1,9 @@
 namespace Un.Object.Function;
 
-public class Arg(string name) : Obj
+public class Arg(string name)
 {
     public string Name { get; set; } = name;
-    public new string Type { get; set; } = "any";
+    public string Type { get; set; } = "any";
 
     public bool IsEssential { get; set; }
     public bool IsOptional { get; set; }
@@ -11,4 +11,14 @@ public class Arg(string name) : Obj
     public bool IsKeyword { get; set; }
 
     public Obj? DefaultValue { get; set; }
+    
+    public Arg New() => new(Name)
+    {
+        Type = Type,
+        IsEssential = IsEssential,
+        IsOptional = IsOptional,
+        IsPositional = IsPositional,
+        IsKeyword = IsKeyword,
+        DefaultValue = DefaultValue,
+    };
 }

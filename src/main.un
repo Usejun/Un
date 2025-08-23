@@ -1,0 +1,13 @@
+class a
+    fn __init__()
+    fn div()
+        -> b()
+
+class b
+    fn __init__()
+    fn add()
+        -> 1
+
+a1 = a()
+b = go a1.div().add
+write(wait b())
