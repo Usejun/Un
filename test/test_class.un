@@ -1,12 +1,6 @@
-class number
-    z: float = 3.0
-
-    fn __init__(z)
-        self.z = z
+struct number(x, y, z)
 
 class point: number
-    x: float = 1.0
-    y: float = 2.0
 
     __len__ = fn() -> (self.x +
                        self.y + 
@@ -15,9 +9,9 @@ class point: number
     new = fn() -> point(self.x, self.y, self.z)
 
     fn __init__(x, y, z)
-        super.__init__(z)
         self.x = x
         self.y = y
+        self.z = z
 
 p1: point = point(55, 2, 348)
 write(p1)

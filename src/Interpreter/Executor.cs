@@ -74,8 +74,26 @@ public static class Executor
                 {
                     var value = values.Pop();
                     var args = Convert.ToTuple(node, context).Unwrap<Tup>(context);
+                    var result = value.IsType() ? Global.GetClass(value.Type[2..^2]).Clone() : value.As<Fn>();
 
-                    var result = value.IsType() ? Global.GetClass(value.Type[2..^2]).Clone().Init(args) : value.As<Fn>().Invoke(args, context);
+                    foreach (var key in result.Annotations.Keys)
+                    {
+                        var name = key as string ?? "";
+                        var tuple = result.Annotations[name] as Tup ?? [];
+                        var deco = context.Scope[name].As<Fn>();
+                        result = deco.Invoke(new([result, .. tuple], new string[tuple.Count + 1]), context);
+                    }
+
+                    foreach (var key in result.Annotations.Keys)
+                    {
+                        var name = key as string ?? "";
+                        if (context.Scope.Get(name, out var item) && item.As<Fn>(out var deco))
+                        {
+                            var tuple = result.Annotations[name] as Tup ?? [];
+                            result = deco.Invoke(new([result, .. tuple], new string[tuple.Count + 1]), context);
+                        }
+                    }
+                    result = result.As<Fn>(out var fn) ? fn.Invoke(args, context) : result.Init(args);
 
                     values.Push(result.Unwrap(context));
                 }
@@ -136,16 +154,16 @@ public static class Executor
                 }
                 else if (type == TokenType.Go)
                 {
-                    var fn = values.Pop();
+                    var expr = Expr(node.Children, context);
 
-                    if (fn is not Fn function)
-                        throw new Error($"cannot call {fn.Type} as a function.", context);
+                    if (!expr.As<Fn>(out var fn))
+                        throw new Error("'go' is only use with call operator: <expr: fn><call oper: ()>", context);
 
-                    values.Push(new GFn(function)
+                    values.Push(new GFn(fn)
                     {
-                        Name = function.Name,
-                        Args = function.Args,
-                        Closure = function.Closure,
+                        Name = fn.Name,
+                        Args = fn.Args,
+                        Closure = fn.Closure,
                     });
                 }
                 else if (type == TokenType.Wait)
@@ -257,7 +275,7 @@ public static class Executor
                     values.Push(value.Unwrap(context));
                 }
             }
-            
+
             return values.Count == 1 ? values.Pop() : values.Count == 0 ? Obj.None : throw new Error("invalid expression", context);
         }
         catch (Panic)

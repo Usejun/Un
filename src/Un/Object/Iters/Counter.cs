@@ -27,7 +27,7 @@ public class Counter : Iters
 
     public override Str ToStr() => throw new Panic("counter is infinite");
 
-    public override Spread Spread() => throw new Panic("counter is infinite");
+    public override Spreads Spread() => throw new Panic("counter is infinite");
 
     public override Obj Clone() => new Counter()
     {

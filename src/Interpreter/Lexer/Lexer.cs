@@ -21,7 +21,7 @@ public class Lexer()
             if (type.IsLeftBracket())
             {
                 var (start, end) = GetBracketRange(type);
-                var children = new Lexer().Lex(tokens[(start + 1)..end]);
+                var children = new Lexer().Lex(this.tokens[(start + 1)..end]);
 
                 nodes.Add(new Node(type switch
                 {
@@ -74,7 +74,7 @@ public class Lexer()
             }
             else if (type == TokenType.Func)
             {
-                var lexed = new Lexer().Lex(tokens[index..]);
+                var lexed = new Lexer().Lex(this.tokens[index..]);
 
                 if (lexed.Count < 2)
                     throw new Panic("expected function body after 'fn' keyword");
@@ -106,7 +106,7 @@ public class Lexer()
             }
             else if (type == TokenType.Match)
             {
-                var lexed = new Lexer().Lex(tokens[index..]);
+                var lexed = new Lexer().Lex(this.tokens[index..]);
 
                 if (lexed.Count < 2)
                     throw new Panic("expected key and body after 'match' keyword");
@@ -120,7 +120,7 @@ public class Lexer()
                 });
 
                 nodes.AddRange(lexed[2..]);
-                index = tokens.Count;
+                index = this.tokens.Count;
             }
             else if (type == TokenType.FString)
             {
@@ -138,6 +138,30 @@ public class Lexer()
                     nodes.Add(new Node(token.Value, TokenType.FString));
                 }
             }
+            else if (type == TokenType.Go)
+            {
+                var lexed = new Lexer().Lex(this.tokens[index..]);
+                var call = -1;
+
+                for (int i = 0; i < lexed.Count; i++)
+                {
+                    if (lexed[i].Type == TokenType.Call)
+                    {
+                        call = i;
+                        break;
+                    }
+                    if (lexed[i].Type.IsOperator() && lexed[i].Type.GetPrecedence() > TokenType.Call.GetPrecedence())
+                        break;
+                }
+
+                nodes.Add(new Node("go", TokenType.Go)
+                {
+                    Children = call == -1 ? lexed : lexed[..call]
+                });
+                nodes.AddRange(call == -1 ? [] : lexed[..call]);
+                index = this.tokens.Count;
+
+            }
             else nodes.Add(new Node(token.Value, type));
         }
 
@@ -147,18 +171,16 @@ public class Lexer()
 
         bool IsVariable() => nodes.Count > 0 && nodes[^1].Type.IsVariable();
 
-        bool IsUnary() => nodes.Count == 0 ||
-        ((nodes[^1].Type != TokenType.Call && nodes[^1].Type != TokenType.Indexer && nodes[^1].Type != TokenType.Slicer)
-        && (nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma));
+        bool IsUnary() => nodes.Count == 0 || nodes[^1].Type.IsUnaryOperator() && (nodes[^1].Type.IsOperator() || nodes[^1].Type == TokenType.Comma);
     }
 
     #region Node Reader
     private TokenInfo Next()
     {
         if (IsEnd())
-            throw new Panic("end of tokens reached");
+            throw new Panic("end of this.tokens reached");
 
-        var token = tokens[index];
+        var token = this.tokens[index];
         var type = token.Type;
 
         index++;
@@ -168,9 +190,9 @@ public class Lexer()
     private TokenInfo Peek(int index)
     {
         if (IsEnd(index))
-            throw new Panic("end of tokens reached");
+            throw new Panic("end of this.tokens reached");
 
-        var token = tokens[index];
+        var token = this.tokens[index];
         var type = token.Type;
 
         return (token, type);
@@ -213,8 +235,8 @@ public class Lexer()
 
         return true;
     }
-    private bool IsEnd() => index >= tokens.Count;
-    private bool IsEnd(int idx) => idx >= tokens.Count;
+    private bool IsEnd() => index >= this.tokens.Count;
+    private bool IsEnd(int idx) => idx >= this.tokens.Count;
     #endregion
 
     private (int start, int end) GetBracketRange(TokenType opener)
@@ -222,7 +244,7 @@ public class Lexer()
         int start = index-1, end = index-1, depth = 0;
         var closer = opener.GetCloser();
 
-        while (end < tokens.Count)
+        while (end < this.tokens.Count)
         {
             var (_, type) = Peek(end);
             if (type.IsRightBracket())

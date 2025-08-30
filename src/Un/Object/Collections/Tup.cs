@@ -54,6 +54,11 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
                 Members[Name[i]] = values[i];
     }
 
+    public Tup(IEnumerable<KeyValuePair<string, Obj>> pairs) : base([..pairs.Select(x => x.Value)], "tuple")
+    {
+        Name = [.. pairs.Select(x => x.Key)];
+    }
+
     public Obj this[int index]
     {
         get => OutOfRange(index) ? new Err("tuple index out of range") : Value[index];
@@ -62,13 +67,13 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
     public override Bool Eq(Obj other)
     {
         if (other is not Tup tup)
-            return new(false);
+            return Bool.False;
 
         for (int i = 0; i < Count; i++)
             if (Value[i].NEq(tup[i]).As<Bool>().Value)
-                return new(false);
+                return Bool.False;
 
-        return new(true);
+        return Bool.True;
     }
 
     public override Obj GetItem(Obj key) => key switch
@@ -82,9 +87,9 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
         foreach (var value in Value)
         {
             if (value.Eq(obj).As<Bool>().Value)
-                return new Bool(true);
+                return Bool.True;
         }
-        return new Bool(false);
+        return Bool.False;
     }
 
     public override Obj Len() => new Int(Count);
@@ -99,7 +104,7 @@ public class Tup : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Iters Iter() => new(this);
 
-    public override Spread Spread() => new(Value);
+    public override Spreads Spread() => new(Value);
 
     public override Obj Copy()
     {

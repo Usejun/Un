@@ -1,6 +1,7 @@
 global using Attributes = System.Collections.Generic.Dictionary<string, Un.Object.Obj>;
 global using Map = System.Collections.Generic.Dictionary<string, Un.Object.Obj>;
 global using IMap = System.Collections.Generic.IDictionary<string, Un.Object.Obj>;
+global using OMap = System.Collections.Specialized.OrderedDictionary;
 
 using Un.Object;
 using Un.Object.IO;
@@ -11,6 +12,7 @@ using Un.Object.Function;
 using Un.Object.Primitive;
 using Un.Object.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Specialized;
 
 namespace Un;
 

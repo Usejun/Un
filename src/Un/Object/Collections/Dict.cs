@@ -11,6 +11,8 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
     public override Obj Init(Tup args) => args switch
     {
         { Count: 0 } => new Dict(),
+        { Count: 1 } when args[0] is Tup t => new Dict(t.Name.Select(name => ((Obj)new Str(name), t.Members[name])).ToDictionary()),
+        { Count: 1 } when args[0] is Stru st => Init(new([st.ToTuple()])),
         _ => new Err($"invaild '{Type}' initialize"),
     };
 
@@ -41,7 +43,7 @@ public class Dict(Dictionary<Obj, Obj> value) : Ref<Dictionary<Obj, Obj>>(value,
 
     public override Iters Iter() => new([.. Value.Keys.Zip(Value.Values).Select(x => new Tup([x.First, x.Second], ["key", "value"]))]);
 
-    public override Spread Spread() => new([.. Value.Select(i => new Tup([i.Key, i.Value], ["key", "value"]))]);
+    public override Spreads Spread() => new([.. Value.Select(i => new Tup([i.Key, i.Value], ["key", "value"]))]);
 
     private bool Overlap(Dict dict)
     {

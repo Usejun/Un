@@ -2,6 +2,7 @@ using Un.Object;
 using Un.Object.Iter;
 using Un.Object.Primitive;
 using Un.Object.Collections;
+using Un.Object.Function;
 
 namespace Un;
 
@@ -75,11 +76,20 @@ public class Parser(Context context)
     private Obj ParseClass()
     {
         var name = nodes[1].Value;
-        var isInherit = nodes.Count >= 3;
-
+        var colon = nodes.FindIndex(x => x.Type == TokenType.Colon);
+        var isInherit = (colon == 2 && nodes.Count >= 4) || (colon == 3 && nodes.Count >= 5);
+        var fields = colon == 2 ? [] : nodes[2].Children;
         var body = context.File.GetBody();
         var members = new Map();
         var types = new HashSet<string>();
+
+        foreach (var value in Fn.GetArgs(fields, context))
+        {
+            if (value.IsEssential)
+                members.Add(value.Name, Obj.None);
+            else if (value.IsOptional)
+                members.Add(value.Name, value.DefaultValue ?? throw new Panic("invalid classs syntax"));
+        }
 
         var innerContext = new Context(new(members), new UnFile(name, body), []);
 
@@ -109,17 +119,33 @@ public class Parser(Context context)
 
         lock (Global.SyncRoot)
         {
-            Global.SetClass(name, new Obj(name)
+            Global.SetClass(name, IsEmpty(body) ?
+            new Stru(name, [..fields.Split(TokenType.Comma).Select(x => x[0].Value)])
+            {
+                Annotations = context.Annotations,
+                Members = members
+            }
+            :
+            new Obj(name)
             {
                 Annotations = context.Annotations,
                 Super = isInherit ? Global.GetClass(nodes[3].Value) : Obj.None,
                 Types = types,
                 Members = members
-                
             });
         }
 
+        context.Annotations = [];
+
         return Obj.None;
+
+        bool IsEmpty(string[] strs)
+        {
+            foreach (var str in strs)
+                if (!string.IsNullOrWhiteSpace(str))
+                    return false;
+            return true;
+        }
     }
     private Obj ParseEunm()
     {
@@ -165,7 +191,7 @@ public class Parser(Context context)
         int valueCount = values.Count(i => i.Type == TokenType.Comma) + 1;
 
         var variable = Obj.None;
-        var objs = new List<Obj>();
+        var objs = new List<Obj>(nameCount);
         var buf = new List<Node>();
 
         if (nameCount == valueCount)
@@ -177,15 +203,14 @@ public class Parser(Context context)
             objs.AddRange(IsDeconstructableToken() ?
                 Convert.ToTuple(values[0], context).Value
             :
-                Scope.Get(values[0].Value).ToTuple().As<Tup>().Value);
+                Scope.Get(values[0].Value).Spread().As<Spreads>());
         else
             throw new Error($"invalid assignment {nodes[assign - 1].Type}.", context);
 
         if (context.Annotations.Count != 0)
             foreach (var obj in objs)
-                foreach (var (key, value) in context.Annotations)
-                    if (!obj.Annotations.TryAdd(key, value))
-                        obj.Annotations[key] = value;
+                foreach (var key in context.Annotations.Keys)
+                        obj.Annotations[key] = context.Annotations[key];
 
         int count = 0;
         var type = nodes[assign].Type;
@@ -207,8 +232,6 @@ public class Parser(Context context)
                         var name = names[i].Value;
                         if (Scope.Get(name, out Obj? value))
                             Scope.Set(name, AssignValue(type, value, objs[count]));
-                        else if (Global.TryGetGlobalVariable(name, out value))
-                            Global.SetGlobalVariable(name, AssignValue(type, value, objs[count]));
                         else if (type == TokenType.Assign)
                             Scope.Set(name, objs[count]);
                         else
@@ -238,9 +261,9 @@ public class Parser(Context context)
 
         bool IsEnd(int index) => index >= names.Count || names[index].Type == TokenType.Comma || names[index].Type == TokenType.Colon;
 
-        bool IsDeconstruct() => valueCount == 1 && (IsDeconstructableToken() || Scope.Get(values[0].Value).As<Tup, List>(out _));
-
         bool IsDeconstructableToken() => (values[0].Type == TokenType.List || values[0].Type == TokenType.Tuple) && nameCount == values[0].Children.Count(i => i.Type == TokenType.Comma) + 1;
+
+        bool IsDeconstruct() => valueCount == 1 && !Scope.Get(values[0].Value).Spread().As<Err>(out _);
 
         Obj AssignValue(TokenType type, Obj a, Obj b) => type switch
         {
@@ -333,7 +356,7 @@ public class Parser(Context context)
     }
     private Obj ParseIf()
     {
-        Bool condition = nodes[0].Type == TokenType.Else ? new(true) : Executor.On(nodes[1..], context).ToBool().As<Bool>();
+        Bool condition = nodes[0].Type == TokenType.Else ? Bool.True : Executor.On(nodes[1..], context).ToBool().As<Bool>();
         var innerScope = new Scope(new Map(), Scope);
 
 

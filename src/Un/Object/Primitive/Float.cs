@@ -71,7 +71,7 @@ public class Float(double value) : Val<double>(value, "float")
     {
         Int i => new Bool(Value == i.Value),
         Float f => new Bool(Value == f.Value),
-        Obj o when o.IsNone() => new Bool(false),
+        Obj o when o.IsNone() => Bool.False,
         _ => new Err($"unsupported operand type(s) for ==: 'float' and '{other.Type}'")
     };
 
@@ -79,7 +79,7 @@ public class Float(double value) : Val<double>(value, "float")
     {
         Int i => new Bool(Value != i.Value),
         Float f => new Bool(Value != f.Value),
-        Obj o when o.IsNone() => new Bool(true),
+        Obj o when o.IsNone() => Bool.True,
         _ => new Err($"unsupported operand type(s) for !=: 'float' and '{other.Type}'")
     };
 

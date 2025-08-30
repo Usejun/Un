@@ -599,15 +599,18 @@ public class Std : IPack
                 ],
                 Func = args =>
                 {
-                    if (!args["time"].As<Int, Float>(out var time))
-                        return new Err("expected 'time' argument to be of type 'int' or 'float");
-
-                    Thread.Sleep(time switch
+                    var milliseconds = args["time"] switch
                     {
                         Int i => (int)i.Value,
                         Float f => (int)(f.Value * 1000),
-                        _ => throw new Panic("expected 'time' argument to be of type 'int' or 'float'"),
-                    });
+                        Obj o => (int)o.ToInt().As<Int>().Value,
+                        _ => -1,
+                    };
+
+                    if (milliseconds == -1)
+                        return new Err("expected 'time' argument to be of type 'int' or 'float' or convertible to int");
+
+                    Thread.Sleep(milliseconds);
                     return Obj.None;
                 }
             }
@@ -635,18 +638,22 @@ public class Std : IPack
                 ],
                 Func = args =>
                 {
-                    if (!args["time"].As<Int, Float>(out var time))
-                        return new Err("expected 'time' argument to be of type 'int' or 'float");
                     if (!args["fn"].As<Fn>(out var fn))
                         return new Err("expected 'fn' argument to be of type 'func'");
                     var vargs = args["args"].ToTuple().As<Tup>();
 
-                    Thread.Sleep(time switch
+                    var milliseconds = args["time"] switch
                     {
                         Int i => (int)i.Value,
                         Float f => (int)(f.Value * 1000),
-                        _ => throw new Panic("expected 'time' argument to be of type 'int' or 'float'"),
-                    });
+                        Obj o => (int)o.ToInt().As<Int>().Value,
+                        _ => -1,
+                    };
+
+                    if (milliseconds == -1)
+                        return new Err("expected 'time' argument to be of type 'int' or 'float' or convertible to int");
+
+                    Thread.Sleep(milliseconds);
 
                     return fn.Call(vargs);
                 }
@@ -691,8 +698,8 @@ public class Std : IPack
                 {
                     var name = args["name"].ToStr().As<Str>().Value;
 
-                    if (args["value"].Annotations.TryGetValue(name, out var annotation))
-                        return annotation;
+                    if (args["value"].Annotations.Contains(name))
+                        return args["value"].Annotations[name] as Obj ?? new Err("invalid annotation");
                     return Obj.None;
                 }
             }
@@ -712,7 +719,7 @@ public class Std : IPack
                 Args = [],
                 Func = (args) =>
                 {
-                    Console.WriteLine("Breakpoint hit. Press Enter to continue...");
+                    Console.WriteLine("breakpoint hit. Press Enter to continue...");
                     Console.Read();
                     return Obj.None;
                 }

@@ -6,7 +6,20 @@ namespace Un;
 
 public static class Convert
 {
-    public static List ToList(Node node, Context context) => new([.. node.Children.Split(TokenType.Comma).Select(x => Executor.On(x, context))]);
+    public static List ToList(Node node, Context context)
+    {
+        List list = [];
+
+        foreach (var value in node.Children.Split(TokenType.Comma).Select(x => Executor.On(x, context)))
+        {
+            if (value.As<Spreads>(out var spread))
+                foreach (var item in spread)
+                    list.Append(item);
+            else list.Append(value);
+        }
+
+        return list;
+    }
 
     public static Tup ToTuple(Node node, Context context)
     {
@@ -30,7 +43,10 @@ public static class Convert
             }
 
             names.Add(name);
-            list.Append(value);
+            if (value.As<Spreads>(out var spread))
+                foreach (var item in spread)
+                    list.Append(item);
+            else list.Append(value);
         }
 
         return new Tup([.. list], [.. names]);
@@ -193,6 +209,17 @@ public static class Convert
                 code.Add('"');
                 code.AddRange(node.Value.ToCharArray());
                 code.Add('"');
+            }
+            else if (node.Type == TokenType.Property)
+            {
+                code.Add('.');
+                code.AddRange(node.Value.ToCharArray());
+            }
+            else if (node.Type == TokenType.NullableProperty)
+            {
+                code.Add('?');
+                code.Add('.');
+                code.AddRange(node.Value.ToCharArray());
             }
             else
                 code.AddRange(node.Value.ToCharArray());

@@ -104,7 +104,7 @@ public class Int(long value) : Val<long>(value, "int")
     {
         Int i => new Bool(Value == i.Value),
         Float f => new Bool(Value == f.Value),
-        Obj o when o.IsNone() => new Bool(false),
+        Obj o when o.IsNone() => Bool.False,
         _ => new Err($"unsupported operand type(s) for ==: 'int' and '{other.Type}'")
     };
 
@@ -140,7 +140,7 @@ public class Int(long value) : Val<long>(value, "int")
     {
         Int i => new Bool(Value != i.Value),
         Float f => new Bool(Value != f.Value),
-        Obj o when o.IsNone() => new Bool(true),
+        Obj o when o.IsNone() => Bool.True,
         _ => new Err($"unsupported operand type(s) for !=: 'int' and '{other.Type}'")
     };
 

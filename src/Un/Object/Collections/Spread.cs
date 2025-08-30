@@ -4,9 +4,9 @@ using Un.Object.Primitive;
 
 namespace Un.Object.Collections;
 
-public class Spread(Obj[] values) : Ref<Obj[]>(values, "spread"), IEnumerable<Obj>
+public class Spreads(Obj[] values) : Ref<Obj[]>(values, "spread"), IEnumerable<Obj>
 {
-    public struct Enumerator(Spread spread) : IEnumerator<Obj>
+    public struct Enumerator(Spreads spread) : IEnumerator<Obj>
     {
         private readonly Obj[] arr = spread.Value;
         private int index = -1; 
@@ -34,6 +34,8 @@ public class Spread(Obj[] values) : Ref<Obj[]>(values, "spread"), IEnumerable<Ob
 
     public int Count => Value.Length;
 
+    public override Obj Spread() => this;
+    
     public IEnumerator<Obj> GetEnumerator() => new Enumerator(this);
 
     IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);

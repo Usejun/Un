@@ -184,7 +184,7 @@ public class Fn() : Obj("fn")
 
         for (var i = 0; i < rawArgs.Count; i++)
         {
-            if (rawArgs[i] is Spread spread)
+            if (rawArgs[i] is Spreads spread)
             {
                 foreach (var v in spread)
                 {

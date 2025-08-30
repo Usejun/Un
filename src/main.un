@@ -1,13 +1,14 @@
-class a
-    fn __init__()
-    fn div()
-        -> b()
+class point(x, y, z)
 
-class b
-    fn __init__()
-    fn add()
-        -> 1
+class vec3 : point
+    fn __init__(x, y, z)
+        self.x = x
+        self.y = y
+        self.z = z
 
-a1 = a()
-b = go a1.div().add
-write(wait b())
+    sum = fn() -> self.x + self.y + self.z
+
+p1 = point(1, 2, 3)
+vec = vec3(4, 5, 6)
+
+write(p1, vec.sum())

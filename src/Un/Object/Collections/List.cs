@@ -55,13 +55,13 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
     public override Bool Eq(Obj other)
     {
         if (other is not List list)
-            return new(false);
+            return Bool.False;
 
         for (int i = 0; i < Count; i++)
             if (Value[i].NEq(list[i]).As<Bool>().Value)
-                return new(false);
+                return Bool.False;
 
-        return new(true);
+        return Bool.True;
     }
 
     public override Obj GetItem(Obj key) => key switch
@@ -117,7 +117,7 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
 
     public override Str ToStr() => new($"[{string.Join(", ", Value[..Count].Select(v => v.ToStr().As<Str>().Value))}]");
 
-    public override Spread Spread() => new(Value[..Count]);
+    public override Spreads Spread() => new(Value[..Count]);
 
     private bool OutOfRange(int index) => index < 0 || index >= Count;
 
@@ -179,18 +179,18 @@ public class List : Ref<Obj[]>, IEnumerable<Obj>
         for (int i = 0; i < Count; i++)
             if (this[i].Eq(obj).As<Bool>().Value)
                 return RemoveAt(new(i));
-        return new(false);
+        return Bool.False;
     }
 
     public Bool RemoveAt(Int index)
     {
         if (OutOfRange((int)index.Value))
-            return new(false);
+            return Bool.False;
 
         for (int i = (int)index.Value; i < Count - 1; i++)
             this[i] = this[i + 1];
         Count--;
-        return new(true);
+        return Bool.True;
     }
 
     public Int IndexOf(Obj obj)

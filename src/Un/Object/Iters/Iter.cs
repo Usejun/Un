@@ -35,7 +35,7 @@ public class Iters(IEnumerable<Obj> value) : Ref<IEnumerable<Obj>>(value, "iter"
         return new Err("iteration stopped");
     }
 
-    public override Spread Spread() => new([.. Value]);
+    public override Spreads Spread() => new([.. Value]);
 
     public override Obj Copy() => this;
 
@@ -58,7 +58,7 @@ public class Iters(IEnumerable<Obj> value) : Ref<IEnumerable<Obj>>(value, "iter"
                     if (!args["n"].As<Int>(out var n))
                         return new Err("invalid argument: 'n'");
 
-                    return new Iters([.. self.Value.Take((int)n.Value)]);
+                    return new Iters(self.Value.Take((int)n.Value));
                 }
             }
         },
@@ -74,7 +74,7 @@ public class Iters(IEnumerable<Obj> value) : Ref<IEnumerable<Obj>>(value, "iter"
                     if (!args["n"].As<Int>(out var n))
                         return new Err("invalid argument: 'n'");
 
-                    return new Iters([.. self.Value.Skip((int)n.Value)]);
+                    return new Iters(self.Value.Skip((int)n.Value));
                 }
             }
         },
@@ -116,13 +116,11 @@ public class Iters(IEnumerable<Obj> value) : Ref<IEnumerable<Obj>>(value, "iter"
                     if (args["fn"] is not Fn fn)
                         return new Err("invalid argument: 'fn'");
 
-                    var mapped = self.Value.Select(x =>
+                    return new Iters(self.Value.Select(x =>
                     {
                         var res = fn.Call(new([x], [""]));
                         return res;
-                    });
-
-                    return new Iters([.. mapped]);
+                    }));
                 }
             }
         },
@@ -138,13 +136,11 @@ public class Iters(IEnumerable<Obj> value) : Ref<IEnumerable<Obj>>(value, "iter"
                     if (args["fn"] is not Fn fn)
                         return new Err("invalid argument: 'fn'");
 
-                    var filtered = self.Value.Where(x =>
+                    return new Iters(self.Value.Where(x =>
                     {
                         var res = fn.Call(new([x], [""]));
                         return res is Bool b && b.Value;
-                    });
-
-                    return new Iters([.. filtered]);
+                    }));
                 }
             }
         },

@@ -24,14 +24,14 @@ public class Str(string value) : Ref<string>(value, "str")
     public override Obj Eq(Obj other) => other switch
     {
         Str s => new Bool(Value.CompareTo(s.Value) == 0),
-        Obj o when o.IsNone() => new Bool(false),
+        Obj o when o.IsNone() => Bool.False,
         _ => new Err($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'")
     };
 
     public override Obj NEq(Obj other) => other switch
     {
         Str s => new Bool(Value.CompareTo(s.Value) != 0),
-        Obj o when o.IsNone() => new Bool(true),
+        Obj o when o.IsNone() => Bool.True,
         _ => new Err($"unsupported operand type(s) for ==: '{Type}' and '{other.Type}'")
     };
 
@@ -53,7 +53,7 @@ public class Str(string value) : Ref<string>(value, "str")
 
     public override Str ToStr() => this;
 
-    public override Obj ToBool() => bool.TryParse(Value, out var result) ? new Bool(result) : string.IsNullOrEmpty(Value) ? new Bool(false) : new Bool(true);
+    public override Obj ToBool() => bool.TryParse(Value, out var result) ? new Bool(result) : string.IsNullOrEmpty(Value) ? Bool.False : Bool.True;
 
     public override List ToList()
     {
