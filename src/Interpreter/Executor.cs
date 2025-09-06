@@ -84,16 +84,7 @@ public static class Executor
                         result = deco.Invoke(new([result, .. tuple], new string[tuple.Count + 1]), context);
                     }
 
-                    foreach (var key in result.Annotations.Keys)
-                    {
-                        var name = key as string ?? "";
-                        if (context.Scope.Get(name, out var item) && item.As<Fn>(out var deco))
-                        {
-                            var tuple = result.Annotations[name] as Tup ?? [];
-                            result = deco.Invoke(new([result, .. tuple], new string[tuple.Count + 1]), context);
-                        }
-                    }
-                    result = result.As<Fn>(out var fn) ? fn.Invoke(args, context) : result.Init(args);
+                    result = result.As<Fn>(out var fn) ? fn.Invoke(args, context) : result.IsType() ? result.Init(args) : result;
 
                     values.Push(result.Unwrap(context));
                 }

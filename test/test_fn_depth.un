@@ -3,4 +3,4 @@ fn fib(x)
         -> 1
     -> fib(x - 1) + fib(x - 2)
 
-write(fib(32))
+write(fib(1))

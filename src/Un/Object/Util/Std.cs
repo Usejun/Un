@@ -45,7 +45,7 @@ public class Std : IPack
                     if (!args["stream"].As<IO.Stream>(out var stream))
                         return new Err("expected 'stream' argument to be of type 'stream'");
 
-                    var items = args["value"].ToTuple().As<Tup>().Value ;
+                    var items = args["value"].ToTuple().As<Tup>().Value;
 
                     var cw = new StreamWriter(stream.Value)
                     {
@@ -54,11 +54,12 @@ public class Std : IPack
 
                     for (int i = 0; i < items.Length; i++)
                     {
-                        cw.Write(items[i].ToStr().As<Str>().Value);
+                        var text = items[i].ToStr().As<Str>(out var str) ? str.Value : items[i].Repr().As<Str>().Value;
+                        cw.Write(text);
                         if (i != items.Length - 1)
-                            cw.Write(args["sep"].ToStr().As<Str>().Value);
+                            cw.Write(args["sep"].ToStr().As<Str>(out var sep) ? sep.Value : args["sep"].Repr().As<Str>().Value);
                     }
-                    cw.Write(args["end"].ToStr().As<Str>().Value);
+                    cw.Write(args["end"].ToStr().As<Str>(out var end) ? end.Value : args["end"].Repr().As<Str>().Value);
                     cw.Flush();
 
                     return Obj.None;
@@ -90,7 +91,7 @@ public class Std : IPack
                         AutoFlush = false
                     };
 
-                    cw.Write(args["prompt"].ToStr().As<Str>().Value);
+                    cw.Write(args["prompt"].ToStr().As<Str>(out var str) ? str.Value : args["prompt"].Repr().As<Str>().Value);
                     cw.Flush();
                     return new Str(cr.ReadLine() ?? "");
                 }
@@ -118,11 +119,12 @@ public class Std : IPack
                     var items = args["value"].ToTuple().As<Tup>().Value;
                     for (int i = 0; i < items.Length; i++)
                     {
-                        ew.Write(items[i].ToStr().As<Str>().Value);
+                        var text = items[i].ToStr().As<Str>(out var str) ? str.Value : items[i].Repr().As<Str>().Value;
+                        ew.Write(text);
                         if (i != items.Length - 1)
-                            ew.Write(args["sep"].ToStr().As<Str>().Value);
+                            ew.Write(args["sep"].ToStr().As<Str>(out var sep) ? sep.Value : args["sep"].Repr().As<Str>().Value);
                     }
-                    ew.Write(args["end"].ToStr().As<Str>().Value);
+                    ew.Write(args["end"].ToStr().As<Str>(out var end) ? end.Value : args["end"].Repr().As<Str>().Value);
                     ew.Flush();
 
                     return Obj.None;
@@ -214,14 +216,14 @@ public class Std : IPack
                 Name = "range",
                 ReturnType = "list[int]",
                 Args = [
-                    new Arg("start") {
+                    new Arg("stop") {
                         Type = "int",
                         IsEssential = true
                     },
-                    new Arg("count") {
+                    new Arg("start") {
                         Type = "int",
                         IsOptional = true,
-                        DefaultValue = new Int(-1),
+                        DefaultValue = new Int(0),
                     },
                     new Arg("step") {
                         Type = "int",
@@ -231,21 +233,11 @@ public class Std : IPack
                 ],
                 Func = (args) =>
                 {
-                    long start = args["start"].ToInt().As<Int>().Value,
-                         count = args["count"].ToInt().As<Int>().Value,
+                    long stop = args["stop"].ToInt().As<Int>().Value,
+                         start = args["start"].ToInt().As<Int>().Value,
                          step  = args["step"].ToInt().As<Int>().Value;
 
-                    if (count == -1)
-                        (start, count) = (0, start);
-                    if (step == 0)
-                        return new Err("argument 'step' must be non-zero.");
-
-                    List list = [];
-
-                    for (long i = start, j = 0; j < count; i += step, j++)
-                        list.Append(new Int(i));
-
-                    return list;
+                    return new Iter.Range(start, stop, step);
                 }
             }
         },
@@ -356,6 +348,10 @@ public class Std : IPack
                             tuple = l.ToTuple();
                         else if (tuple[0].As<Tup>(out var t))
                             tuple = t;
+                        else if (tuple[0].As<Iter.Range>(out var r))
+                            return new Int(r.Value.Sum(x => x.As<Int>().Value));
+                        else if (tuple[0].As<Iters>(out var it))
+                            tuple = it.ToTuple();
                         else
                             return tuple[0];
                     }
@@ -724,6 +720,52 @@ public class Std : IPack
                     return Obj.None;
                 }
             }
+        },
+        { "gc", new NFn()
+            {
+                Name = "gc",
+                ReturnType = "none",
+                Args = [],
+                Func = (args) =>
+                {
+                    GC.Collect();
+                    return Obj.None;
+                }
+            }
+        },
+        { "bench", new NFn()
+            {
+                Name = "bench",
+                ReturnType = "float",
+                Args = [
+                    new Arg("fn") {
+                        Type = "func",
+                        IsEssential = true
+                    },
+                    new Arg("args") {
+                        Type = "tuple[any]",
+                        IsPositional = true,
+                    }
+                ],
+                Func = (args) =>
+                {
+                    if (!args["fn"].As<Fn>(out var fn))
+                        return new Err("expected 'fn' argument to be of type 'func'");
+                    var vargs = args["args"].ToTuple().As<Tup>();
+
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    var returned = fn.Call(vargs);
+                    sw.Stop();
+
+                    var w = new StreamWriter(so.Value)
+                    {
+                        AutoFlush = false
+                    };
+
+                    return new Tup([returned, new Int(sw.ElapsedMilliseconds)], ["value", "time"]);
+                }
+            }
+
         }
     };
 }

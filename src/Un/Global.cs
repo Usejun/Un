@@ -32,6 +32,7 @@ public static class Global
     static Global()
     {
         classes["time"] = new Time();
+        classes["timer"] = new Object.Util.Timer(); 
         classes["flow"] = new Flow();
         classes["json"] = new Json(Obj.None);
         classes["counter"] = new Counter();

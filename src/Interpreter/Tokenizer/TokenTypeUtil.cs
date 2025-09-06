@@ -73,6 +73,12 @@ public static class TokenTypeUtil
         _ => false
     };
 
+    public static bool IsDeconstruct(this TokenType type) => type switch
+    {
+        TokenType.List or TokenType.Dict or TokenType.Set or TokenType.Tuple => true,
+        _ => false
+    };
+
     public static bool IsLiteral(this TokenType type) => type switch
     {
         TokenType.Integer or TokenType.Float or TokenType.String or TokenType.FString or TokenType.Boolean or

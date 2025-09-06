@@ -299,9 +299,17 @@ public class Obj(string type) : IComparable<Obj>
 
     public virtual Obj ToStr()
     {
+        if (IsNone()) return new Str("none");
         if (TryMethod("__str__", out Obj? value, []))
             return value;
-        return Super is not null && !Super.IsNone() && Super.Has("__str__") ? Super.ToStr() : new Str($"{Type}");
+        return Super is not null && !Super.IsNone() ? Super.ToStr() : new Err($"unsupported operand type(s) for str(): '{Type}'");
+    }
+
+    public virtual Obj Repr()
+    {
+        if (TryMethod("__repr__", out Obj? value, []))
+            return value;
+        return Super is not null && !Super.IsNone() && Super.Repr().As<Str>().Value != Super.Type ? Super.Repr(): new Str(Type);
     }
 
     public virtual Obj ToBool()

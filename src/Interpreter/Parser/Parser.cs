@@ -49,14 +49,9 @@ public class Parser(Context context)
         var splited = nodes.Split(TokenType.As);
         var modules = splited[0][1..];
 
-        bool isNickname = splited is { Count: 2 } &&
-                          splited[1] is { Count: 1 } &&
-                          splited[1][0] is { Type: TokenType.Identifier };
-
-        bool isSpread = splited is { Count: 2 } &&
-                        splited[1] is { Count: 1 } &&
-                        splited[1][0] is { Type: TokenType.Asterisk };
-
+        bool isAs = splited is { Count: 2 } && splited[1] is { Count: 1 };
+        bool isNickname = isAs && splited[1][0] is { Type: TokenType.Identifier };
+        bool isSpread = isAs && splited[1][0] is { Type: TokenType.Asterisk };
         bool isPart = modules[^1].Type == TokenType.Set;
 
         string[] path = [..modules[..^(isPart ? 1 : 0)].Select(x => x.Value)];
@@ -78,10 +73,11 @@ public class Parser(Context context)
         var name = nodes[1].Value;
         var colon = nodes.FindIndex(x => x.Type == TokenType.Colon);
         var isInherit = (colon == 2 && nodes.Count >= 4) || (colon == 3 && nodes.Count >= 5);
-        var fields = colon == 2 ? [] : nodes[2].Children;
+        var fields = colon < 3 ? [] : nodes[2].Children;
         var body = context.File.GetBody();
         var members = new Map();
         var types = new HashSet<string>();
+        var superType = "";
 
         foreach (var value in Fn.GetArgs(fields, context))
         {
@@ -101,12 +97,15 @@ public class Parser(Context context)
 
             if (inherits.Count != 2) throw new Error("invalid class syntax", context);
 
-            types.Add(nodes[3].Value);
+            var supers = inherits[1].Split(TokenType.Comma);
+            superType = supers[0][^1].Value;
 
-            foreach (var super in inherits[1].Split(TokenType.Comma).Skip(1))
-                if (super is { Count: 1 } && super[0] is { Type: TokenType.Identifier })
+            types.Add(superType);
+
+            foreach (var super in supers.Skip(1))
+                if (super[^1] is { Type: TokenType.Identifier })
                 {
-                    var superName = super[0].Value;
+                    var superName = super[^1].Value;
                     if (!Global.TryGetClass(superName, out Obj? superObj))
                         throw new Error($"superclass {superName} is not defined", context);
 
@@ -119,7 +118,7 @@ public class Parser(Context context)
 
         lock (Global.SyncRoot)
         {
-            Global.SetClass(name, IsEmpty(body) ?
+            Global.SetClass(name, IsEmpty(body) && colon < 3 ?
             new Stru(name, [..fields.Split(TokenType.Comma).Select(x => x[0].Value)])
             {
                 Annotations = context.Annotations,
@@ -129,7 +128,7 @@ public class Parser(Context context)
             new Obj(name)
             {
                 Annotations = context.Annotations,
-                Super = isInherit ? Global.GetClass(nodes[3].Value) : Obj.None,
+                Super = isInherit ? Global.GetClass(superType) : Obj.None,
                 Types = types,
                 Members = members
             });
@@ -263,7 +262,7 @@ public class Parser(Context context)
 
         bool IsDeconstructableToken() => (values[0].Type == TokenType.List || values[0].Type == TokenType.Tuple) && nameCount == values[0].Children.Count(i => i.Type == TokenType.Comma) + 1;
 
-        bool IsDeconstruct() => valueCount == 1 && !Scope.Get(values[0].Value).Spread().As<Err>(out _);
+        bool IsDeconstruct() => valueCount == 1 && (values[0].Type.IsDeconstruct() || !Scope.Get(values[0].Value).Spread().As<Err>(out _));
 
         Obj AssignValue(TokenType type, Obj a, Obj b) => type switch
         {
@@ -290,12 +289,13 @@ public class Parser(Context context)
         var iter = Executor.On(nodes[(inIdx + 1)..], context).Iter().As<Iters>().Value;
         var innerScope = new Scope(new Map(), Scope);
         var innerContext = new Context(innerScope, new("for", context.File.GetBody()), []);
+        var runner = Runner.Load(innerContext, context);
 
         innerContext.EnterBlock("loop");
 
         foreach (var current in iter)
         {
-            innerContext.File.Move(0, 0);
+            runner.Reset();
 
             if (vars.Count != 1 && vars.Count != current switch
             {
@@ -314,7 +314,7 @@ public class Parser(Context context)
             for (int i = 0; i < vars.Count; i++)
                 innerScope.Set(vars[i].Value, values[i]);
 
-            ReturnValue = Runner.Load(innerContext, context).Run();
+            ReturnValue = runner.Run();
 
             if (ReturnValue?.Type == "break")
             {

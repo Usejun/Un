@@ -11,16 +11,10 @@ public class Stru(string type, string[] names) : Obj(type)
     {
         if (args.Count != names.Length) return new Err("invalid initialize");
 
-        Map map = Members.New();
-
         for (int i = 0; i < names.Length; i++)
-            map[names[i]] = args[i];
+            Members[names[i]] = args[i];
 
-        return new Stru(type, names)
-        {
-            Annotations = Annotations,
-            Members = map,
-        };
+        return this;
     }
 
     public override Str ToStr() => new($"{Type}({string.Join(", ", names.Select(name => $"{name}: {Members[name]}"))})");

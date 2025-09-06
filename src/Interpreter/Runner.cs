@@ -49,6 +49,13 @@ public class Runner(Context context, Context? parentContext = null!)
         return returned!;
     }
 
+    public void Reset()
+    {
+        Context.File.Move(0, 0);
+        Context.Defers.Clear();
+        Context.Usings.Clear();
+    }
+
     private void Free()
     {
         foreach (var obj in Context.Usings)

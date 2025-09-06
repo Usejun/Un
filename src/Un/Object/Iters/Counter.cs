@@ -6,9 +6,13 @@ namespace Un.Object.Iter;
 
 public class Counter : Iters
 {
-    public Counter() : base(Default())
+    protected long current = 0;
+
+    public Counter(long start = 0)
     {
         Type = "counter";
+        current = start;
+        Value = Default(start);
     }
 
     public override Obj Init(Tup args) => args switch
@@ -29,14 +33,14 @@ public class Counter : Iters
 
     public override Spreads Spread() => throw new Panic("counter is infinite");
 
-    public override Obj Clone() => new Counter()
+    public override Obj Clone() => new Counter(current)
     {
         Annotations = Annotations
     };
 
-    protected static IEnumerable<Obj> Default()
+    protected IEnumerable<Obj> Default(long start)
     {
-        long i = 0;
+        long i = start;
         while (true)
             yield return new Int(i++);
     }

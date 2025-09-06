@@ -15,7 +15,6 @@ Un은 현대적인 문법과 비동기 처리, 안전성을 중시하는 프로�
 * `go` 키워드로 비동기 작업을 백그라운드 실행 가능
 * 구조 분해, 패턴 매칭 등 최신 언어 기능 내장
 * 파일 기반 모듈 시스템 (`use` 키워드)
-* 클래스는 지원하지만 인터페이스는 아직 없음
 * 자원 관리를 위한 `using` 키워드 제공
 * 문자열 보간 및 tagged template 문자열 지원
 
@@ -59,7 +58,8 @@ Un의 함수는 기본적으로 비동기이며, 실행 결과를 기다리기 �
 예시:
 
 ```
-let data = wait fetch("https://example.com")
+data = wait fetch("https://example.com")
+
 go downloadFile("file.zip")
 ```
 

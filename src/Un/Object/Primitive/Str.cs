@@ -47,6 +47,8 @@ public class Str(string value) : Ref<string>(value, "str")
         _ => new Err("invalid index type"),
     };
 
+    public override Int Len() => new(Value.Length);
+
     public override Obj ToInt() => long.TryParse(Value, out var result) ? new Int(result) : new Err($"cannot convert '{Value}' to 'int'");
 
     public override Obj ToFloat() => double.TryParse(Value, out var result) ? new Float(result) : new Err($"cannot convert '{Value}' to 'float'");
